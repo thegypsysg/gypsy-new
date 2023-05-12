@@ -1,7 +1,12 @@
 <template>
   <v-app-bar color="white" elevation="1" fixed>
     <router-link to="/">
-      <img class="logo-img" src="@/assets/images/logo/logo.png" height="90" />
+      <img
+        class="logo-img"
+        src="@/assets/images/logo/logo.png"
+        height="90"
+        :class="{ 'ml-5': isWelcome }"
+      />
     </router-link>
     <div v-if="isWelcome" class="ml-4 d-flex flex-row header-info">
       <div class="divider" />
