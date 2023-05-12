@@ -1,10 +1,12 @@
 <template>
-  <Header/>
-  <Banner />
-  <TrendingApps />
-  <Partners />
-  <hr>
-  <Footer />
+  <div>
+    <Header />
+    <Banner />
+    <TrendingApps />
+    <Partners />
+    <hr />
+    <Footer />
+  </div>
 </template>
 
 <script setup>
@@ -21,17 +23,17 @@ export default {
   data() {
     return {
       drawer: false,
-    }
+    };
   },
 };
 </script>
 
 <style>
 @font-face {
-  font-family: 'Nunito';
+  font-family: "Nunito";
   font-style: normal;
   font-weight: normal;
-  src: url('@/assets/font/nunito/Nunito-VariableFont_wght.ttf') format('opentype');
+  src: url("@/assets/font/nunito/Nunito-VariableFont_wght.ttf")
+    format("opentype");
 }
-
 </style>
