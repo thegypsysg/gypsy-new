@@ -1,6 +1,5 @@
 <template>
   <div>
-    <Header />
     <Banner />
     <TrendingApps />
     <Partners />
@@ -10,7 +9,6 @@
 </template>
 
 <script setup>
-import Header from "@/components/Header.vue";
 import Banner from "@/components/Banner.vue";
 import TrendingApps from "@/components/TrendingApps.vue";
 import Partners from "@/components/Partners.vue";

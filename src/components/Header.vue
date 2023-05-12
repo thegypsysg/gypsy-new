@@ -3,7 +3,12 @@
     <router-link to="/">
       <img class="logo-img" src="@/assets/images/logo/logo.png" height="90" />
     </router-link>
-    <form class="navbar__search navbar__search__desktop">
+    <div v-if="isWelcome" class="ml-4 d-flex flex-row header-info">
+      <div class="divider" />
+      <span>Sign Up / Login</span>
+    </div>
+    <v-spacer v-if="isWelcome" />
+    <form v-if="!isWelcome" class="navbar__search navbar__search__desktop">
       <input
         id="product_name"
         class="form-control mr-sm-2"
@@ -16,7 +21,7 @@
         <v-icon color="white"> mdi-magnify </v-icon>
       </button>
     </form>
-    <div class="desktop__app">
+    <div v-if="!isWelcome" class="desktop__app">
       <v-menu>
         <template #activator="{ props }">
           <v-btn
@@ -44,17 +49,17 @@
         </v-list>
       </v-menu>
     </div>
-    <v-btn elevation="0" class="btn_sign__up" to="/welcome">
+    <v-btn v-if="!isWelcome" elevation="0" class="btn_sign__up" to="/welcome">
       Sign up / Register
     </v-btn>
-    <v-btn icon @click="drawer = !drawer">
+    <v-btn v-if="!isWelcome" icon @click="drawer = !drawer">
       <img
         src="@/assets/images/icons/user_icon.png"
         style="height: 48px; width: auto"
       />
     </v-btn>
 
-    <template #extension>
+    <template v-if="!isWelcome" #extension>
       <div class="mobile__app text-center">
         <div style="margin-bottom: 8px; margin-top: -16px">
           <v-menu>
@@ -100,7 +105,12 @@
       </div>
     </template>
   </v-app-bar>
-  <v-navigation-drawer v-model="drawer" temporary location="right">
+  <v-navigation-drawer
+    v-if="!isWelcome"
+    v-model="drawer"
+    temporary
+    location="right"
+  >
     <div class="drawer__top">
       <a style="font-size: 1.125rem; color: white">Sign up / Register</a>
     </div>
@@ -180,6 +190,7 @@
 export default {
   // eslint-disable-next-line vue/multi-word-component-names, vue/no-reserved-component-names
   name: "Header",
+  props: ["isWelcome"],
   data() {
     return {
       drawer: false,
@@ -196,5 +207,19 @@ export default {
 <style scoped>
 .v-app-bar.v-toolbar {
   max-width: 100%;
+}
+
+.divider {
+  background: rgb(173, 173, 173);
+  width: 2px;
+  height: 70px;
+}
+
+.header-info {
+  align-items: center;
+  gap: 25px;
+  font-size: 30px;
+  color: black;
+  font-weight: 800;
 }
 </style>

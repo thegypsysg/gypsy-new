@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-app-bar color="white" elevation="1" fixed>
+    <!-- <v-app-bar color="white" elevation="1" fixed>
       <router-link to="/">
         <img class="logo-img" src="@/assets/images/logo/logo.png" height="90" />
       </router-link>
@@ -9,7 +9,7 @@
         <span>Sign Up / Login</span>
       </div>
       <v-spacer />
-    </v-app-bar>
+    </v-app-bar> -->
     <div class="d-flex align-center login-container">
       <v-container fluid>
         <v-row class="d-flex align-center justify-end">
@@ -89,20 +89,6 @@ export default {
 </script>
 
 <style scoped>
-.divider {
-  background: rgb(173, 173, 173);
-  width: 2px;
-  height: 70px;
-}
-
-.header-info {
-  align-items: center;
-  gap: 25px;
-  font-size: 30px;
-  color: black;
-  font-weight: 800;
-}
-
 .login-container {
   background-image: url("../assets/header.png");
   background-position: center;
