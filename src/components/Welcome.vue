@@ -1,68 +1,140 @@
 <template>
   <div>
-    <!-- <v-app-bar color="white" elevation="1" fixed>
-      <router-link to="/">
-        <img class="logo-img" src="@/assets/images/logo/logo.png" height="90" />
-      </router-link>
-      <div class="ml-4 d-flex flex-row header-info">
-        <div class="divider" />
-        <span>Sign Up / Login</span>
-      </div>
-      <v-spacer />
-    </v-app-bar> -->
-    <div class="d-flex align-center login-container">
+    <div
+      class="d-flex align-center"
+      :class="{ 'login-container': !isSmall, 'mt-10': isSmall }"
+    >
       <v-container fluid>
         <v-row class="d-flex align-center justify-end">
-          <v-col cols="6">
+          <v-col :cols="isSmall ? '12' : '6'">
             <v-card
-              elevation="1"
-              max-width="450"
-              class="mt-12 mx-auto px-12 login-card"
+              :elevation="!isSmall ? 1 : 0"
+              :max-width="isSmall ? `${screenWidth - 30}px` : '450'"
+              class="mx-auto"
+              :class="{ 'login-card px-12': !isSmall, 'py-10 px-2': isSmall }"
             >
-              <h1 class="mb-1">Welcome</h1>
-              <p class="mb-4">
+              <h1
+                class="mb-1"
+                style="font-family: Arial, Helvetica, sans-serif !important"
+              >
+                Welcome
+              </h1>
+              <p :class="{ 'mb-4': !isSmall, 'mb-12': isSmall }">
                 To begin please enter your email and press Get Started
               </p>
               <v-form fast-fail @submit.prevent="login">
+                <label style="font-size: 24px; font-weight: 600"
+                  >Email ID</label
+                >
                 <v-text-field
                   v-model="email"
                   class="login-input mb-8"
-                  label="Email"
+                  label="Email Address"
                   type="email"
                   variant="outlined"
                   placeholder="John@example.com"
                   :persistent-hint="true"
                 />
 
-                <v-btn type="submit" variant="outlined" block class="login-btn">
+                <v-btn
+                  type="submit"
+                  variant="outlined"
+                  block
+                  class="login-btn"
+                  :class="{ 'login-btn-mobile': isSmall }"
+                >
                   Get Started
                 </v-btn>
                 <div class="login-footer mt-8">
                   <div class="d-flex justify-center" style="gap: 25px">
-                    <div class="login-line" />
-                    <span class="mt-n3">OR</span>
-                    <div class="login-line" />
+                    <div
+                      class="login-line"
+                      :class="{ 'login-line-mobile': isSmall }"
+                    />
+                    <span
+                      class="mt-n3"
+                      :class="{ 'login-footer-span': isSmall }"
+                      >OR</span
+                    >
+                    <div
+                      class="login-line"
+                      :class="{ 'login-line-mobile': isSmall }"
+                    />
                   </div>
+                </div>
+
+                <div
+                  v-if="isSmall"
+                  class="d-flex flex-column justify-center text-center mt-10"
+                  style="gap: 5px"
+                >
+                  <h2>Social Media</h2>
+                  <p>please select anyone from below</p>
                 </div>
                 <div
                   class="login-footer-btn d-flex justify-center mt-5"
-                  style="gap: 20px"
+                  :class="{ 'login-footer-btn-mobile': isSmall }"
                 >
-                  <div class="login-footer-icon">
-                    <img src="../assets/tiktok.png" alt="logo" />
-                  </div>
-                  <div class="login-footer-icon">
-                    <img src="../assets/facebook.png" alt="logo" />
-                  </div>
-                  <div class="login-footer-icon">
-                    <img src="../assets/instagram.png" alt="logo" />
-                  </div>
-                  <div class="login-footer-icon">
-                    <img src="../assets/google.png" alt="logo" />
-                  </div>
-                  <div class="login-footer-icon">
-                    <img src="../assets/linkedin.png" alt="logo" />
-                  </div>
+                  <v-btn
+                    v-if="!isSmall"
+                    :size="!isSmall ? '40' : '50'"
+                    variant="text"
+                    style="background: black"
+                    color="white"
+                    icon
+                  >
+                    <v-icon :size="!isSmall ? '18' : '24'">
+                      <i class="fa-brands fa-tiktok" />
+                    </v-icon>
+                  </v-btn>
+
+                  <v-btn
+                    :size="!isSmall ? '40' : '50'"
+                    variant="text"
+                    style="background: #4267b2"
+                    color="white"
+                    icon
+                  >
+                    <v-icon :size="!isSmall ? '18' : '24'">
+                      <i class="fa-brands fa-facebook-f" />
+                    </v-icon>
+                  </v-btn>
+
+                  <v-btn
+                    :size="!isSmall ? '40' : '50'"
+                    variant="text"
+                    style="background: #fc2145"
+                    color="white"
+                    icon
+                  >
+                    <v-icon :size="!isSmall ? '18' : '24'">
+                      <i class="fa-brands fa-instagram" />
+                    </v-icon>
+                  </v-btn>
+
+                  <v-btn
+                    :size="!isSmall ? '40' : '50'"
+                    variant="text"
+                    color="white"
+                    style="background: #db4a39"
+                    icon
+                  >
+                    <v-icon :size="!isSmall ? '18' : '24'">
+                      <i class="fa-brands fa-google-plus-g" />
+                    </v-icon>
+                  </v-btn>
+
+                  <v-btn
+                    :size="!isSmall ? '40' : '50'"
+                    variant="text"
+                    style="background: #0072b1"
+                    color="white"
+                    icon
+                  >
+                    <v-icon :size="!isSmall ? '18' : '24'">
+                      <i class="fa-brands fa-linkedin-in" />
+                    </v-icon>
+                  </v-btn>
                 </div>
               </v-form>
             </v-card>
@@ -79,11 +151,25 @@ export default {
   name: "Welcome",
   data() {
     return {
-      rememberMe: false,
-      password: "",
       email: "",
-      showPassword: false,
+      screenWidth: window.innerWidth,
     };
+  },
+  computed: {
+    isSmall() {
+      return this.screenWidth < 640;
+    },
+  },
+  created() {
+    window.addEventListener("resize", this.handleResize);
+  },
+  unmounted() {
+    window.removeEventListener("resize", this.handleResize);
+  },
+  methods: {
+    handleResize() {
+      this.screenWidth = window.innerWidth;
+    },
   },
 };
 </script>
@@ -120,18 +206,38 @@ export default {
   text-transform: unset;
 }
 
+.login-btn-mobile {
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.login-footer-span {
+  font-size: 20px;
+  font-weight: 600;
+}
+
 .login-line {
   width: 70px;
   height: 1px;
   background: #bababa;
 }
+.login-line-mobile {
+  width: 150px;
+}
 
 .login-card {
+  margin-top: 90px;
   padding-top: 15px;
   padding-bottom: 120px;
 }
 
 .login-footer-icon {
   cursor: pointer;
+}
+.login-footer-btn {
+  gap: 20px;
+}
+.login-footer-btn-mobile {
+  gap: 40px;
 }
 </style>

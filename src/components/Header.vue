@@ -5,12 +5,12 @@
         class="logo-img"
         src="@/assets/images/logo/logo.png"
         height="90"
-        :class="{ 'ml-5': isWelcome }"
+        :class="{ 'ml-8': isWelcome }"
       />
     </router-link>
     <div v-if="isWelcome" class="ml-4 d-flex flex-row header-info">
-      <div class="divider" />
-      <span>Sign Up / Login</span>
+      <div v-if="!isSmall" class="divider" />
+      <span :class="{ 'header-info-span': isSmall }">Sign Up / Login</span>
     </div>
     <v-spacer v-if="isWelcome" />
     <form v-if="!isWelcome" class="navbar__search navbar__search__desktop">
@@ -111,7 +111,7 @@
     </template>
   </v-app-bar>
   <v-navigation-drawer
-    v-if="!isWelcome"
+    v-if="!isWelcome || (isWelcome && isSmall)"
     v-model="drawer"
     temporary
     location="right"
@@ -204,7 +204,24 @@ export default {
         { title: "Sign Up", path: "/signup", icon: "face" },
         { title: "Sign In", path: "/signin", icon: "lock_open" },
       ],
+      screenWidth: window.innerWidth,
     };
+  },
+  computed: {
+    isSmall() {
+      return this.screenWidth < 640;
+    },
+  },
+  created() {
+    window.addEventListener("resize", this.handleResize);
+  },
+  unmounted() {
+    window.removeEventListener("resize", this.handleResize);
+  },
+  methods: {
+    handleResize() {
+      this.screenWidth = window.innerWidth;
+    },
   },
 };
 </script>
@@ -225,6 +242,11 @@ export default {
   gap: 25px;
   font-size: 30px;
   color: black;
+  font-weight: 800;
+}
+
+.header-info-span {
+  font-size: 25px;
   font-weight: 800;
 }
 </style>
