@@ -14,7 +14,7 @@
         </v-img>
       </div>
     </router-link>
-    <div v-if="isWelcome" class="ml-4 d-flex flex-row header-info">
+    <div v-if="isWelcome" class="ml-10 d-flex flex-row header-info">
       <div v-if="!isSmall" class="divider" />
       <span :class="{ 'header-info-span': isSmall }">Sign Up / Login</span>
     </div>
