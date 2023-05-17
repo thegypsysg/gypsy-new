@@ -115,7 +115,7 @@
                 </div>
               </div>
               <v-img
-                src="@/assets/gypsi-1.png"
+                src="@/assets/gypsy-1.png"
                 gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
                 height="200px"
                 cover
