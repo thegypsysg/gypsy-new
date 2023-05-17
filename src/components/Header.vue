@@ -1,12 +1,18 @@
 <template>
   <v-app-bar color="white" elevation="1" fixed>
     <router-link to="/">
-      <img
-        class="logo-img"
-        src="@/assets/images/logo/logo.png"
-        height="90"
-        :class="{ 'ml-8': isWelcome }"
-      />
+      <div class="logo-img-container">
+        <v-img
+          class="logo-img"
+          src="@/assets/images/logo/logo.png"
+          height="90"
+          :class="{ 'ml-8': isWelcome }"
+        >
+          <template #placeholder>
+            <div class="skeleton" />
+          </template>
+        </v-img>
+      </div>
     </router-link>
     <div v-if="isWelcome" class="ml-4 d-flex flex-row header-info">
       <div v-if="!isSmall" class="divider" />
@@ -248,5 +254,34 @@ export default {
 .header-info-span {
   font-size: 25px;
   font-weight: 800;
+}
+
+.logo-img-container {
+  height: 80px;
+  min-width: 100px;
+}
+
+.logo-img {
+  width: 100%;
+  height: 100%;
+}
+
+.skeleton {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  z-index: 10000;
+  background: linear-gradient(-90deg, #f2f2f2 0%, #e1e1e1 50%, #f2f2f2 100%);
+  background-size: 400% 400%;
+  animation: skeleton 1.6s ease infinite;
+}
+
+@keyframes skeleton {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
 }
 </style>

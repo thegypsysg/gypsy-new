@@ -36,7 +36,7 @@ export default {
 
 .page-opacity-enter-active,
 .page-opacity-leave-active {
-  transition: 300ms ease all;
+  transition: 400ms ease all;
 }
 
 .page-opacity-enter-from,
