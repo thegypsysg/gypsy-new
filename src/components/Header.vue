@@ -301,7 +301,7 @@ export default {
 
 <style scoped>
 .scroll-container {
-  margin-top: -100px;
+  margin-top: -90px;
   overflow-x: auto;
   white-space: nowrap;
   gap: 20px;
@@ -310,7 +310,7 @@ export default {
   max-width: 100%;
 }
 .app-bar-mobile {
-  height: 28vh;
+  height: 29vh;
 }
 
 .divider {
