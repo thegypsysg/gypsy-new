@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-image">
+  <div class="bg-image" :class="{ 'bg-image-mobile': isSmall }">
     <v-container
       style="height: calc(100vh - 90px); display: flex; align-items: center"
     >
@@ -26,10 +26,9 @@
               What are you
             </h1>
             <h1
-              style="color: rgb(255, 236, 75); margin-left: 100px"
+              style="color: rgb(255, 236, 75)"
               :style="{
                 'font-size': !isSmall ? '55px' : '45px',
-                'margin-left': !isSmall ? '100px' : '65px',
               }"
             >
               Looking for. ?
@@ -116,4 +115,8 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.bg-image-mobile {
+  height: 73vh !important;
+}
+</style>

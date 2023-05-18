@@ -235,32 +235,32 @@ export default {
       ],
       trendingCard: [
         {
-          img: "@/assets/gypsy-1.png",
+          img: "assets/gypsy-1.png",
           title: "Mall-e",
           desc: "Promotion happening in mall",
         },
         {
-          img: "@/assets/gypsy-2.png",
+          img: "assets/gypsy-2.png",
           title: "Boozards",
           desc: "Marketplace for booz",
         },
         {
-          img: "@/assets/gypsy-3.png",
+          img: "assets/gypsy-3.png",
           title: "Flea",
           desc: "Promotion happening in street",
         },
         {
-          img: "@/assets/gypsy-4.png",
+          img: "assets/gypsy-4.png",
           title: "Mendesliga",
           desc: "Market place for tournaments",
         },
         {
-          img: "@/assets/gypsy-5.png",
+          img: "assets/gypsy-5.png",
           title: "Cake run",
           desc: "Promotion happening in malls",
         },
         {
-          img: "@/assets/gypsy-6.png",
+          img: "assets/gypsy-6.png",
           title: "Cafe run",
           desc: "Marketplace for cafe around you",
         },

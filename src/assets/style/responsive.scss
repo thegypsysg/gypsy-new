@@ -33,8 +33,7 @@
   }
   .bg-image {
     background-image: url('@/assets/images/banner-mobile.png') !important;
-    margin-top: 185px;
-    min-height: calc(100vh - 185px);
+    margin-top: 28vh !important;
   }
 
   .logo-img-container {
@@ -126,6 +125,11 @@
   }
 }
 @media (max-width: 599px) {
+  .bg-image {
+    background-image: url('@/assets/images/banner-mobile.png') !important;
+    margin-top: 28vh !important;
+    min-height: 40vh !important;
+  }
   .navbar__search {
     max-width: 300px !important;
   }

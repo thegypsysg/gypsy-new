@@ -301,7 +301,7 @@ export default {
 
 <style scoped>
 .scroll-container {
-  margin-top: -90px;
+  margin-top: -80px;
   overflow-x: auto;
   white-space: nowrap;
   gap: 20px;
