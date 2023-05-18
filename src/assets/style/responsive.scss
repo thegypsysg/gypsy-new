@@ -129,6 +129,9 @@
   }
 }
 @media (max-width: 599px) {
+  .navbar__search {
+    max-width: 300px !important;
+  }
   .trending__app__wrapper .v-col-sm-6 {
     flex: 0 0 50%;
     max-width: 50%;

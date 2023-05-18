@@ -1,5 +1,10 @@
 <template>
-  <v-app-bar color="white" elevation="1" fixed>
+  <v-app-bar
+    :class="{ 'app-bar-mobile': isSmall }"
+    color="white"
+    elevation="1"
+    fixed
+  >
     <router-link to="/">
       <div class="logo-img-container">
         <v-img
@@ -71,8 +76,10 @@
     </v-btn>
 
     <template v-if="!isWelcome" #extension>
-      <div class="mobile__app text-center">
-        <div style="margin-bottom: 8px; margin-top: -16px">
+      <div
+        class="mobile__app text-center scroll-container d-flex flex-column justify-center align-content-space-between mx-2"
+      >
+        <div>
           <v-menu>
             <template #activator="{ props }">
               <v-btn
@@ -100,7 +107,10 @@
             </v-list>
           </v-menu>
         </div>
-        <form class="navbar__search navbar__search__mobile">
+        <form
+          class="navbar__search navbar__search__mobile mx-auto"
+          @submit="preventSubmit"
+        >
           <input
             id="product_name"
             class="form-control mr-sm-2"
@@ -113,37 +123,11 @@
             <v-icon color="white"> mdi-magnify </v-icon>
           </button>
         </form>
-        <v-slide-group v-model="selectedType" style="margin-bottom: 70px">
-          <template #prev="{ on, attrs }">
-            <v-btn
-              v-if="activeIndex > 1"
-              color="black"
-              rounded
-              style="background-color: red !important; z-index: 100000"
-              icon
-              v-bind="attrs"
-              v-on="on"
-              @click="previousSlide"
-            >
-              <v-icon>mdi-arrow-left</v-icon>
-            </v-btn>
-          </template>
-          <template #next="{ on, attrs }">
-            <v-btn
-              v-if="activeIndex + 1 <= trendingBtn / 5"
-              color="black"
-              rounded
-              style="background-color: red !important; z-index: 100000"
-              icon
-              v-bind="attrs"
-              @click="nextSlide"
-              v-on="on"
-            >
-              <v-icon>mdi-arrow-right</v-icon>
-            </v-btn>
-          </template>
+
+        <v-slide-group v-model="selectedType">
           <v-slide-group-item
             v-for="(btn, i) in trendingBtn"
+            :id="i"
             :key="i"
             v-slot="{ isSelected, toggle }"
           >
@@ -308,13 +292,25 @@ export default {
     nextSlide() {
       this.activeIndex++;
     },
+    preventSubmit(event) {
+      event.preventDefault();
+    },
   },
 };
 </script>
 
 <style scoped>
+.scroll-container {
+  margin-top: -100px;
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 20px;
+}
 .v-app-bar.v-toolbar {
   max-width: 100%;
+}
+.app-bar-mobile {
+  height: 28vh;
 }
 
 .divider {
