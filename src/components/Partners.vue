@@ -12,17 +12,19 @@
       <v-col sm="12" md="4" cols="12">
         <v-lazy :options="{ threshold: 0.5 }" min-height="200">
           <v-card class="partners_box">
-            <v-img
-              src="@/assets/partner-1.png"
-              class="align-end"
-              gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
-              height="200px"
-              cover
-            >
-              <template #placeholder>
-                <div class="skeleton" />
-              </template>
-            </v-img>
+            <div class="img-cont">
+              <v-img
+                src="@/assets/partner-1.png"
+                class="align-end img-item"
+                gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
+                height="200px"
+                cover
+              >
+                <template #placeholder>
+                  <div class="skeleton" />
+                </template>
+              </v-img>
+            </div>
             <v-card-title class="text-black text-center">
               As a Rider/Driver
             </v-card-title>
@@ -45,17 +47,19 @@
       <v-col sm="12" md="4" cols="12">
         <v-lazy :options="{ threshold: 0.5 }" min-height="200">
           <v-card class="partners_box">
-            <v-img
-              src="@/assets/partner-2.png"
-              class="align-end"
-              gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
-              height="200px"
-              cover
-            >
-              <template #placeholder>
-                <div class="skeleton" />
-              </template>
-            </v-img>
+            <div class="img-cont">
+              <v-img
+                src="@/assets/partner-2.png"
+                class="align-end img-item"
+                gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
+                height="200px"
+                cover
+              >
+                <template #placeholder>
+                  <div class="skeleton" />
+                </template>
+              </v-img>
+            </div>
             <v-card-title class="text-black text-center">
               As a Merchant / Brand Owner
             </v-card-title>
@@ -78,17 +82,19 @@
       <v-col sm="12" md="4" cols="12">
         <v-lazy :options="{ threshold: 0.5 }" min-height="200">
           <v-card class="partners_box">
-            <v-img
-              src="@/assets/partner-3.png"
-              class="align-end"
-              gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
-              height="200px"
-              cover
-            >
-              <template #placeholder>
-                <div class="skeleton" />
-              </template>
-            </v-img>
+            <div class="img-cont">
+              <v-img
+                src="@/assets/partner-3.png"
+                class="align-end img-item"
+                gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
+                height="200px"
+                cover
+              >
+                <template #placeholder>
+                  <div class="skeleton" />
+                </template>
+              </v-img>
+            </div>
             <v-card-title class="text-black text-center">
               As an Employer / Agency
             </v-card-title>
@@ -112,6 +118,21 @@
 </template>
 <script></script>
 <style>
+.img-cont {
+  position: relative;
+  overflow: hidden;
+}
+
+.img-item {
+  transition: all 0.3s;
+  width: 100%;
+  height: auto;
+  transform: scale(1);
+}
+
+.partners_box:hover .img-item {
+  transform: scale(1.2);
+}
 .skeleton {
   width: 100%;
   height: 100%;
