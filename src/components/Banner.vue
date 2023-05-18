@@ -104,7 +104,7 @@ export default {
           offset;
         window.scrollTo({ top: topPos, behavior: "smooth" });
       } else {
-        const offset = 230; // Atur offset sesuai kebutuhan Anda
+        const offset = 270; // Atur offset sesuai kebutuhan Anda
         const topPos =
           sectionElement.getBoundingClientRect().top +
           window.pageYOffset -
