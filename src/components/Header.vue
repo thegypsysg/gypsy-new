@@ -113,6 +113,55 @@
             <v-icon color="white"> mdi-magnify </v-icon>
           </button>
         </form>
+        <v-slide-group v-model="selectedType" style="margin-bottom: 70px">
+          <template #prev="{ on, attrs }">
+            <v-btn
+              v-if="activeIndex > 1"
+              color="black"
+              rounded
+              style="background-color: red !important; z-index: 100000"
+              icon
+              v-bind="attrs"
+              v-on="on"
+              @click="previousSlide"
+            >
+              <v-icon>mdi-arrow-left</v-icon>
+            </v-btn>
+          </template>
+          <template #next="{ on, attrs }">
+            <v-btn
+              v-if="activeIndex + 1 <= trendingBtn / 5"
+              color="black"
+              rounded
+              style="background-color: red !important; z-index: 100000"
+              icon
+              v-bind="attrs"
+              @click="nextSlide"
+              v-on="on"
+            >
+              <v-icon>mdi-arrow-right</v-icon>
+            </v-btn>
+          </template>
+          <v-slide-group-item
+            v-for="(btn, i) in trendingBtn"
+            :key="i"
+            v-slot="{ isSelected, toggle }"
+          >
+            <v-btn
+              class="sub-menu-btn"
+              :class="isSelected ? 'active' : ''"
+              style="box-shadow: 0 5px 25px rgba(0, 0, 0, 0)"
+              @click="toggle"
+            >
+              <p style="font-size: 12px" eleva>
+                {{ btn }}
+              </p>
+              <span class="badge" :class="isSelected ? 'active' : ''"
+                >2.7K</span
+              >
+            </v-btn>
+          </v-slide-group-item>
+        </v-slide-group>
       </div>
     </template>
   </v-app-bar>
@@ -210,6 +259,31 @@ export default {
         { title: "Sign Up", path: "/signup", icon: "face" },
         { title: "Sign In", path: "/signin", icon: "lock_open" },
       ],
+      trendingBtn: [
+        "View All",
+        "Illustration",
+        "Branding",
+        "Product Design",
+        "Branding",
+        "View All",
+        "Illustration",
+        "Branding",
+        "Product Design",
+        "Branding",
+        "View All",
+        "Illustration",
+        "Branding",
+        "Product Design",
+        "Branding",
+        "View All",
+        "Illustration",
+        "Branding",
+        "Product Design",
+        "Branding",
+      ],
+
+      selectedType: 0,
+      activeIndex: 1,
       screenWidth: window.innerWidth,
     };
   },
@@ -227,6 +301,12 @@ export default {
   methods: {
     handleResize() {
       this.screenWidth = window.innerWidth;
+    },
+    previousSlide() {
+      this.activeIndex--;
+    },
+    nextSlide() {
+      this.activeIndex++;
     },
   },
 };

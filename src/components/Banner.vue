@@ -43,6 +43,7 @@
                 font-size: 20px;
                 font-weight: 700;
               "
+              @click="scrollToTrending"
             >
               <span class="mr-4">Trending Apps</span>
             </v-btn>
@@ -92,6 +93,24 @@ export default {
   methods: {
     handleResize() {
       this.screenWidth = window.innerWidth;
+    },
+    scrollToTrending() {
+      const sectionElement = document.getElementById("trending");
+      if (sectionElement && !this.isSmall) {
+        const offset = 80; // Atur offset sesuai kebutuhan Anda
+        const topPos =
+          sectionElement.getBoundingClientRect().top +
+          window.pageYOffset -
+          offset;
+        window.scrollTo({ top: topPos, behavior: "smooth" });
+      } else {
+        const offset = 160; // Atur offset sesuai kebutuhan Anda
+        const topPos =
+          sectionElement.getBoundingClientRect().top +
+          window.pageYOffset -
+          offset;
+        window.scrollTo({ top: topPos, behavior: "smooth" });
+      }
     },
   },
 };
