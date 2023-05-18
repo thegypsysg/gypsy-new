@@ -35,7 +35,7 @@
               Looking for. ?
             </h1>
             <v-btn
-              height="40"
+              :height="isSmall ? 40 : 60"
               class="text-white elevation-0 mt-6"
               style="
                 background-color: rgb(253, 169, 0);
