@@ -1,12 +1,12 @@
 <template>
   <v-container>
-    <div class="jumbotron-text">
+    <div class="jumbotron-text" :class="{ 'mb-n4 mt-n10': isSmall }">
       <h1
         align="center"
         class="header-title mb-n10"
         style="font-size: 56px; font-style: normal; font-weight: 700"
       >
-        The gypsy Trending Web Apps
+        The Gypsy Trending Web Apps
       </h1>
       <!-- <p class="header-title-sub" style="margin-top: 32px">
         The gypsy Trending Web Apps
@@ -15,7 +15,11 @@
   </v-container>
 
   <v-container id="trending" class="wrapper-box">
-    <v-slide-group v-model="selectedType" class="trending-slide">
+    <v-slide-group
+      v-if="!isSmall"
+      v-model="selectedType"
+      class="trending-slide"
+    >
       <template #prev="{ on, attrs }">
         <v-btn
           v-if="activeIndex > 1"
@@ -81,7 +85,7 @@
               border-radius: 0px;
             "
           >
-            <div style="position: relative">
+            <div class="img-cont">
               <div class="cart clearfix animate-effect">
                 <div class="action">
                   <ul class="list-unstyled">
@@ -117,6 +121,7 @@
                 gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
                 height="200px"
                 cover
+                class="img-item"
               >
                 <template #placeholder>
                   <div class="skeleton" />
@@ -228,41 +233,56 @@ export default {
       ],
       trendingCard: [
         {
-          img: "src/assets/gypsy-1.png",
+          img: "@/assets/gypsy-1.png",
           title: "Mall-e",
           desc: "Promotion happening in mall",
         },
         {
-          img: "src/assets/gypsy-2.png",
+          img: "@/assets/gypsy-2.png",
           title: "Boozards",
           desc: "Marketplace for booz",
         },
         {
-          img: "src/assets/gypsy-3.png",
+          img: "@/assets/gypsy-3.png",
           title: "Flea",
           desc: "Promotion happening in street",
         },
         {
-          img: "src/assets/gypsy-4.png",
+          img: "@/assets/gypsy-4.png",
           title: "Mendesliga",
           desc: "Market place for tournaments",
         },
         {
-          img: "src/assets/gypsy-5.png",
+          img: "@/assets/gypsy-5.png",
           title: "Cake run",
           desc: "Promotion happening in malls",
         },
         {
-          img: "src/assets/gypsy-6.png",
+          img: "@/assets/gypsy-6.png",
           title: "Cafe run",
           desc: "Marketplace for cafe around you",
         },
       ],
       selectedType: 0,
       activeIndex: 1,
+      screenWidth: window.innerWidth,
     };
   },
+  computed: {
+    isSmall() {
+      return this.screenWidth < 640;
+    },
+  },
+  created() {
+    window.addEventListener("resize", this.handleResize);
+  },
+  unmounted() {
+    window.removeEventListener("resize", this.handleResize);
+  },
   methods: {
+    handleResize() {
+      this.screenWidth = window.innerWidth;
+    },
     previousSlide() {
       this.activeIndex--;
     },
@@ -274,6 +294,21 @@ export default {
 </script>
 
 <style scoped>
+.img-cont {
+  position: relative;
+  overflow: hidden;
+}
+
+.img-item {
+  transition: all 0.3s;
+  width: 100%;
+  height: auto;
+  transform: scale(1);
+}
+
+.trending__app:hover .img-item {
+  transform: scale(1.2);
+}
 .skeleton {
   width: 100%;
   height: 100%;
