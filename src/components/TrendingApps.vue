@@ -19,6 +19,7 @@
       v-if="!isSmall"
       v-model="selectedType"
       class="trending-slide"
+      :class="{ 'ml-n16': !isSmall }"
     >
       <template #prev="{ on, attrs }">
         <v-btn
@@ -26,7 +27,7 @@
           color="#0596d5"
           rounded
           icon
-          size="30"
+          size="40"
           v-bind="attrs"
           v-on="on"
           @click="previousSlide"
@@ -39,7 +40,7 @@
           v-if="activeIndex + 1 <= trendingBtn.length / 5"
           color="#0596d5"
           rounded
-          size="30"
+          size="40"
           icon
           v-bind="attrs"
           @click="nextSlide"
@@ -56,7 +57,8 @@
       >
         <v-btn
           class="sub-menu-btn"
-          :class="isSelected ? 'active' : ''"
+          :size="isSmall ? 30 : 155"
+          :class="{ active: isSelected, 'py-4 mx-2': !isSmall }"
           style="box-shadow: 0 5px 25px rgba(0, 0, 0, 0)"
           @click="toggle"
         >
