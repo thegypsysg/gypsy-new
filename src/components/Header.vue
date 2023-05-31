@@ -29,7 +29,7 @@
         id="product_name"
         class="form-control mr-sm-2"
         type="text"
-        placeholder="Type a Mall or merchant"
+        placeholder="Type anything that you are looking for "
         aria-label="Search"
         data-autocompleturl="https://boozards.com/merchant-product/search"
       />
@@ -115,7 +115,7 @@
             id="product_name"
             class="form-control mr-sm-2"
             type="text"
-            placeholder="Type a Mall or merchant"
+            placeholder="Type anything that you are looking for "
             aria-label="Search"
             data-autocompleturl="https://boozards.com/merchant-product/search"
           />

@@ -17,7 +17,7 @@
   <v-container id="trending" class="wrapper-box">
     <v-slide-group
       v-if="!isSmall"
-      v-model="selectedType"
+      v-model="selectedTag"
       class="trending-slide"
       :class="{ 'ml-n16': !isSmall }"
     >
@@ -50,10 +50,11 @@
         </v-btn>
       </template>
       <v-slide-group-item
-        v-for="(btn, i) in trendingBtn"
-        :id="i"
-        :key="i"
+        v-for="btn in trendingBtn"
+        :key="btn.tag"
         v-slot="{ isSelected, toggle }"
+        :value="btn.tag"
+        @click="filterCards(btn.tag)"
       >
         <v-btn
           class="sub-menu-btn"
@@ -64,7 +65,9 @@
         >
           <p style="font-size: 12px" elevation>
             {{ btn.title }}
-            <span>{{ btn.count == 0 ? "" : `(${btn.count})` }}</span>
+            <span>{{
+              countCards(btn.tag) == 0 ? "" : `(${countCards(btn.tag)})`
+            }}</span>
           </p>
           <!-- <span class="badge" :class="isSelected ? 'active' : ''">2.7K</span> -->
         </v-btn>
@@ -73,7 +76,7 @@
 
     <v-row class="trending__app__wrapper">
       <v-col
-        v-for="(card, i) in trendingCard"
+        v-for="(card, i) in filteredItems"
         :key="i"
         xs="6"
         sm="6"
@@ -214,22 +217,22 @@ export default {
   name: "TrendingApps",
   data() {
     return {
+      selectedTag: null,
       trendingBtn: [
         {
           title: "View All",
-          count: 0,
         },
-        { title: "Promo App", count: 1 },
-        { title: "Alcohol App", count: 1 },
-        { title: "Jobs App", count: 1 },
-        { title: "On The Run Apps", count: 3 },
-        { title: "Housing App", count: 1 },
-        { title: "Travel App", count: 1 },
-        { title: "Staycation App", count: 1 },
-        { title: "Listings App", count: 1 },
-        { title: "Tournaments App", count: 1 },
-        { title: "Cafe App", count: 1 },
-        { title: "Overseas Study App", count: 1 },
+        { title: "Promo App", tag: "Promo App" },
+        { title: "Alcohol App", tag: "Alcohol App" },
+        { title: "Jobs App", tag: "Job App" },
+        { title: "On The Run Apps", tag: "On the Run App" },
+        { title: "Housing App", tag: "Housing App" },
+        { title: "Travel App", tag: "Travel App" },
+        { title: "Staycation App", tag: "Staycation App" },
+        { title: "Listings App", tag: "Listing App" },
+        { title: "Tournaments App", tag: "Tournament App" },
+        { title: "Cafe App", tag: "Cafe App" },
+        { title: "Overseas Study App", tag: "Overseas Study App" },
       ],
       trendingCard: [
         {
@@ -323,6 +326,7 @@ export default {
           tag: "Listing App",
         },
       ],
+      filteredCards: [],
       selectedType: 0,
       activeIndex: 1,
       screenWidth: window.innerWidth,
@@ -332,6 +336,17 @@ export default {
     isSmall() {
       return this.screenWidth < 640;
     },
+    filteredItems() {
+      console.log(this.selectedTag);
+      if (!this.selectedTag) {
+        return this.trendingCard;
+      } else {
+        // const searchTextLower = this.search.toLowerCase();
+        return this.trendingCard.filter((item) => {
+          return item.tag.includes(this.selectedTag);
+        });
+      }
+    },
   },
   created() {
     window.addEventListener("resize", this.handleResize);
@@ -340,6 +355,15 @@ export default {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    filterCards(tag) {
+      this.selectedTag = tag;
+    },
+    countCards(tag) {
+      const count = this.trendingCard.filter(
+        (trend) => trend.tag === tag
+      ).length;
+      return count;
+    },
     handleResize() {
       this.screenWidth = window.innerWidth;
     },
