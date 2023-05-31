@@ -37,7 +37,7 @@
       </template>
       <template #next="{ on, attrs }">
         <v-btn
-          v-if="activeIndex + 1 <= trendingBtn.length / 5"
+          v-if="activeIndex + 1 <= trendingBtn.length / 4"
           color="#0596d5"
           rounded
           size="40"
@@ -62,10 +62,11 @@
           style="box-shadow: 0 5px 25px rgba(0, 0, 0, 0)"
           @click="toggle"
         >
-          <p style="font-size: 12px" eleva>
-            {{ btn }}
+          <p style="font-size: 12px" elevation>
+            {{ btn.title }}
+            <span>{{ btn.count == 0 ? "" : `(${btn.count})` }}</span>
           </p>
-          <span class="badge" :class="isSelected ? 'active' : ''">2.7K</span>
+          <!-- <span class="badge" :class="isSelected ? 'active' : ''">2.7K</span> -->
         </v-btn>
       </v-slide-group-item>
     </v-slide-group>
@@ -136,7 +137,7 @@
                 </div>
               </v-img>
               <div class="tag">
-                <v-chip> Flipmart </v-chip>
+                <v-chip> {{ card.tag }} </v-chip>
               </div>
             </div>
             <div class="desktop__app">
@@ -146,9 +147,11 @@
               >
                 {{ card.title }}
               </h3>
-              <p style="padding-bottom: 32px" class="text_subtitle text-left">
-                {{ card.desc }}
-              </p>
+              <div class="desktop-card-desc">
+                <p style="padding-bottom: 32px" class="text_subtitle text-left">
+                  {{ card.desc }}
+                </p>
+              </div>
               <v-card-actions class="d-flex">
                 <v-btn
                   elevation="4"
@@ -212,102 +215,112 @@ export default {
   data() {
     return {
       trendingBtn: [
-        "View All",
-        "Illustration",
-        "Branding",
-        "Product Design",
-        "Branding",
-        "View All",
-        "Illustration",
-        "Branding",
-        "Product Design",
-        "Branding",
-        "View All",
-        "Illustration",
-        "Branding",
-        "Product Design",
-        "Branding",
-        "View All",
-        "Illustration",
-        "Branding",
-        "Product Design",
-        "Branding",
+        {
+          title: "View All",
+          count: 0,
+        },
+        { title: "Promo App", count: 1 },
+        { title: "Alcohol App", count: 1 },
+        { title: "Jobs App", count: 1 },
+        { title: "On The Run Apps", count: 3 },
+        { title: "Housing App", count: 1 },
+        { title: "Travel App", count: 1 },
+        { title: "Staycation App", count: 1 },
+        { title: "Listings App", count: 1 },
+        { title: "Tournaments App", count: 1 },
+        { title: "Cafe App", count: 1 },
+        { title: "Overseas Study App", count: 1 },
       ],
       trendingCard: [
         {
           img: "assets/gypsy-1.png",
           title: "Mall-e",
-          desc: "Promotion happening in mall",
+          desc: "Promotions Happening in Malls",
+          tag: "Promo App",
         },
         {
           img: "assets/gypsy-2.png",
           title: "Boozards",
-          desc: "Marketplace for booz",
+          desc: "Marketplace for Alcohol, Clubs, Happy Hours",
+          tag: "Alcohol App",
         },
         {
           img: "assets/gypsy-3.png",
           title: "Flea",
-          desc: "Promotion happening in street",
+          desc: "Promotions Happening in Streets , Office Buildings Gas Stations etc",
+          tag: "Promo App",
         },
         {
           img: "assets/gypsy-4.png",
           title: "Mendesliga",
-          desc: "Market place for tournaments",
+          desc: "Marketplace for Sports Tournaments.",
+          tag: "Tournament App",
         },
         {
           img: "assets/gypsy-5.png",
-          title: "Cake run",
-          desc: "Promotion happening in malls",
+          title: "Cake Run",
+          desc: "Marketplace for all Types of Cakes.",
+          tag: "On the Run App",
         },
         {
           img: "assets/gypsy-6.png",
-          title: "Cafe run",
-          desc: "Marketplace for cafe around you",
+          title: "Cafino",
+          desc: "Maketplace for Cafes around you.",
+          tag: "Cafe App",
         },
         {
           img: "assets/gypsy-7.jpg",
           title: "4 Walls",
           desc: "Marketplace for Housing",
+          tag: "Housing App",
         },
         {
           img: "assets/gypsy-8.jpg",
           title: "Staycasey",
           desc: "Marketplace for Staycation",
+          tag: "Staycation App",
         },
         {
           img: "assets/gypsy-9.jpg",
           title: "Astalavista",
           desc: "Marketplace for Overseas Travel",
+          tag: "Travel App",
         },
         {
           img: "assets/gypsy-10.jpg",
           title: "i-Study",
           desc: "Marketplace for Study Overseas",
+          tag: "Overseas Study App",
         },
         {
           img: "assets/gypsy-11.jpg",
           title: "Mart-In",
           desc: "Marketplace for Mini Mart",
+          tag: "Mini Mart App",
         },
         {
           img: "assets/gypsy-12.jpg",
           title: "Biryani-Run",
           desc: "Marketplace for Biryani",
+          tag: "On the Run App",
         },
         {
           img: "assets/gypsy-13.jpg",
           title: "i-Hired",
           desc: "Marketplace for Jobs",
+          tag: "Job App",
         },
         {
           img: "assets/gypsy-14.jpg",
           title: "Pizza Run",
           desc: "Marketplace for Pizza",
+          tag: "On the Run App",
         },
         {
           img: "assets/gypsy-15.jpg",
           title: "Listings",
           desc: "Marketplace for Listings",
+          tag: "Listing App",
         },
       ],
       selectedType: 0,
@@ -364,6 +377,10 @@ export default {
   background: linear-gradient(-90deg, #f2f2f2 0%, #e1e1e1 50%, #f2f2f2 100%);
   background-size: 400% 400%;
   animation: skeleton 1.6s ease infinite;
+}
+
+.desktop-card-desc {
+  height: 70px !important;
 }
 
 @keyframes skeleton {
