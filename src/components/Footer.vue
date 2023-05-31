@@ -7,25 +7,25 @@
           class="footer_paragraph"
           style="margin-bottom: 16px; margin-top: 34px"
         >
-          The gypsy is a Super App that is useful for users travelling from
+          The Gypsy is a Super App that is useful for users travelling from
           point A to point B in search of anything and everything!!!
         </p>
         <ul class="footer_social">
           <li>
             <img src="@/assets/map-pointer.svg" height="24" />
-            Marine drive, Singapore
+            Marine Drive, Singapore
           </li>
           <li>
             <img src="@/assets/phone.svg" height="24" />
-            +917738282000
+            +65.91992000
           </li>
           <li>
             <img src="@/assets/whatsapp.svg" height="24" />
-            +917738282000
+            +65.91992000
           </li>
           <li>
             <img src="@/assets/mail.svg" height="24" />
-            <a href="mailto:support@the-gypsy.in">support@the-gypsy.in</a>
+            <a href="mailto:support@the-gypsy.in">24hrs@the-gypsy.sg</a>
           </li>
         </ul>
       </v-col>
