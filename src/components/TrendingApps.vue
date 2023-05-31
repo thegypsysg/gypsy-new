@@ -264,6 +264,51 @@ export default {
           title: "Cafe run",
           desc: "Marketplace for cafe around you",
         },
+        {
+          img: "assets/gypsy-7.jpg",
+          title: "4 Walls",
+          desc: "Marketplace for Housing",
+        },
+        {
+          img: "assets/gypsy-8.jpg",
+          title: "Staycasey",
+          desc: "Marketplace for Staycation",
+        },
+        {
+          img: "assets/gypsy-9.jpg",
+          title: "Astalavista",
+          desc: "Marketplace for Overseas Travel",
+        },
+        {
+          img: "assets/gypsy-10.jpg",
+          title: "i-Study",
+          desc: "Marketplace for Study Overseas",
+        },
+        {
+          img: "assets/gypsy-11.jpg",
+          title: "Mart-In",
+          desc: "Marketplace for Mini Mart",
+        },
+        {
+          img: "assets/gypsy-12.jpg",
+          title: "Biryani-Run",
+          desc: "Marketplace for Biryani",
+        },
+        {
+          img: "assets/gypsy-13.jpg",
+          title: "i-Hired",
+          desc: "Marketplace for Jobs",
+        },
+        {
+          img: "assets/gypsy-14.jpg",
+          title: "Pizza Run",
+          desc: "Marketplace for Pizza",
+        },
+        {
+          img: "assets/gypsy-15.jpg",
+          title: "Listings",
+          desc: "Marketplace for Listings",
+        },
       ],
       selectedType: 0,
       activeIndex: 1,
