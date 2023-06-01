@@ -50,7 +50,7 @@
             v-bind="props"
             variant="text"
           >
-            Singapore
+            {{ itemSelected }}
             <v-icon right dark> mdi-menu-down </v-icon>
           </v-btn>
         </template>
@@ -59,6 +59,7 @@
             v-for="(item, index) in items"
             :key="index"
             :value="index"
+            @click="itemSelected = item.title"
           >
             <v-list-item-title>{{ item.title }}</v-list-item-title>
           </v-list-item>
@@ -92,7 +93,7 @@
                 v-bind="props"
                 variant="text"
               >
-                Singapore
+                {{ itemSelected }}
                 <v-icon right dark> mdi-menu-down </v-icon>
               </v-btn>
             </template>
@@ -101,6 +102,7 @@
                 v-for="(item, index) in items"
                 :key="index"
                 :value="index"
+                @click="itemSelected = item.title"
               >
                 <v-list-item-title>{{ item.title }}</v-list-item-title>
               </v-list-item>
@@ -264,10 +266,12 @@ export default {
       //   { title: "Overseas Study App", tag: "Overseas Study App" },
       // ],
       drawer: false,
+      itemSelected: "Singapore",
       items: [
-        { title: "Home", path: "/home", icon: "home" },
-        { title: "Sign Up", path: "/signup", icon: "face" },
-        { title: "Sign In", path: "/signin", icon: "lock_open" },
+        { title: "Singapore", path: "#" },
+        { title: "Mumbai", path: "#" },
+        { title: "Goa", path: "#" },
+        { title: "Kuala Lumpur", path: "#" },
       ],
 
       trendingCard: [
