@@ -17,7 +17,7 @@
   <v-container id="trending" class="wrapper-box">
     <v-slide-group
       v-if="!isSmall"
-      v-model="selectedTag"
+      v-model="activeTag"
       class="trending-slide"
       :class="{ 'ml-n16': !isSmall }"
     >
@@ -54,7 +54,7 @@
         :key="btn.tag"
         v-slot="{ isSelected, toggle }"
         :value="btn.tag"
-        @click="filterCards(btn.tag)"
+        @click="selectTag(btn.tag)"
       >
         <v-btn
           class="sub-menu-btn"
@@ -136,7 +136,9 @@
                   <h3 class="text_title" style="padding-bottom: 12px">
                     {{ card.title }}
                   </h3>
-                  <p class="text_subtitle">Promotion happening in malls</p>
+                  <p class="text_subtitle">
+                    {{ card.desc }}
+                  </p>
                 </div>
               </v-img>
               <div class="tag">
@@ -213,27 +215,33 @@
 </template>
 
 <script>
+// import app from "@/util/eventBus";
+// import { computed, onMounted, onUnmounted } from "vue";
+// import eventBus from "@/util/eventBus";
+import { mapState } from "vuex";
+
 export default {
   name: "TrendingApps",
   data() {
     return {
-      selectedTag: null,
-      trendingBtn: [
-        {
-          title: "View All",
-        },
-        { title: "Promo App", tag: "Promo App" },
-        { title: "Alcohol App", tag: "Alcohol App" },
-        { title: "Jobs App", tag: "Job App" },
-        { title: "On The Run Apps", tag: "On the Run App" },
-        { title: "Housing App", tag: "Housing App" },
-        { title: "Travel App", tag: "Travel App" },
-        { title: "Staycation App", tag: "Staycation App" },
-        { title: "Listings App", tag: "Listing App" },
-        { title: "Tournaments App", tag: "Tournament App" },
-        { title: "Cafe App", tag: "Cafe App" },
-        { title: "Overseas Study App", tag: "Overseas Study App" },
-      ],
+      // activeTag: null,
+      // activeTagHeader: null,
+      // trendingBtn: [
+      //   {
+      //     title: "View All",
+      //   },
+      //   { title: "Promo App", tag: "Promo App" },
+      //   { title: "Alcohol App", tag: "Alcohol App" },
+      //   { title: "Jobs App", tag: "Job App" },
+      //   { title: "On The Run Apps", tag: "On the Run App" },
+      //   { title: "Housing App", tag: "Housing App" },
+      //   { title: "Travel App", tag: "Travel App" },
+      //   { title: "Staycation App", tag: "Staycation App" },
+      //   { title: "Listings App", tag: "Listing App" },
+      //   { title: "Tournaments App", tag: "Tournament App" },
+      //   { title: "Cafe App", tag: "Cafe App" },
+      //   { title: "Overseas Study App", tag: "Overseas Study App" },
+      // ],
       trendingCard: [
         {
           img: "assets/gypsy-1.png",
@@ -326,37 +334,82 @@ export default {
           tag: "Listing App",
         },
       ],
-      filteredCards: [],
+      // filteredCards: [],
       selectedType: 0,
       activeIndex: 1,
       screenWidth: window.innerWidth,
     };
   },
   computed: {
+    ...mapState(["activeTag"]),
+
+    trendingBtn() {
+      return [
+        {
+          title: "View All",
+        },
+        { title: "Promo App", tag: "Promo App" },
+        { title: "Alcohol App", tag: "Alcohol App" },
+        { title: "Jobs App", tag: "Job App" },
+        { title: "On The Run Apps", tag: "On the Run App" },
+        { title: "Housing App", tag: "Housing App" },
+        { title: "Travel App", tag: "Travel App" },
+        { title: "Staycation App", tag: "Staycation App" },
+        { title: "Listings App", tag: "Listing App" },
+        { title: "Tournaments App", tag: "Tournament App" },
+        { title: "Cafe App", tag: "Cafe App" },
+        { title: "Overseas Study App", tag: "Overseas Study App" },
+      ];
+    },
     isSmall() {
       return this.screenWidth < 640;
     },
     filteredItems() {
-      console.log(this.selectedTag);
-      if (!this.selectedTag) {
+      console.log(this.activeTag);
+      if (this.activeTag === "") {
         return this.trendingCard;
       } else {
         // const searchTextLower = this.search.toLowerCase();
         return this.trendingCard.filter((item) => {
-          return item.tag.includes(this.selectedTag);
+          return item.tag.includes(this.activeTag);
         });
       }
     },
   },
   created() {
     window.addEventListener("resize", this.handleResize);
+    // app.config.globalProperties.$eventBus.$on("filter-card", (tag) => {
+    //   this.activeTag = tag;
+    // });
   },
+  // mounted() {
+  //   eventBus.on("filter-card-header", this.filterCards);
+  // },
+  // beforeUnmount() {
+  //   app.config.globalProperties.$eventBus.$off(
+  //     "filter-card-header",
+  //     this.filterCards
+  //   );
+  //   // eventBus.off("filter-card-header", this.filterCards);
+  // },
   unmounted() {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    // selectTag(tag) {
+    //   this.activeTag = tag; // Menetapkan tag yang dipilih sebagai tag aktif di komponen kartu
+    // },
+
+    selectTag(tag) {
+      this.$store.commit("setActiveTag", tag); // Menetapkan tag yang dipilih sebagai tag aktif
+    },
     filterCards(tag) {
-      this.selectedTag = tag;
+      console.log("ok");
+      this.activeTag = tag;
+    },
+    filterCardHeader(tag) {
+      this.activeTag = tag;
+      console.log(this.activeTag);
     },
     countCards(tag) {
       const count = this.trendingCard.filter(

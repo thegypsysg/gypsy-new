@@ -7,6 +7,7 @@
 // Components
 import App from "./App.vue";
 import router from "./router";
+import store from "./store";
 
 import "@fortawesome/fontawesome-free/css/fontawesome.css";
 import "@fortawesome/fontawesome-free/css/brands.css";
@@ -22,4 +23,5 @@ const app = createApp(App);
 
 registerPlugins(app);
 app.use(router);
+app.use(store);
 app.mount("#app");
