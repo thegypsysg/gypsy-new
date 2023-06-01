@@ -4,7 +4,7 @@ import { createStore } from "vuex";
 
 export default createStore({
   state: {
-    activeTag: "", // Tag yang aktif
+    activeTag: null, // Tag yang aktif
   },
   mutations: {
     setActiveTag(state, tag) {
