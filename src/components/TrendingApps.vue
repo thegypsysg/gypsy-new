@@ -1,6 +1,10 @@
 <template>
   <v-container>
-    <div class="jumbotron-text" :class="{ 'mb-n4 mt-n10': isSmall }">
+    <div
+      id="trending-section"
+      class="jumbotron-text"
+      :class="{ 'mb-n4 mt-n10': isSmall }"
+    >
       <h1
         align="center"
         class="header-title mb-n10"
@@ -18,7 +22,7 @@
     <v-slide-group
       v-if="!isSmall"
       v-model="selectedTag"
-      class="trending-slide"
+      class="trending-slide my-slide"
       :class="{ 'ml-n16': !isSmall }"
     >
       <template #prev="{ on, attrs }">
@@ -50,16 +54,21 @@
         </v-btn>
       </template>
       <v-slide-group-item
-        v-for="btn in trendingBtn"
+        v-for="(btn, index) in trendingBtn"
         :key="btn.tag"
         v-slot="{ isSelected, toggle }"
         :value="btn.tag"
+        class="my-slide-item"
         @click="filterCards(btn.tag)"
       >
         <v-btn
+          v-if="btn.title !== 'View All'"
           class="sub-menu-btn"
           :size="isSmall ? 30 : 155"
-          :class="{ active: isSelected, 'py-4 mx-2': !isSmall }"
+          :class="{
+            active: isSelected,
+            'py-4 mx-2': !isSmall,
+          }"
           style="box-shadow: 0 5px 25px rgba(0, 0, 0, 0)"
           @click="toggle"
         >
@@ -71,6 +80,20 @@
           </p>
           <!-- <span class="badge" :class="isSelected ? 'active' : ''">2.7K</span> -->
         </v-btn>
+        <template v-if="index === 0 && btn.title === 'View All'">
+          <v-btn
+            class="sub-menu-btn view-all"
+            size="155"
+            :class="{
+              active: isSelected,
+              'py-4 mx-2': !isSmall,
+            }"
+            style="box-shadow: 0 5px 25px rgba(0, 0, 0, 0)"
+            @click="toggle"
+          >
+            <p style="font-size: 12px" elevation>View All</p>
+          </v-btn>
+        </template>
       </v-slide-group-item>
     </v-slide-group>
 
@@ -596,6 +619,17 @@ export default {
 </script>
 
 <style scoped>
+.my-slide {
+  position: relative !important;
+}
+.view-all {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  background-color: red !important;
+  z-index: 1000 !important;
+  /* Gaya view all yang sticky */
+}
 .card-transition-enter-active,
 .card-transition-leave-active {
   transition: transform 0.5s, opacity 0.3s;

@@ -126,31 +126,49 @@
           </button>
         </form>
 
-        <v-slide-group v-model="activeTag">
-          <v-slide-group-item
-            v-for="btn in trendingBtn"
-            :key="btn.tag"
-            v-slot="{ isSelected }"
-            :value="btn.tag"
+        <div class="my-slide d-flex">
+          <v-btn
+            class="sub-menu-btn view-all"
+            :class="{
+              active: isSelected,
+            }"
+            style="box-shadow: 0 5px 25px rgba(0, 0, 0, 0)"
+            @click="selectTag('')"
           >
-            <v-btn
-              class="sub-menu-btn"
-              :class="isSelected ? 'active' : ''"
-              style="box-shadow: 0 5px 25px rgba(0, 0, 0, 0)"
-              @click="selectTag(btn.tag)"
+            <p style="font-size: 12px" elevation>View All</p>
+            <!-- <span class="badge" :class="isSelected ? 'active' : ''"
+            >2.7K</span
+          > -->
+          </v-btn>
+          <v-slide-group v-model="activeTag">
+            <v-slide-group-item
+              v-for="(btn, index) in trendingBtn"
+              :key="btn.tag"
+              v-slot="{ isSelected }"
+              :value="btn.tag"
             >
-              <p style="font-size: 12px" elevation>
-                {{ btn.title }}
-                <span>{{
-                  countCards(btn.tag) == 0 ? "" : `(${countCards(btn.tag)})`
-                }}</span>
-              </p>
-              <!-- <span class="badge" :class="isSelected ? 'active' : ''"
+              <v-btn
+                v-if="index !== 0 && btn.title != 'View All'"
+                class="sub-menu-btn"
+                :class="{
+                  active: isSelected,
+                }"
+                style="box-shadow: 0 5px 25px rgba(0, 0, 0, 0)"
+                @click="selectTag(btn.tag)"
+              >
+                <p style="font-size: 12px" elevation>
+                  {{ btn.title }}
+                  <span>{{
+                    countCards(btn.tag) == 0 ? "" : `(${countCards(btn.tag)})`
+                  }}</span>
+                </p>
+                <!-- <span class="badge" :class="isSelected ? 'active' : ''"
                 >2.7K</span
               > -->
-            </v-btn>
-          </v-slide-group-item>
-        </v-slide-group>
+              </v-btn>
+            </v-slide-group-item>
+          </v-slide-group>
+        </div>
       </div>
     </template>
   </v-app-bar>
@@ -440,6 +458,13 @@ export default {
 </script>
 
 <style scoped>
+.view-all {
+  position: sticky !important;
+  top: 0 !important;
+  left: 0 !important;
+  z-index: 1000 !important;
+  /* Gaya view all yang sticky */
+}
 .scroll-container {
   margin-top: -80px;
   overflow-x: auto;
