@@ -19,6 +19,18 @@
   </v-container>
 
   <v-container id="trending" class="wrapper-box">
+    <v-btn
+      class="sub-menu-btn view-all"
+      size="155"
+      :class="{
+        active: isSelected,
+        'py-4 mx-2': !isSmall,
+      }"
+      style="box-shadow: 0 5px 25px rgba(0, 0, 0, 0)"
+      @click="toggle"
+    >
+      <p style="font-size: 12px" elevation>View All</p>
+    </v-btn>
     <v-slide-group
       v-if="!isSmall"
       v-model="selectedTag"
@@ -54,7 +66,7 @@
         </v-btn>
       </template>
       <v-slide-group-item
-        v-for="(btn, index) in trendingBtn"
+        v-for="btn in trendingBtn"
         :key="btn.tag"
         v-slot="{ isSelected, toggle }"
         :value="btn.tag"
@@ -62,7 +74,6 @@
         @click="filterCards(btn.tag)"
       >
         <v-btn
-          v-if="btn.title !== 'View All'"
           class="sub-menu-btn"
           :size="isSmall ? 30 : 155"
           :class="{
@@ -80,20 +91,6 @@
           </p>
           <!-- <span class="badge" :class="isSelected ? 'active' : ''">2.7K</span> -->
         </v-btn>
-        <template v-if="index === 0 && btn.title === 'View All'">
-          <v-btn
-            class="sub-menu-btn view-all"
-            size="155"
-            :class="{
-              active: isSelected,
-              'py-4 mx-2': !isSmall,
-            }"
-            style="box-shadow: 0 5px 25px rgba(0, 0, 0, 0)"
-            @click="toggle"
-          >
-            <p style="font-size: 12px" elevation>View All</p>
-          </v-btn>
-        </template>
       </v-slide-group-item>
     </v-slide-group>
 
@@ -392,7 +389,7 @@
 </template>
 
 <script>
-// import app from "@/util/eventBus";
+import app from "@/util/eventBus";
 // import { computed, onMounted, onUnmounted } from "vue";
 // import eventBus from "@/util/eventBus";
 import { mapState } from "vuex";
@@ -522,9 +519,6 @@ export default {
 
     trendingBtn() {
       return [
-        {
-          title: "View All",
-        },
         { title: "Promo App", tag: "Promo App" },
         { title: "Alcohol App", tag: "Alcohol App" },
         { title: "Jobs App", tag: "Job App" },
@@ -566,20 +560,20 @@ export default {
   },
   created() {
     window.addEventListener("resize", this.handleResize);
-    // app.config.globalProperties.$eventBus.$on("filter-card", (tag) => {
-    //   this.activeTag = tag;
-    // });
   },
-  // mounted() {
-  //   eventBus.on("filter-card-header", this.filterCards);
-  // },
-  // beforeUnmount() {
-  //   app.config.globalProperties.$eventBus.$off(
-  //     "filter-card-header",
-  //     this.filterCards
-  //   );
-  //   // eventBus.off("filter-card-header", this.filterCards);
-  // },
+  mounted() {
+    app.config.globalProperties.$eventBus.$on(
+      "scrollToCardSection",
+      this.scrollToCardSection
+    );
+  },
+  beforeUnmount() {
+    app.config.globalProperties.$eventBus.$off(
+      "scrollToCardSection",
+      this.scrollToCardSection
+    );
+    // eventBus.off("filter-card-header", this.filterCards);
+  },
   unmounted() {
     window.removeEventListener("resize", this.handleResize);
   },
@@ -587,6 +581,19 @@ export default {
     // selectTag(tag) {
     //   this.activeTag = tag; // Menetapkan tag yang dipilih sebagai tag aktif di komponen kartu
     // },
+    scrollToCardSection() {
+      const cardSection = document.getElementById("trending");
+      const cardRect = cardSection.getBoundingClientRect();
+      const scrollTop =
+        window.pageYOffset || document.documentElement.scrollTop;
+      const offset = cardRect.top + scrollTop - 300; // Nilai offset yang diinginkan, dalam piksel
+
+      window.scrollTo({
+        top: offset,
+        behavior: "smooth",
+      });
+      // window.scrollBy(0, -scrollOffset);
+    },
 
     selectTag(tag) {
       this.$store.commit("setActiveTag", tag); // Menetapkan tag yang dipilih sebagai tag aktif

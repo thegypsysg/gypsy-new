@@ -255,7 +255,7 @@
 
 <script>
 import { mapState, mapMutations } from "vuex";
-// import app from "@/util/eventBus";
+import app from "@/util/eventBus";
 
 // import eventBus from "@/util/eventBus";
 // import eventBus from "@/util/eventBus";
@@ -425,7 +425,7 @@ export default {
     selectTag(tag) {
       this.setActiveTag(tag); // Menetapkan tag yang dipilih sebagai tag aktif
 
-      // app.config.globalProperties.$eventBus.$emit("filter-card", tag);
+      app.config.globalProperties.$eventBus.$emit("scrollToCardSection");
     },
     // emitFilterEvent(tag) {
     //   this.$emit("filter-card", tag);
