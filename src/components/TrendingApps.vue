@@ -83,6 +83,7 @@
         </v-slide-group-item>
       </v-slide-group>
       <v-btn
+        v-if="!isSmall"
         class="sub-menu-btn view-all"
         :size="isSmall ? 30 : 120"
         :class="{
