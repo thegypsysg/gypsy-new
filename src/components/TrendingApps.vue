@@ -20,11 +20,23 @@
 
   <v-container id="trending" class="wrapper-box">
     <div class="d-flex">
+      <v-btn
+        v-if="!isSmall"
+        class="sub-menu-btn view-all"
+        :size="isSmall ? 30 : 120"
+        :class="{
+          active: isSelected,
+          'py-n4 ml-n14': !isSmall,
+        }"
+        style="box-shadow: 0 5px 25px rgba(0, 0, 0, 0)"
+        @click="filterCards('')"
+      >
+        <p style="font-size: 12px" elevation>View All</p>
+      </v-btn>
       <v-slide-group
         v-if="!isSmall"
         v-model="selectedTag"
         class="trending-slide my-slide"
-        :class="{ 'ml-n16': !isSmall }"
       >
         <template #prev="{ on, attrs }">
           <v-btn
@@ -82,19 +94,6 @@
           </v-btn>
         </v-slide-group-item>
       </v-slide-group>
-      <v-btn
-        v-if="!isSmall"
-        class="sub-menu-btn view-all"
-        :size="isSmall ? 30 : 120"
-        :class="{
-          active: isSelected,
-          'py-n4 mx-2': !isSmall,
-        }"
-        style="box-shadow: 0 5px 25px rgba(0, 0, 0, 0)"
-        @click="filterCards('')"
-      >
-        <p style="font-size: 12px" elevation>View All</p>
-      </v-btn>
     </div>
     <v-row class="trending__app__wrapper">
       <template v-if="isSmall">
