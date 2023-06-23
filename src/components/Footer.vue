@@ -89,6 +89,7 @@
                 line-height: 19px;
                 text-decoration: none;
               "
+              @click="scrollToTrending"
             >
               View all</a
             >
@@ -156,6 +157,8 @@
 
 <script>
 import axios from "@/util/axios";
+import app from "@/util/eventBus";
+
 export default {
   // eslint-disable-next-line vue/multi-word-component-names, vue/no-reserved-component-names
   name: "Footer",
@@ -170,14 +173,18 @@ export default {
     this.getAppData();
   },
   methods: {
+    scrollToTrending() {
+      app.config.globalProperties.$eventBus.$emit("scrollToTrendingSection");
+    },
     getAppData() {
       // this.isLoading = true;
       axios
         .get(`/app`)
         .then((response) => {
           const data = response.data.data;
+          const dataItem = data.slice(0, 6);
           // console.log(data);
-          this.trendingCard = data.map((item) => {
+          this.trendingCard = dataItem.map((item) => {
             return {
               img: item.app_main_image || "",
               title: item.app_name || "",
