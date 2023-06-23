@@ -7,25 +7,26 @@
           class="footer_paragraph"
           style="margin-bottom: 16px; margin-top: 34px"
         >
-          The Gypsy is a Super App that is useful for users travelling from
-          point A to point B in search of anything and everything!!!
+          {{ headerData?.app_detail }}
         </p>
         <ul class="footer_social">
           <li>
             <img src="@/assets/map-pointer.svg" height="24" />
-            Marine Drive, Singapore
+            {{ footerData?.location }}
           </li>
           <li>
             <img src="@/assets/phone.svg" height="24" />
-            +65.91992000
+            {{ footerData?.mobile_number }}
           </li>
           <li>
             <img src="@/assets/whatsapp.svg" height="24" />
-            +65.91992000
+            {{ footerData?.whats_app }}
           </li>
           <li>
             <img src="@/assets/mail.svg" height="24" />
-            <a href="mailto:support@the-gypsy.in">24hrs@the-gypsy.sg</a>
+            <a :href="`mailto:${footerData?.email_id}`">{{
+              footerData?.email_id
+            }}</a>
           </li>
         </ul>
       </v-col>
@@ -188,20 +189,42 @@
 
   <v-footer class="bg-black text-center footer__content">
     <div class="footer_text">
-      @ The gypsy International | Singapore, India 2023 - 2025
+      {{ footerData?.copyright }}
     </div>
     <div style="display: flex; justify-content: center">
-      <v-btn variant="text" color="#00CDCD" icon="mdi-facebook" />
-      <v-btn variant="text" color="#00CDCD" icon="mdi-twitter" />
-      <v-btn variant="text" color="#00CDCD" icon="mdi-instagram" />
-      <v-btn variant="text" color="#00CDCD" icon="mdi-youtube" />
+      <v-btn
+        :href="footerData?.facebook"
+        variant="text"
+        color="#00CDCD"
+        icon="mdi-facebook"
+      />
+      <v-btn
+        :href="footerData?.twitter"
+        variant="text"
+        color="#00CDCD"
+        icon="mdi-twitter"
+      />
+      <v-btn
+        :href="footerData?.instagram"
+        variant="text"
+        color="#00CDCD"
+        icon="mdi-instagram"
+      />
+      <v-btn
+        :href="footerData?.youtube"
+        variant="text"
+        color="#00CDCD"
+        icon="mdi-youtube"
+      />
     </div>
   </v-footer>
 </template>
 
 <script>
 export default {
+  // eslint-disable-next-line vue/multi-word-component-names, vue/no-reserved-component-names
   name: "Footer",
+  props: ["footerData", "headerData"],
 };
 </script>
 

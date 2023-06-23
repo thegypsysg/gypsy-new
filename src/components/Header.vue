@@ -9,7 +9,7 @@
       <div class="logo-img-container">
         <v-img
           class="logo-img"
-          src="@/assets/images/logo/logo.png"
+          :src="fileURL + headerData?.app_logo"
           height="90"
           :class="{ 'ml-8': isWelcome }"
         >
@@ -256,6 +256,7 @@
 <script>
 import { mapState, mapMutations } from "vuex";
 import app from "@/util/eventBus";
+import axios from "@/util/axios";
 
 // import eventBus from "@/util/eventBus";
 // import eventBus from "@/util/eventBus";
@@ -266,6 +267,8 @@ export default {
   props: ["isWelcome"],
   data() {
     return {
+      fileURL: "https://admin1.the-gypsy.sg",
+      headerData: {},
       // selectedTag: null,
       // trendingBtn: [
       //   {
@@ -417,6 +420,10 @@ export default {
   created() {
     window.addEventListener("resize", this.handleResize);
   },
+  mounted() {
+    this.getHeaderData();
+    this.getCountry();
+  },
   unmounted() {
     window.removeEventListener("resize", this.handleResize);
   },
@@ -426,6 +433,41 @@ export default {
       this.setActiveTag(tag); // Menetapkan tag yang dipilih sebagai tag aktif
 
       app.config.globalProperties.$eventBus.$emit("scrollToCardSection");
+    },
+    getHeaderData() {
+      // this.isLoading = true;
+      axios
+        .get(`/header`)
+        .then((response) => {
+          const data = response.data.data;
+          // console.log(data);
+          this.headerData = data;
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+        });
+      // .finally(() => {
+      //   this.isLoading = false;
+      // });
+    },
+    getCountry() {
+      axios
+        .get(`/country`)
+        .then((response) => {
+          const data = response.data.data;
+          this.items = data.map((country) => {
+            return {
+              id: country.country_id,
+              title: country.country_name,
+              path: "#",
+            };
+          });
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+        });
     },
     // emitFilterEvent(tag) {
     //   this.$emit("filter-card", tag);

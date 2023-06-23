@@ -1,5 +1,9 @@
 <template>
-  <div class="bg-image" :class="{ 'bg-image-mobile': isSmall }">
+  <div
+    class="bg-image"
+    :style="{ backgroundImage: `url(${fileURL + headerData.app_main_image})` }"
+    :class="{ 'bg-image-mobile': isSmall }"
+  >
     <v-container
       style="height: calc(100vh - 90px); display: flex; align-items: center"
     >
@@ -64,8 +68,10 @@ import AOS from "aos";
 export default {
   // eslint-disable-next-line vue/multi-word-component-names, vue/no-reserved-component-names
   name: "Banner",
+  props: ["headerData"],
   data() {
     return {
+      fileURL: "https://admin1.the-gypsy.sg",
       drawer: false,
       items: [
         { title: "Home", path: "/home", icon: "home" },
