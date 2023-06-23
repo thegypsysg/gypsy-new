@@ -239,6 +239,7 @@ export default {
   position: relative;
   overflow: hidden;
   min-height: 10px;
+  max-height: 52px;
 }
 .our-apps-img {
   max-width: 100%;
