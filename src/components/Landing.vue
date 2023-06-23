@@ -1,10 +1,15 @@
 <template>
   <div>
-    <Banner :header-data="headerData" />
-    <TrendingApps />
-    <Partners />
-    <hr />
-    <Footer :header-data="headerData" :footer-data="footerData" />
+    <div v-if="isLoading" class="text-center loading-page">
+      <v-progress-circular :size="50" color="primary" indeterminate />
+    </div>
+    <div v-if="!isLoading">
+      <Banner :header-data="headerData" />
+      <TrendingApps />
+      <Partners />
+      <hr />
+      <Footer :header-data="headerData" :footer-data="footerData" />
+    </div>
   </div>
 </template>
 
@@ -25,6 +30,7 @@ export default {
       headerData: {},
       footerData: {},
       appData: [],
+      isLoading: false,
     };
   },
   mounted() {
@@ -33,7 +39,7 @@ export default {
   },
   methods: {
     getHeaderData() {
-      // this.isLoading = true;
+      this.isLoading = true;
       axios
         .get(`/header`)
         .then((response) => {
@@ -44,13 +50,13 @@ export default {
         .catch((error) => {
           // eslint-disable-next-line
           console.log(error);
+        })
+        .finally(() => {
+          this.isLoading = false;
         });
-      // .finally(() => {
-      //   this.isLoading = false;
-      // });
     },
     getFooterData() {
-      // this.isLoading = true;
+      this.isLoading = true;
       axios
         .get(`/footer`)
         .then((response) => {
@@ -61,10 +67,10 @@ export default {
         .catch((error) => {
           // eslint-disable-next-line
           console.log(error);
+        })
+        .finally(() => {
+          this.isLoading = false;
         });
-      // .finally(() => {
-      //   this.isLoading = false;
-      // });
     },
   },
 };
@@ -77,5 +83,9 @@ export default {
   font-weight: normal;
   src: url("@/assets/font/nunito/Nunito-VariableFont_wght.ttf")
     format("opentype");
+}
+
+.loading-page {
+  margin-top: 300px;
 }
 </style>
