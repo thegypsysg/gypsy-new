@@ -126,7 +126,7 @@
           </button>
         </form>
 
-        <div class="my-slide d-flex">
+        <div v-if="!isLoading" class="my-slide d-flex">
           <v-btn
             class="sub-menu-btn view-all"
             :class="{
@@ -142,13 +142,12 @@
           </v-btn>
           <v-slide-group v-model="activeTag">
             <v-slide-group-item
-              v-for="(btn, index) in trendingBtn"
-              :key="btn.tag"
+              v-for="btn in trendingBtn"
+              :key="btn.id"
               v-slot="{ isSelected }"
               :value="btn.tag"
             >
               <v-btn
-                v-if="index !== 0 && btn.title != 'View All'"
                 class="sub-menu-btn"
                 :class="{
                   active: isSelected,
@@ -267,10 +266,11 @@ export default {
   props: ["isWelcome"],
   data() {
     return {
+      isLoading: false,
       fileURL: "https://admin1.the-gypsy.sg",
       headerData: {},
       // selectedTag: null,
-      // trendingBtn: [
+      trendingBtn: [],
       //   {
       //     title: "View All",
       //   },
@@ -295,98 +295,98 @@ export default {
         { title: "Kuala Lumpur", path: "#" },
       ],
 
-      trendingCard: [
-        {
-          img: "assets/gypsy-1.png",
-          title: "Mall-e",
-          desc: "Promotions Happening in Malls",
-          tag: "Promo App",
-        },
-        {
-          img: "assets/gypsy-2.png",
-          title: "Boozards",
-          desc: "Marketplace for Alcohol, Clubs, Happy Hours",
-          tag: "Alcohol App",
-        },
-        {
-          img: "assets/gypsy-3.png",
-          title: "Flea",
-          desc: "Promotions Happening in Streets , Office Buildings Gas Stations etc",
-          tag: "Promo App",
-        },
-        {
-          img: "assets/gypsy-4.png",
-          title: "Mendesliga",
-          desc: "Marketplace for Sports Tournaments.",
-          tag: "Tournament App",
-        },
-        {
-          img: "assets/gypsy-5.png",
-          title: "Cake Run",
-          desc: "Marketplace for all Types of Cakes.",
-          tag: "On the Run App",
-        },
-        {
-          img: "assets/gypsy-6.png",
-          title: "Cafino",
-          desc: "Maketplace for Cafes around you.",
-          tag: "Cafe App",
-        },
-        {
-          img: "assets/gypsy-7.jpg",
-          title: "4 Walls",
-          desc: "Marketplace for Housing",
-          tag: "Housing App",
-        },
-        {
-          img: "assets/gypsy-8.jpg",
-          title: "Staycasey",
-          desc: "Marketplace for Staycation",
-          tag: "Staycation App",
-        },
-        {
-          img: "assets/gypsy-9.jpg",
-          title: "Astalavista",
-          desc: "Marketplace for Overseas Travel",
-          tag: "Travel App",
-        },
-        {
-          img: "assets/gypsy-10.jpg",
-          title: "i-Study",
-          desc: "Marketplace for Study Overseas",
-          tag: "Overseas Study App",
-        },
-        {
-          img: "assets/gypsy-11.jpg",
-          title: "Mart-In",
-          desc: "Marketplace for Mini Mart",
-          tag: "Mini Mart App",
-        },
-        {
-          img: "assets/gypsy-12.jpg",
-          title: "Biryani-Run",
-          desc: "Marketplace for Biryani",
-          tag: "On the Run App",
-        },
-        {
-          img: "assets/gypsy-13.jpg",
-          title: "i-Hired",
-          desc: "Marketplace for Jobs",
-          tag: "Job App",
-        },
-        {
-          img: "assets/gypsy-14.jpg",
-          title: "Pizza Run",
-          desc: "Marketplace for Pizza",
-          tag: "On the Run App",
-        },
-        {
-          img: "assets/gypsy-15.jpg",
-          title: "Listings",
-          desc: "Marketplace for Listings",
-          tag: "Listing App",
-        },
-      ],
+      trendingCard: [],
+      //   {
+      //     img: "assets/gypsy-1.png",
+      //     title: "Mall-e",
+      //     desc: "Promotions Happening in Malls",
+      //     tag: "Promo App",
+      //   },
+      //   {
+      //     img: "assets/gypsy-2.png",
+      //     title: "Boozards",
+      //     desc: "Marketplace for Alcohol, Clubs, Happy Hours",
+      //     tag: "Alcohol App",
+      //   },
+      //   {
+      //     img: "assets/gypsy-3.png",
+      //     title: "Flea",
+      //     desc: "Promotions Happening in Streets , Office Buildings Gas Stations etc",
+      //     tag: "Promo App",
+      //   },
+      //   {
+      //     img: "assets/gypsy-4.png",
+      //     title: "Mendesliga",
+      //     desc: "Marketplace for Sports Tournaments.",
+      //     tag: "Tournament App",
+      //   },
+      //   {
+      //     img: "assets/gypsy-5.png",
+      //     title: "Cake Run",
+      //     desc: "Marketplace for all Types of Cakes.",
+      //     tag: "On the Run App",
+      //   },
+      //   {
+      //     img: "assets/gypsy-6.png",
+      //     title: "Cafino",
+      //     desc: "Maketplace for Cafes around you.",
+      //     tag: "Cafe App",
+      //   },
+      //   {
+      //     img: "assets/gypsy-7.jpg",
+      //     title: "4 Walls",
+      //     desc: "Marketplace for Housing",
+      //     tag: "Housing App",
+      //   },
+      //   {
+      //     img: "assets/gypsy-8.jpg",
+      //     title: "Staycasey",
+      //     desc: "Marketplace for Staycation",
+      //     tag: "Staycation App",
+      //   },
+      //   {
+      //     img: "assets/gypsy-9.jpg",
+      //     title: "Astalavista",
+      //     desc: "Marketplace for Overseas Travel",
+      //     tag: "Travel App",
+      //   },
+      //   {
+      //     img: "assets/gypsy-10.jpg",
+      //     title: "i-Study",
+      //     desc: "Marketplace for Study Overseas",
+      //     tag: "Overseas Study App",
+      //   },
+      //   {
+      //     img: "assets/gypsy-11.jpg",
+      //     title: "Mart-In",
+      //     desc: "Marketplace for Mini Mart",
+      //     tag: "Mini Mart App",
+      //   },
+      //   {
+      //     img: "assets/gypsy-12.jpg",
+      //     title: "Biryani-Run",
+      //     desc: "Marketplace for Biryani",
+      //     tag: "On the Run App",
+      //   },
+      //   {
+      //     img: "assets/gypsy-13.jpg",
+      //     title: "i-Hired",
+      //     desc: "Marketplace for Jobs",
+      //     tag: "Job App",
+      //   },
+      //   {
+      //     img: "assets/gypsy-14.jpg",
+      //     title: "Pizza Run",
+      //     desc: "Marketplace for Pizza",
+      //     tag: "On the Run App",
+      //   },
+      //   {
+      //     img: "assets/gypsy-15.jpg",
+      //     title: "Listings",
+      //     desc: "Marketplace for Listings",
+      //     tag: "Listing App",
+      //   },
+      // ],
 
       selectedType: 0,
       activeIndex: 1,
@@ -398,31 +398,33 @@ export default {
       return this.screenWidth < 640;
     },
     ...mapState(["activeTag"]),
-    trendingBtn() {
-      return [
-        {
-          title: "View All",
-        },
-        { title: "Promo App", tag: "Promo App" },
-        { title: "Alcohol App", tag: "Alcohol App" },
-        { title: "Jobs App", tag: "Job App" },
-        { title: "On The Run Apps", tag: "On the Run App" },
-        { title: "Housing App", tag: "Housing App" },
-        { title: "Travel App", tag: "Travel App" },
-        { title: "Staycation App", tag: "Staycation App" },
-        { title: "Listings App", tag: "Listing App" },
-        { title: "Tournaments App", tag: "Tournament App" },
-        { title: "Cafe App", tag: "Cafe App" },
-        { title: "Overseas Study App", tag: "Overseas Study App" },
-      ];
-    },
+    // trendingBtn() {
+    //   return [
+    //     {
+    //       title: "View All",
+    //     },
+    //     { title: "Promo App", tag: "Promo App" },
+    //     { title: "Alcohol App", tag: "Alcohol App" },
+    //     { title: "Jobs App", tag: "Job App" },
+    //     { title: "On The Run Apps", tag: "On the Run App" },
+    //     { title: "Housing App", tag: "Housing App" },
+    //     { title: "Travel App", tag: "Travel App" },
+    //     { title: "Staycation App", tag: "Staycation App" },
+    //     { title: "Listings App", tag: "Listing App" },
+    //     { title: "Tournaments App", tag: "Tournament App" },
+    //     { title: "Cafe App", tag: "Cafe App" },
+    //     { title: "Overseas Study App", tag: "Overseas Study App" },
+    //   ];
+    // },
   },
   created() {
     window.addEventListener("resize", this.handleResize);
   },
   mounted() {
+    this.getAppData();
     this.getHeaderData();
     this.getCountry();
+    this.getGroups();
   },
   unmounted() {
     window.removeEventListener("resize", this.handleResize);
@@ -433,6 +435,83 @@ export default {
       this.setActiveTag(tag); // Menetapkan tag yang dipilih sebagai tag aktif
 
       app.config.globalProperties.$eventBus.$emit("scrollToCardSection");
+    },
+    getAppData() {
+      // this.isLoading = true;
+      axios
+        .get(`/app`)
+        .then((response) => {
+          const data = response.data.data;
+          // console.log(data);
+          this.trendingCard = data.map((item) => {
+            return {
+              img: item.app_main_image || "",
+              title: item.app_name || "",
+              desc: item.app_description || "",
+              tag: item.app_group_name || "",
+              link: item.app_link || "",
+              views: item.app_views || "0",
+
+              id: item.app_id || 1,
+              group_id: item.app_group_id || 1,
+              logo: item.app_logo || null,
+              image: item.app_main_image || null,
+              name: item.app_name || "",
+              description: item.app_description || "",
+              details: item.app_detail || "",
+              isActive:
+                item.active == "N" ? false : item.active == "Y" ? true : null,
+              isFav:
+                item.favorite == "N"
+                  ? false
+                  : item.favorite == "Y"
+                  ? true
+                  : null,
+              group: item.app_group_name || "",
+              user: item.user_id || 1,
+              created: item.dated || "",
+              likes: item.app_likes || "",
+              shares: item.app_shares || "",
+            };
+          });
+          // console.log(this.trendingCard);
+
+          // app.config.globalProperties.$eventBus.$emit(
+          //   'update-image',
+          //   this.items
+          // );
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+        });
+      // .finally(() => {
+      //   this.isLoading = false;
+      // });
+    },
+    getGroups() {
+      this.isLoading = true;
+      axios
+        .get(`/groups`)
+        .then((response) => {
+          const data = response.data.data;
+          this.isLoading = false;
+          // console.log(data);
+          this.trendingBtn = data.map((group) => {
+            return {
+              id: group.app_group_id,
+              title: group.app_group_name,
+              tag: group.app_group_name,
+            };
+          });
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
     },
     getHeaderData() {
       // this.isLoading = true;
@@ -456,7 +535,7 @@ export default {
         .get(`/city`)
         .then((response) => {
           const data = response.data.data;
-          console.log(data);
+          // console.log(data);
           this.items = data.map((city) => {
             return {
               id: city.city_id,

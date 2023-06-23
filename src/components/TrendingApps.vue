@@ -628,7 +628,7 @@ export default {
               shares: item.app_shares || "",
             };
           });
-          console.log(this.trendingCard);
+          // console.log(this.trendingCard);
 
           // app.config.globalProperties.$eventBus.$emit(
           //   'update-image',
