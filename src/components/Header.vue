@@ -453,13 +453,14 @@ export default {
     },
     getCountry() {
       axios
-        .get(`/country`)
+        .get(`/city`)
         .then((response) => {
           const data = response.data.data;
-          this.items = data.map((country) => {
+          console.log(data);
+          this.items = data.map((city) => {
             return {
-              id: country.country_id,
-              title: country.country_name,
+              id: city.city_id,
+              title: city.city_name,
               path: "#",
             };
           });
