@@ -84,8 +84,13 @@ export default {
   src: url("@/assets/font/nunito/Nunito-VariableFont_wght.ttf")
     format("opentype");
 }
-
 .loading-page {
   margin-top: 300px;
+}
+
+@media (max-width: 599px) {
+  .loading-page {
+    margin-top: 450px;
+  }
 }
 </style>
