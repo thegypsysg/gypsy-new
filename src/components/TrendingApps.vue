@@ -116,8 +116,24 @@
               >
                 <div class="img-cont">
                   <div class="cart clearfix animate-effect">
-                    <div class="action">
-                      <ul class="list-unstyled">
+                    <div class="action d-flex justify-center">
+                      <v-btn
+                        elevation="4"
+                        style="
+                          background-color: #fa2964;
+                          border-radius: 50px;
+                          padding-left: 8px;
+                          padding-right: 8px;
+                          padding-top: 5px;
+                          padding-bottom: 5px;
+                        "
+                      >
+                        <span class="text-white" style="">View App</span>
+                        <v-icon right style="color: #fff">
+                          mdi-chevron-right
+                        </v-icon>
+                      </v-btn>
+                      <!-- <ul class="list-unstyled">
                         <li class="add-cart-button">
                           <v-btn rounded icon color="#ee4054">
                             <v-icon color="white"> mdi-cart </v-icon>
@@ -142,7 +158,7 @@
                             </v-tooltip>
                           </v-btn>
                         </li>
-                      </ul>
+                      </ul> -->
                     </div>
                   </div>
                   <v-img
