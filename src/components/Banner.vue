@@ -5,7 +5,8 @@
     :class="{ 'bg-image-mobile': isSmall }"
   >
     <v-container
-      style="height: calc(100vh - 90px); display: flex; align-items: center"
+      class="d-flex align-center"
+      :class="{ 'banner-desktop': !isSmall, 'banner-mobile': isSmall }"
     >
       <v-row :class="{ 'd-flex justify-end': !isSmall }">
         <v-col :cols="!isSmall ? 5 : 12">
@@ -121,6 +122,13 @@ export default {
 @import url("https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap");
 .bg-image-mobile {
   height: 73vh !important;
+}
+
+.banner-desktop {
+  height: calc(100vh - 90px);
+}
+.banner-mobile {
+  height: calc(100vh - 200px);
 }
 
 .hero_title {
