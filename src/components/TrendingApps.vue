@@ -118,6 +118,7 @@
                   <div class="cart clearfix animate-effect">
                     <div class="action d-flex justify-center">
                       <v-btn
+                        :href="card.link"
                         elevation="4"
                         style="
                           background-color: #fa2964;
@@ -651,7 +652,7 @@ export default {
               shares: item.app_shares || "",
             };
           });
-          // console.log(this.trendingCard);
+          console.log(this.trendingCard);
 
           // app.config.globalProperties.$eventBus.$emit(
           //   'update-image',
