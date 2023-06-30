@@ -163,7 +163,7 @@
                     </div>
                   </div>
                   <v-img
-                    :src="fileURL + card.img"
+                    :src="$fileURL + card.img"
                     gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
                     height="200px"
                     cover
@@ -308,7 +308,7 @@
                     </div>
                   </div>
                   <v-img
-                    :src="fileURL + card.img"
+                    :src="$fileURL + card.img"
                     gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
                     height="200px"
                     cover
@@ -419,7 +419,7 @@ export default {
   props: ["appData"],
   data() {
     return {
-      fileURL: "https://admin1.the-gypsy.sg",
+      // fileURL: ,
       selectedTag: null,
       // activeTagHeader: null,
       trendingBtn: [],

@@ -9,7 +9,7 @@
       <div class="logo-img-container">
         <v-img
           class="logo-img"
-          :src="fileURL + headerData?.app_logo"
+          :src="$fileURL + headerData?.app_logo"
           height="90"
           :class="{ 'ml-8': isWelcome }"
         >
@@ -267,7 +267,7 @@ export default {
   data() {
     return {
       isLoading: false,
-      fileURL: "https://admin1.the-gypsy.sg",
+      // fileURL: "https://admin1.the-gypsy.sg",
       headerData: {},
       // selectedTag: null,
       trendingBtn: [],

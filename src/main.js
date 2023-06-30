@@ -21,6 +21,7 @@ import { registerPlugins } from "@/plugins";
 import "aos/dist/aos.css";
 
 const app = createApp(App);
+app.config.globalProperties.$fileURL = "https://admin1.the-gypsy.sg/img/app/";
 
 registerPlugins(app);
 app.use(router);

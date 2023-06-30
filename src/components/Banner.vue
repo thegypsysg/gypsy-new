@@ -1,7 +1,7 @@
 <template>
   <div
     class="bg-image"
-    :style="{ backgroundImage: `url(${fileURL + headerData.app_main_image})` }"
+    :style="{ backgroundImage: `url(${$fileURL + headerData.app_main_image})` }"
     :class="{ 'bg-image-mobile': isSmall }"
   >
     <v-container
@@ -68,7 +68,7 @@ export default {
   props: ["headerData"],
   data() {
     return {
-      fileURL: "https://admin1.the-gypsy.sg",
+      // fileURL: "https://admin1.the-gypsy.sg",
       drawer: false,
       items: [
         { title: "Home", path: "/home", icon: "home" },

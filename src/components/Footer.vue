@@ -69,7 +69,7 @@
               <v-img
                 class="our-apps-img"
                 transition="fade-transition"
-                :src="fileURL + item.img"
+                :src="$fileURL + item.img"
               >
                 <template #placeholder>
                   <div class="skeleton" />
@@ -165,7 +165,7 @@ export default {
   props: ["footerData", "headerData"],
   data() {
     return {
-      fileURL: "https://admin1.the-gypsy.sg",
+      // fileURL: "https://admin1.the-gypsy.sg",
       trendingCard: [],
     };
   },
