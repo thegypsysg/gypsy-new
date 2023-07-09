@@ -118,7 +118,8 @@
                   <div class="cart clearfix animate-effect">
                     <div class="action d-flex justify-center">
                       <v-btn
-                        :href="card.link"
+                        :href="card.link ? card.link : ''"
+                        target="_blank"
                         elevation="4"
                         style="
                           background-color: #fa2964;
@@ -128,6 +129,7 @@
                           padding-top: 5px;
                           padding-bottom: 5px;
                         "
+                        @click="card.link ? '' : openLive(card)"
                       >
                         <span class="text-white" style="">View App</span>
                         <v-icon right style="color: #fff">
@@ -202,6 +204,8 @@
                   </div>
                   <v-card-actions class="d-flex">
                     <v-btn
+                      :href="card.link ? card.link : ''"
+                      target="_blank"
                       elevation="4"
                       style="
                         background-color: #fa2964;
@@ -211,6 +215,7 @@
                         padding-top: 10px;
                         padding-bottom: 10px;
                       "
+                      @click="card.link ? '' : openLive(card)"
                     >
                       <span class="text-white" style="">View App</span>
                       <v-icon right style="color: #fff">
@@ -347,7 +352,8 @@
                   </div>
                   <v-card-actions class="d-flex">
                     <v-btn
-                      :href="card.link"
+                      :href="card.link ? card.link : ''"
+                      target="_blank"
                       elevation="4"
                       style="
                         background-color: #fa2964;
@@ -357,6 +363,7 @@
                         padding-top: 10px;
                         padding-bottom: 10px;
                       "
+                      @click="card.link ? '' : openLive(card)"
                     >
                       <span class="text-white" style="">View App</span>
                       <v-icon right style="color: #fff">
@@ -404,6 +411,16 @@
         </transition-group>
       </template>
     </v-row>
+
+    <v-dialog v-model="isOpenLive" persistent width="auto">
+      <v-card width="450">
+        <v-card-text class="text-center">
+          <v-img height="100" :src="liveData.img" />
+          <h2 class="my-4">{{ liveData.title }} would be Live Soon</h2>
+          <v-btn class="mb-4" @click="closeLive()"> OK </v-btn>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -419,119 +436,14 @@ export default {
   props: ["appData"],
   data() {
     return {
-      // fileURL: ,
+      isOpenLive: false,
+      liveData: {
+        img: "",
+        title: "",
+      },
       selectedTag: null,
-      // activeTagHeader: null,
       trendingBtn: [],
-      //   {
-      //     title: "View All",
-      //   },
-      //   { title: "Promo App", tag: "Promo App" },
-      //   { title: "Alcohol App", tag: "Alcohol App" },
-      //   { title: "Jobs App", tag: "Job App" },
-      //   { title: "On The Run Apps", tag: "On the Run App" },
-      //   { title: "Housing App", tag: "Housing App" },
-      //   { title: "Travel App", tag: "Travel App" },
-      //   { title: "Staycation App", tag: "Staycation App" },
-      //   { title: "Listings App", tag: "Listing App" },
-      //   { title: "Tournaments App", tag: "Tournament App" },
-      //   { title: "Cafe App", tag: "Cafe App" },
-      //   { title: "Overseas Study App", tag: "Overseas Study App" },
-      // ],
       trendingCard: [],
-      // trendingCard: [
-      //   {
-      //     img: "assets/gypsy-1.png",
-      //     title: "Mall-e",
-      //     desc: "Promotions Happening in Malls",
-      //     tag: "Promo App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-2.png",
-      //     title: "Boozards",
-      //     desc: "Marketplace for Alcohol, Clubs, Happy Hours",
-      //     tag: "Alcohol App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-3.png",
-      //     title: "Flea",
-      //     desc: "Promotions Happening in Streets , Office Buildings Gas Stations etc",
-      //     tag: "Promo App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-4.png",
-      //     title: "Mendesliga",
-      //     desc: "Marketplace for Sports Tournaments.",
-      //     tag: "Tournament App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-5.png",
-      //     title: "Cake Run",
-      //     desc: "Marketplace for all Types of Cakes.",
-      //     tag: "On the Run App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-6.png",
-      //     title: "Cafino",
-      //     desc: "Maketplace for Cafes around you.",
-      //     tag: "Cafe App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-7.jpg",
-      //     title: "4 Walls",
-      //     desc: "Marketplace for Housing",
-      //     tag: "Housing App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-8.jpg",
-      //     title: "Staycasey",
-      //     desc: "Marketplace for Staycation",
-      //     tag: "Staycation App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-9.jpg",
-      //     title: "Astalavista",
-      //     desc: "Marketplace for Overseas Travel",
-      //     tag: "Travel App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-10.jpg",
-      //     title: "i-Study",
-      //     desc: "Marketplace for Study Overseas",
-      //     tag: "Overseas Study App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-11.jpg",
-      //     title: "Mart-In",
-      //     desc: "Marketplace for Mini Mart",
-      //     tag: "Mini Mart App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-12.jpg",
-      //     title: "Biryani-Run",
-      //     desc: "Marketplace for Biryani",
-      //     tag: "On the Run App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-13.jpg",
-      //     title: "i-Hired",
-      //     desc: "Marketplace for Jobs",
-      //     tag: "Job App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-14.jpg",
-      //     title: "Pizza Run",
-      //     desc: "Marketplace for Pizza",
-      //     tag: "On the Run App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-15.jpg",
-      //     title: "Listings",
-      //     desc: "Marketplace for Listings",
-      //     tag: "Listing App",
-      //   },
-      // ],
-      // filteredCards: [],
       selectedType: 0,
       activeIndex: 1,
       screenWidth: window.innerWidth,
@@ -613,7 +525,20 @@ export default {
     // selectTag(tag) {
     //   this.activeTag = tag; // Menetapkan tag yang dipilih sebagai tag aktif di komponen kartu
     // },
-
+    openLive(item) {
+      this.isOpenLive = true;
+      this.liveData = {
+        img: this.$fileURL + item.img,
+        title: item.title,
+      };
+    },
+    closeLive() {
+      this.isOpenLive = false;
+      this.liveData = {
+        img: "",
+        title: "",
+      };
+    },
     getAppData() {
       // this.isLoading = true;
       axios
