@@ -118,7 +118,7 @@
                   <div class="cart clearfix animate-effect">
                     <div class="action d-flex justify-center">
                       <v-btn
-                        :href="card.link ? card.link : ''"
+                        :href="card.isLive ? card.link : ''"
                         target="_blank"
                         elevation="4"
                         style="
@@ -129,7 +129,7 @@
                           padding-top: 5px;
                           padding-bottom: 5px;
                         "
-                        @click="card.link ? '' : openLive(card)"
+                        @click="card.isLive ? '' : openLive(card)"
                       >
                         <span class="text-white" style="">View App</span>
                         <v-icon right style="color: #fff">
@@ -204,7 +204,7 @@
                   </div>
                   <v-card-actions class="d-flex">
                     <v-btn
-                      :href="card.link ? card.link : ''"
+                      :href="card.isLive ? card.link : ''"
                       target="_blank"
                       elevation="4"
                       style="
@@ -215,7 +215,7 @@
                         padding-top: 10px;
                         padding-bottom: 10px;
                       "
-                      @click="card.link ? '' : openLive(card)"
+                      @click="card.isLive ? '' : openLive(card)"
                     >
                       <span class="text-white" style="">View App</span>
                       <v-icon right style="color: #fff">
@@ -352,7 +352,7 @@
                   </div>
                   <v-card-actions class="d-flex">
                     <v-btn
-                      :href="card.link ? card.link : ''"
+                      :href="card.isLive ? card.link : ''"
                       target="_blank"
                       elevation="4"
                       style="
@@ -363,7 +363,7 @@
                         padding-top: 10px;
                         padding-bottom: 10px;
                       "
-                      @click="card.link ? '' : openLive(card)"
+                      @click="card.isLive ? '' : openLive(card)"
                     >
                       <span class="text-white" style="">View App</span>
                       <v-icon right style="color: #fff">
@@ -451,22 +451,6 @@ export default {
   },
   computed: {
     ...mapState(["activeTag"]),
-
-    // trendingBtn() {
-    //   return [
-    //     { title: "Promo App", tag: "Promo App" },
-    //     { title: "Alcohol App", tag: "Alcohol App" },
-    //     { title: "Jobs App", tag: "Job App" },
-    //     { title: "On The Run Apps", tag: "On the Run App" },
-    //     { title: "Housing App", tag: "Housing App" },
-    //     { title: "Travel App", tag: "Travel App" },
-    //     { title: "Staycation App", tag: "Staycation App" },
-    //     { title: "Listings App", tag: "Listing App" },
-    //     { title: "Tournaments App", tag: "Tournament App" },
-    //     { title: "Cafe App", tag: "Cafe App" },
-    //     { title: "Overseas Study App", tag: "Overseas Study App" },
-    //   ];
-    // },
     isSmall() {
       return this.screenWidth < 640;
     },
@@ -545,7 +529,7 @@ export default {
         .get(`/app`)
         .then((response) => {
           const data = response.data.data;
-          // console.log(data);
+
           this.trendingCard = data.map((item) => {
             return {
               img: item.app_main_image || "",
@@ -570,6 +554,12 @@ export default {
                   : item.favorite == "Y"
                   ? true
                   : null,
+              isLive:
+                item.live == "N" || item.live == null
+                  ? false
+                  : item.live == "Y"
+                  ? true
+                  : null,
               group: item.app_group_name || "",
               user: item.user_id || 1,
               created: item.dated || "",
@@ -577,7 +567,6 @@ export default {
               shares: item.app_shares || "",
             };
           });
-          console.log(this.trendingCard);
 
           // app.config.globalProperties.$eventBus.$emit(
           //   'update-image',
