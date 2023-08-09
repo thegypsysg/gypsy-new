@@ -42,6 +42,7 @@
                   block
                   class="login-btn"
                   :class="{ 'login-btn-mobile': isSmall }"
+                  @click="nextStep"
                 >
                   Get Started
                 </v-btn>
@@ -76,7 +77,6 @@
                   :class="{ 'login-footer-btn-mobile': isSmall }"
                 >
                   <v-btn
-                    v-if="!isSmall"
                     :size="!isSmall ? '40' : '50'"
                     variant="text"
                     style="background: black"
@@ -167,6 +167,9 @@ export default {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    nextStep() {
+      this.$emit("nextStep");
+    },
     handleResize() {
       this.screenWidth = window.innerWidth;
     },
@@ -176,7 +179,7 @@ export default {
 
 <style scoped>
 .login-container {
-  background-image: url("../assets/header.png");
+  background-image: url("@/assets/header.png");
   background-position: center;
   background-size: cover;
   background-color: #cccccc;

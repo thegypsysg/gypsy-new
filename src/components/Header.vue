@@ -1,6 +1,6 @@
 <template>
   <v-app-bar
-    :class="{ 'app-bar-mobile': isSmall }"
+    :class="{ 'app-bar-mobile': isSmall && !isWelcome }"
     color="white"
     elevation="1"
     fixed
