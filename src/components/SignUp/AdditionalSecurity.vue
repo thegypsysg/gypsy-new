@@ -14,110 +14,43 @@
               :class="{ 'login-card px-12': !isSmall, 'py-10 px-2': isSmall }"
             >
               <v-row>
-                <v-col :cols="isSmall ? '12' : '6'">
-                  <h1
-                    class="mb-6"
-                    style="font-family: Arial, Helvetica, sans-serif !important"
-                    :class="{ 'header-mobile': isSmall }"
-                  >
-                    Step 3 - Additional Security
-                  </h1>
+                <v-col cols="12">
+                  <h2 class="mt-6">
+                    {{ name || "" }}
+                  </h2>
+                  <br />
+                  <h2>You have successfully completed the Sign Up process.</h2>
+                  <br />
+                  <h2>Gypsy ID : {{ gId || "" }}</h2>
 
-                  <v-form fast-fail @submit.prevent="login">
-                    <label
-                      style="font-weight: 600"
+                  <div class="d-flex mt-12 align-center w-50">
+                    <v-btn
+                      type="submit"
+                      variant="outlined"
+                      class="login-btn"
                       :class="{
-                        'section-mobile': isSmall,
-                        'section-desktop': !isSmall,
+                        'w-25 login-btn-mobile': isSmall,
+                        'w-33': !isSmall,
                       }"
-                      >Enter a strong password, min 8 characters</label
+                      :to="`/`"
                     >
-                    <div
-                      class="d-flex"
-                      :class="{
-                        'flex-column': isSmall,
-                        'flex-row': !isSmall,
-                      }"
-                    >
-                      <v-text-field
-                        v-model="password"
-                        class="login-input mb-8"
-                        :class="{
-                          'mr-4 mt-2': !isSmall,
-                          'mt-4': isSmall,
-                        }"
-                        type="password"
-                        variant="outlined"
-                        placeholder="Password"
-                        :persistent-hint="true"
-                      />
-                      <v-text-field
-                        v-model="password2"
-                        class="login-input mb-8"
-                        :class="{
-                          'mt-2': !isSmall,
-                        }"
-                        type="password"
-                        variant="outlined"
-                        placeholder="Re-enter Password"
-                        :persistent-hint="true"
-                      />
-                    </div>
-
-                    <div class="d-flex align-center">
-                      <v-btn
-                        type="submit"
-                        variant="outlined"
-                        class="login-btn"
-                        :class="{
-                          'w-66 login-btn-mobile': isSmall,
-                          'w-75': !isSmall,
-                        }"
-                        @click="nextStep"
-                      >
-                        Next
-                      </v-btn>
-                      <div
-                        :class="{
-                          'w-33 login-btn-mobile': isSmall,
-                          'w-25': !isSmall,
-                        }"
-                        style="
-                          text-align: center;
-                          cursor: pointer;
-                          color: #2b0087;
-                          font-weight: 700;
-                          font-size: 20px;
-                        "
-                        @click="backStep"
-                      >
-                        Back
-                      </div>
-                    </div>
-                  </v-form>
-                </v-col>
-                <v-col
-                  v-if="!isSmall"
-                  cols="6"
-                  class="d-flex align-center justify-center"
-                >
-                  <h1 style="width: 80%">
-                    Please create a password so you can use that to login.
-                  </h1>
+                      OK
+                    </v-btn>
+                  </div>
                 </v-col>
               </v-row>
             </v-card>
           </v-col>
         </v-row>
         <v-snackbar
+          v-model="isSuccess"
           location="top"
           color="green"
-          v-model="isSuccess"
           :timeout="3000"
         >
           {{ successMessage }}
 
-          <template v-slot:actions>
+          <template #actions>
             <v-btn color="white" variant="text" @click="isSuccess = false">
               <v-icon>mdi-close</v-icon>
             </v-btn>
@@ -131,14 +64,14 @@
 <script>
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
-  name: 'AdditionalSecurity',
+  name: "AdditionalSecurity",
   data() {
     return {
-      password: '',
-      password2: '',
+      name: "",
+      gId: "",
       screenWidth: window.innerWidth,
       isSuccess: false,
-      successMessage: '',
+      successMessage: "",
     };
   },
   computed: {
@@ -147,24 +80,30 @@ export default {
     },
   },
   created() {
-    window.addEventListener('resize', this.handleResize);
+    window.addEventListener("resize", this.handleResize);
+  },
+  mounted() {
+    this.name = localStorage.getItem("name")
+      ? localStorage.getItem("name")
+      : "";
+    this.gId = localStorage.getItem("g_id") ? localStorage.getItem("g_id") : "";
   },
   unmounted() {
-    window.removeEventListener('resize', this.handleResize);
+    window.removeEventListener("resize", this.handleResize);
   },
   methods: {
     nextStep() {
-      this.$emit('nextStep');
+      this.$emit("nextStep");
     },
     backStep() {
-      this.$emit('backStep');
+      this.$emit("backStep");
     },
     handleResize() {
       this.screenWidth = window.innerWidth;
     },
     resendOTP() {
       this.isSuccess = true;
-      this.successMessage = 'Success send OTP';
+      this.successMessage = "Success send OTP";
     },
   },
 };
@@ -172,7 +111,7 @@ export default {
 
 <style scoped>
 .login-container {
-  background-image: url('@/assets/Syringe-Signup-main.jpg');
+  background-image: url("@/assets/Syringe-Signup-main.jpg");
   background-position: center;
   background-size: cover;
   background-color: #cccccc;
@@ -206,8 +145,8 @@ export default {
   width: 400px;
   height: 50px;
 
-  background: #fa2964;
-  border-radius: 10px;
+  background: #5d87ff;
+  border-radius: 2px;
   color: white !important;
   font-weight: 500;
   font-size: 14px;

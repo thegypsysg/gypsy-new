@@ -22,12 +22,13 @@
               <p :class="{ 'mb-4': !isSmall, 'mb-12': isSmall }">
                 To begin please enter your email and press Get Started
               </p>
-              <v-form fast-fail @submit.prevent="login">
+              <v-form v-model="valid" @submit.prevent>
                 <label style="font-size: 24px; font-weight: 600"
                   >Email ID</label
                 >
                 <v-text-field
                   v-model="email"
+                  :rules="emailRules"
                   class="login-input mb-8"
                   label="Email Address"
                   type="email"
@@ -42,7 +43,7 @@
                   block
                   class="login-btn"
                   :class="{ 'login-btn-mobile': isSmall }"
-                  @click="nextStep"
+                  @click="sendData"
                 >
                   Get Started
                 </v-btn>
@@ -140,18 +141,47 @@
             </v-card>
           </v-col>
         </v-row>
+
+        <v-snackbar
+          v-model="isError"
+          location="top"
+          color="red"
+          :timeout="3000"
+        >
+          {{ errorMessage }}
+
+          <template #actions>
+            <v-btn color="white" variant="text" @click="isError = false">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
+        </v-snackbar>
       </v-container>
     </div>
   </div>
 </template>
 
 <script>
+import axios from "@/util/axios";
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: "Welcome",
   data() {
     return {
+      valid: false,
       email: "",
+      isError: false,
+      errorMessage: "",
+      emailRules: [
+        (value) => {
+          if (value) return true;
+          return "E-mail is requred.";
+        },
+        (value) => {
+          if (/.+@.+\..+/.test(value)) return true;
+          return "E-mail must be valid.";
+        },
+      ],
       screenWidth: window.innerWidth,
     };
   },
@@ -169,6 +199,39 @@ export default {
   methods: {
     nextStep() {
       this.$emit("nextStep");
+    },
+
+    sendData() {
+      if (this.valid) {
+        this.isSending = true;
+        const payload = {
+          email_id: this.email,
+        };
+        axios
+          .post(`/gypsy-registration/check-email-exists`, payload)
+          .then((response) => {
+            const data = response.data;
+            this.successMessage = data.message;
+            this.isSuccess = true;
+            localStorage.setItem("email", this.email);
+            // this.email = "";
+            this.nextStep();
+          })
+          .catch((error) => {
+            // eslint-disable-next-line
+            console.log(error);
+            const message = error.response.data.email_id
+              ? error.response.data.email_id[0]
+              : error.response.data.message
+              ? error.response.data.message
+              : "Something Wrong!!!";
+            this.errorMessage = message;
+            this.isError = true;
+          })
+          .finally(() => {
+            this.isSending = false;
+          });
+      }
     },
     handleResize() {
       this.screenWidth = window.innerWidth;
