@@ -33,6 +33,7 @@
                         'w-33': !isSmall,
                       }"
                       :to="`/`"
+                      @click="changeHeader()"
                     >
                       OK
                     </v-btn>
@@ -62,6 +63,7 @@
 </template>
 
 <script>
+import app from "@/util/eventBus";
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: "AdditionalSecurity",
@@ -92,6 +94,12 @@ export default {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    changeHeader() {
+      app.config.globalProperties.$eventBus.$emit(
+        "changeHeaderWelcome",
+        "New Sign-Up"
+      );
+    },
     nextStep() {
       this.$emit("nextStep");
     },
@@ -111,7 +119,7 @@ export default {
 
 <style scoped>
 .login-container {
-  background-image: url("@/assets/Syringe-Signup-main.jpg");
+  background-image: url("@/assets/header.png");
   background-position: center;
   background-size: cover;
   background-color: #cccccc;

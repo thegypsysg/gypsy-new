@@ -20,8 +20,8 @@
       </div>
     </router-link>
     <div v-if="isWelcome" class="ml-10 d-flex flex-row header-info">
-      <div v-if="!isSmall" class="divider" />
-      <span :class="{ 'header-info-span': isSmall }">Sign Up / Login</span>
+      <div :class="{ divider: !isSmall, 'divider-2': isSmall }" />
+      <span :class="{ 'header-info-span': isSmall }">{{ titleWelcome }}</span>
     </div>
     <v-spacer v-if="isWelcome" />
     <form v-if="!isWelcome" class="navbar__search navbar__search__desktop">
@@ -271,6 +271,7 @@ export default {
       headerData: {},
       // selectedTag: null,
       trendingBtn: [],
+      titleWelcome: "New Sign-Up",
       //   {
       //     title: "View All",
       //   },
@@ -425,12 +426,25 @@ export default {
     this.getHeaderData();
     this.getCountry();
     this.getGroups();
+    app.config.globalProperties.$eventBus.$on(
+      "changeHeaderWelcome",
+      this.changeHeaderWelcome
+    );
+  },
+  beforeUnmount() {
+    app.config.globalProperties.$eventBus.$off(
+      "changeHeaderWelcome",
+      this.changeHeaderWelcome
+    );
   },
   unmounted() {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
     ...mapMutations(["setActiveTag"]),
+    changeHeaderWelcome(title) {
+      this.titleWelcome = title;
+    },
     selectTag(tag) {
       this.setActiveTag(tag); // Menetapkan tag yang dipilih sebagai tag aktif
 
@@ -604,6 +618,11 @@ export default {
   background: rgb(173, 173, 173);
   width: 2px;
   height: 70px;
+}
+.divider-2 {
+  background: rgb(51, 51, 51);
+  width: 2px;
+  height: 50px;
 }
 
 .header-info {

@@ -30,7 +30,6 @@
                   v-model="email"
                   :rules="emailRules"
                   class="login-input mb-8"
-                  label="Email Address"
                   type="email"
                   variant="outlined"
                   placeholder="John@example.com"
@@ -304,6 +303,6 @@ export default {
   gap: 20px;
 }
 .login-footer-btn-mobile {
-  gap: 40px;
+  gap: 20px;
 }
 </style>

@@ -7,7 +7,10 @@
       <PersonalDetails @nextStep="nextStep" @backStep="backStep" />
     </div>
     <div v-else-if="currentStep === 3">
-      <AdditionalSecurity @nextStep="nextStep" @backStep="backStep" />
+      <AdditionalData @nextStep="nextStep" @backStep="backStep" />
+    </div>
+    <div v-else-if="currentStep === 4">
+      <ResultRegister @nextStep="nextStep" @backStep="backStep" />
     </div>
     <!-- <div v-else-if="currentStep === 4">
       <AdditionalSecurity @nextStep="nextStep" @backStep="backStep" />
@@ -34,7 +37,8 @@
 import Welcome from "@/components/SignUp/Welcome.vue";
 // import InputEmail from '@/components/SignUp/InputEmail.vue';
 import PersonalDetails from "@/components/SignUp/PersonalDetails.vue";
-import AdditionalSecurity from "@/components/SignUp/AdditionalSecurity.vue";
+import ResultRegister from "@/components/SignUp/ResultRegister.vue";
+import AdditionalData from "@/components/SignUp/AdditionalData.vue";
 // import EmailVerification from "@/components/SignUp/EmailVerification.vue";
 // import WhereAreYou from "@/components/SignUp/WhereAreYou.vue";
 // import AdditionalInformation from "@/components/SignUp/AdditionalInformation.vue";
@@ -46,11 +50,8 @@ export default {
     Welcome,
     // EmailVerification,
     PersonalDetails,
-    AdditionalSecurity,
-    // WhereAreYou,
-    // AdditionalInformation,
-    // SelectSkills,
-    // SpecialisedPage,
+    ResultRegister,
+    AdditionalData,
   },
   data() {
     return {

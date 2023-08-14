@@ -38,7 +38,6 @@
                         readonly
                         :rules="rules.emailRules"
                         class="login-input mt-2 mb-8"
-                        label="Email Address"
                         type="email"
                         variant="outlined"
                         placeholder="John@example.com"
@@ -76,15 +75,92 @@
                     />
                     <!-- :persistent-hint="true" -->
 
-                    <label
-                      style="font-weight: 600"
-                      :class="{
-                        'section-mobile': isSmall,
-                        'section-desktop': !isSmall,
-                      }"
-                      >Where Are You Now?</label
-                    >
-                    <div class="d-flex mb-8">
+                    <template v-if="!isSmall">
+                      <div class="d-flex justify-space-between">
+                        <label
+                          style="font-weight: 600"
+                          :class="{
+                            'section-mobile': isSmall,
+                            'section-desktop ': !isSmall,
+                          }"
+                          >Where Are You Now?</label
+                        >
+                        <div class="w-50">
+                          <label
+                            style="font-weight: 600"
+                            :class="{
+                              'section-mobile pl-4': isSmall,
+                              'section-desktop w-50 pl-3': !isSmall,
+                            }"
+                            >Gender</label
+                          >
+                        </div>
+                      </div>
+                      <div class="d-flex mb-8">
+                        <v-autocomplete
+                          v-model="country"
+                          :items="resource.countries"
+                          :rules="rules.countryRules"
+                          item-title="name"
+                          item-value="id"
+                          label="Enter Country"
+                          class="mt-2 w-50 mr-8"
+                          variant="outlined"
+                          clearable
+                        />
+
+                        <v-radio-group
+                          v-model="gender"
+                          :rules="rules.genderRules"
+                          style="
+                            border: 1px solid rgb(166, 166, 166);
+                            border-radius: 5px;
+                            height: 50px;
+                            width: 50%;
+                          "
+                          class="mt-2"
+                          inline
+                        >
+                          <v-radio
+                            :class="{
+                              'mr-10': !isSmall,
+                              'gender-small': isSmall,
+                            }"
+                            label="Male"
+                            value="M"
+                          >
+                            <template #label>
+                              <span :class="{ 'gender-small': isSmall }"
+                                >Male</span
+                              >
+                            </template>
+                          </v-radio>
+                          <v-radio
+                            :class="{
+                              'gender-small': isSmall,
+                            }"
+                            value="F"
+                          >
+                            <template #label>
+                              <span :class="{ 'gender-small': isSmall }"
+                                >Female</span
+                              >
+                            </template>
+                          </v-radio>
+                        </v-radio-group>
+                      </div>
+                    </template>
+
+                    <template v-if="isSmall">
+                      <label
+                        style="font-weight: 600"
+                        :class="{
+                          'section-mobile': isSmall,
+                          'section-desktop ': !isSmall,
+                        }"
+                        >Where Are You Now?</label
+                      >
+
                       <v-autocomplete
                         v-model="country"
                         :items="resource.countries"
@@ -92,60 +168,20 @@
                         item-title="name"
                         item-value="id"
                         label="Enter Country"
-                        class="mt-2 w-50 mr-2"
+                        class="mt-2 w-50 mr-8 mb-6"
                         variant="outlined"
                         clearable
                       />
-                      <v-autocomplete
-                        v-model="city"
-                        :items="resource.cities"
-                        :rules="rules.cityRules"
-                        item-title="name"
-                        item-value="name"
-                        label="Which City"
-                        class="mt-2 w-50"
-                        variant="outlined"
-                        clearable
-                      />
-                    </div>
-                    <div class="d-flex justify-space-between">
-                      <label
-                        style="font-weight: 600"
-                        :class="{
-                          'section-mobile': isSmall,
-                          'section-desktop w-50': !isSmall,
-                        }"
-                        >Mobile Number</label
-                      >
-                      <label
-                        style="font-weight: 600"
-                        :class="{
-                          'section-mobile': isSmall,
-                          'section-desktop w-50': !isSmall,
-                        }"
-                        >Gender</label
-                      >
-                    </div>
-                    <div class="d-flex">
-                      <div class="d-flex mr-2" style="width: 50%">
-                        <v-text-field
-                          v-model="code"
-                          :rules="rules.codeRules"
-                          type="text"
-                          class="mt-2 w-33"
-                          placeholder="Code"
-                          variant="outlined"
-                          :persistent-hint="true"
-                        />
-                        <v-text-field
-                          v-model="mobile"
-                          :rules="rules.mobileRules"
-                          type="number"
-                          class="login-input mb-8 mt-2 w-66"
-                          variant="outlined"
-                          placeholder="Phone Number"
-                          :persistent-hint="true"
-                        />
+
+                      <div class="w-50">
+                        <label
+                          style="font-weight: 600"
+                          :class="{
+                            'section-mobile mt-6': isSmall,
+                            'section-desktop w-50 pl-3': !isSmall,
+                          }"
+                          >Gender</label
+                        >
                       </div>
                       <v-radio-group
                         v-model="gender"
@@ -186,7 +222,7 @@
                           </template>
                         </v-radio>
                       </v-radio-group>
-                    </div>
+                    </template>
 
                     <div class="d-flex align-center">
                       <v-btn
@@ -194,16 +230,16 @@
                         variant="outlined"
                         class="login-btn"
                         :class="{
-                          'w-66 login-btn-mobile': isSmall,
+                          'w-66 login-btn-mobile mt-10': isSmall,
                           'w-50': !isSmall,
                         }"
-                        @click="sendData"
+                        @click="saveData"
                       >
                         Next
                       </v-btn>
                       <div
                         :class="{
-                          'w-33 login-btn-mobile': isSmall,
+                          'w-33 login-btn-mobile mt-10': isSmall,
                           'w-33': !isSmall,
                         }"
                         style="
@@ -255,6 +291,7 @@
 
 <script>
 import axios from "@/util/axios";
+import app from "@/util/eventBus";
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
@@ -335,7 +372,7 @@ export default {
   watch: {
     // eslint-disable-next-line no-unused-vars
     country: function (newVal, oldVal) {
-      this.getCityData(newVal);
+      // this.getCityData(newVal);
       this.getCountryCode(newVal);
     },
   },
@@ -357,50 +394,34 @@ export default {
     },
     backStep() {
       this.$emit("backStep");
+      app.config.globalProperties.$eventBus.$emit(
+        "changeHeaderWelcome",
+        "New Sign-Up"
+      );
     },
-    sendData() {
+    saveData() {
       if (this.valid) {
-        this.isSending = true;
-        const payload = {
-          email_id: this.email,
-          name: this.name,
-          country_current: this.country,
-          new_city: this.city,
-          mobile_number: this.mobile,
-          gender: this.gender,
-          registered_type: this.isSmall ? "M" : "W",
-          app_id: this.$appId,
-        };
-        axios
-          .post(`/gypsy-registration`, payload)
-          .then((response) => {
-            const data = response.data;
-            console.log(data);
-            this.successMessage = data.message;
-            localStorage.setItem("name", data.data.name);
-            localStorage.setItem("g_id", data.data.gypsy_ref_no);
-            this.isSuccess = true;
-            this.email = "";
-            this.name = "";
-            this.country = null;
-            this.city = null;
-            this.mobile = "";
-            this.gender = "";
-            this.nextStep();
-          })
-          .catch((error) => {
-            // eslint-disable-next-line
-            console.log(error);
-            const message =
-              error.response.data.message === ""
-                ? "Something Wrong!!!"
-                : error.response.data.message;
-            this.errorMessage = message;
-            this.isError = true;
-          })
-          .finally(() => {
-            this.isSending = false;
-          });
+        // const payload = {
+        //   email_id: this.email,
+        //   name: this.name,
+        //   country_current: this.country,
+        //   gender: this.gender,
+        //   registered_type: this.isSmall ? "M" : "W",
+        //   app_id: this.$appId,
+        // };
+        localStorage.setItem("email_id", this.email);
+        localStorage.setItem("name", this.name);
+        localStorage.setItem("country_current", this.country);
+        localStorage.setItem("gender", this.gender);
+        localStorage.setItem("registered_type", this.isSmall ? "M" : "W");
+        localStorage.setItem("app_id", this.$appId);
+        localStorage.setItem("code", this.code);
+        this.email = "";
+        this.name = "";
+        this.country = null;
+        this.gender = "";
+
+        this.nextStep();
       }
     },
 
