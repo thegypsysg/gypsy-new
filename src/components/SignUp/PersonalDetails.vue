@@ -85,7 +85,7 @@
                           }"
                           >Where Are You Now?</label
                         >
-                        <div class="w-50">
+                        <div style="width: 45%">
                           <label
                             style="font-weight: 600"
                             :class="{
@@ -103,10 +103,10 @@
                           :rules="rules.countryRules"
                           item-title="name"
                           item-value="id"
+                          style="white-space: nowrap; width: 55%"
                           label="Enter Country"
-                          class="mt-2 w-50 mr-8"
+                          class="mt-2 mr-8"
                           variant="outlined"
-                          clearable
                         />
 
                         <v-radio-group
@@ -116,14 +116,14 @@
                             border: 1px solid rgb(166, 166, 166);
                             border-radius: 5px;
                             height: 50px;
-                            width: 50%;
+                            width: 45%;
                           "
                           class="mt-2"
                           inline
                         >
                           <v-radio
                             :class="{
-                              'mr-10': !isSmall,
+                              'mr-2': !isSmall,
                               'gender-small': isSmall,
                             }"
                             label="Male"
@@ -168,9 +168,9 @@
                         item-title="name"
                         item-value="id"
                         label="Enter Country"
-                        class="mt-2 w-50 mr-8 mb-6"
+                        style="white-space: nowrap"
+                        class="mt-2 w-75 mr-8 mb-6"
                         variant="outlined"
-                        clearable
                       />
 
                       <div class="w-50">
