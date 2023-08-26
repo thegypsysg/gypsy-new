@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "../views/HomeView.vue";
 import SignUp from "../views/SignUpForm.vue";
+import SocialLogin from "../views/SocialLoginForm.vue";
 
 const routes = [
   {
@@ -11,6 +12,23 @@ const routes = [
     path: "/welcome",
     name: "Welcome",
     component: SignUp,
+  },
+  {
+    path: "/social-sign-up",
+    name: "Social Sign Up",
+    component: SocialLogin,
+    beforeRouteEnter(to, from, next) {
+      const email = to.query.email || "";
+      const name = to.query.name || "";
+      const avatar = to.query.avatar || "";
+
+      // Anda dapat menyimpan nilai-nilai ini dalam state Vuex atau menggunakan mereka langsung dalam komponen
+      next((vm) => {
+        vm.email = email;
+        vm.name = name;
+        vm.avatar = avatar;
+      });
+    },
   },
 ];
 

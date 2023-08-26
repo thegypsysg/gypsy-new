@@ -118,6 +118,7 @@
                     color="white"
                     style="background: #db4a39"
                     icon
+                    @click="loginSocial('google')"
                   >
                     <v-icon :size="!isSmall ? '18' : '24'">
                       <i class="fa-brands fa-google-plus-g" />
@@ -199,7 +200,13 @@ export default {
     nextStep() {
       this.$emit("nextStep");
     },
-
+    loginSocial(social_name) {
+      axios.get(`/gypsy-login/${social_name}`).then((response) => {
+        console.log(response);
+        window.location.assign(response.data.target_url);
+        console.log(response.data.target_url);
+      });
+    },
     sendData() {
       if (this.valid) {
         this.isSending = true;
