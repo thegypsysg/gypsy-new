@@ -13,6 +13,7 @@ import "maz-ui/css/main.css";
 // import "@/css/path_to_your_main_file.css";
 import "@fortawesome/fontawesome-free/css/fontawesome.css";
 import "@fortawesome/fontawesome-free/css/brands.css";
+import "/node_modules/flag-icons/css/flag-icons.min.css";
 
 import store from "./store";
 import vuetify from "./plugins/vuetify";
