@@ -12,20 +12,12 @@
               :max-width="isSmall ? `${screenWidth - 30}px` : ''"
               class="mx-auto"
               :class="{
-                'login-card px-12': !isSmall,
-                'login-card-mobile pt-4 pb-16 px-2': isSmall,
+                'login-card px-12 pb-16': !isSmall,
+                'login-card-mobile pb-16 px-2': isSmall,
               }"
             >
               <v-row>
                 <v-col cols="12">
-                  <h2
-                    class="text-center"
-                    style="font-family: Arial, Helvetica, sans-serif !important"
-                    :class="{ 'header-mobile': isSmall }"
-                  >
-                    Step 1 - User Information
-                  </h2>
-
                   <v-form v-model="valid" @submit.prevent>
                     <input
                       ref="filePickerField"
@@ -123,58 +115,55 @@
                         >Where are you now</label
                       >
                     </div>
-                    <div
-                      class="d-flex align-center pl-2"
-                      style="
-                        height: 40px;
-                        position: relative;
-                        overflow: hidden;
-                        gap: 20px;
-                        display: block;
-                        width: 98%;
-                        border-radius: 5px;
-                        border: 1px solid #ced4da;
-                      "
-                    >
-                      <div v-if="country">
+
+                    <div class="w-100 d-flex align-center">
+                      <div
+                        v-if="country"
+                        style="
+                          border-top: 2px solid rgb(239, 239, 239);
+                          border-bottom: 2px solid rgb(239, 239, 239);
+                          border-left: 2px solid rgb(239, 239, 239);
+                          border-radius: 5px 0 0px 5px;
+                          height: 47px;
+                        "
+                        class="d-flex align-center justify-center"
+                      >
                         <span
-                          class="fi pr-4 mr-4"
+                          class="fi ml-2 pr-4 mr-4"
                           :class="['fi-' + country.toLowerCase()]"
                         />
                       </div>
-                      <v-autocomplete
+                      <MazSelect
+                        v-slot="{ option }"
                         v-model="country"
-                        item-title="label"
-                        item-value="value"
-                        variant="underlined"
-                        :items="options"
-                        placeholder="Select Country"
-                        density="compact"
-                        :class="{
-                          'country-no': !country,
-                          'country-yes': country,
-                        }"
-                        style="position: absolute; top: -8px; width: 100%"
+                        label="Select Country"
+                        item-height="40"
+                        :options="options"
+                        search
+                        max-list-width="250"
+                        search-placeholder="Search in country"
+                        :class="{ 'ml-n1': country }"
                       >
-                        <template #item="{ props, item }">
-                          <div v-bind="props">
-                            <div
-                              style="cursor: pointer"
-                              class="country-item d-flex align-center w-100 py-2 pl-2"
-                            >
-                              <span
-                                class="fi"
-                                :class="['fi-' + item.raw.value.toLowerCase()]"
-                              />
-                              <span class="flag-text">{{
-                                item.raw.label
-                              }}</span>
-                            </div>
-                          </div>
-                        </template>
-                      </v-autocomplete>
+                        <div
+                          class="flex items-center"
+                          style="
+                            padding-top: 0.5rem;
+                            padding-bottom: 0.5rem;
+                            width: 100%;
+                            gap: 1rem;
+                          "
+                        >
+                          <span
+                            class="fi"
+                            :class="['fi-' + option.value.toLowerCase()]"
+                          />
+                          <span class="pl-2">
+                            {{ option.label }}
+                          </span>
+                        </div>
+                      </MazSelect>
                     </div>
-                    <v-radio-group v-model="gender" class="mt-2" inline>
+                    <v-radio-group v-model="gender" inline>
                       <v-radio
                         :class="{
                           'mr-2': !isSmall,
@@ -202,7 +191,7 @@
                         </template>
                       </v-radio>
                     </v-radio-group>
-                    <div class="d-flex justify-space-between mt-n4">
+                    <div class="d-flex justify-space-between mt-n8">
                       <label
                         style="font-weight: 500"
                         :class="{
@@ -216,6 +205,7 @@
                       v-model="mobile"
                       show-code-on-list
                       color="info"
+                      default-country-code="SG"
                       :preferred-countries="[
                         'SG',
                         'BD',
@@ -271,18 +261,21 @@
 import axios from "@/util/axios";
 import app from "@/util/eventBus";
 import MazPhoneNumberInput from "maz-ui/components/MazPhoneNumberInput";
+import MazSelect from "maz-ui/components/MazSelect";
 import ImageCropperDialog from "../ImageCropperDialog.vue";
 
 export default {
   name: "PersonalDetails",
   components: {
     MazPhoneNumberInput,
+    MazSelect,
     ImageCropperDialog,
   },
   data() {
     return {
       valid: false,
       image: null,
+      imageSend: null,
       image_path: "",
       name: "",
       email: "",
@@ -556,6 +549,9 @@ export default {
     nameProvider() {
       return this.$route.query.name || "";
     },
+    tokenProvider() {
+      return this.$route.query.token || "";
+    },
     avatarProvider() {
       return this.$route.query.avatar || "";
     },
@@ -602,6 +598,7 @@ export default {
       if (!event) return;
       var file = event.target.files[0];
       this.image = await this.toBase64(file);
+      this.imageSend = file;
       this.$refs.cropperDialog.initCropper(file.type);
     },
 
@@ -617,30 +614,66 @@ export default {
       window.history.back();
     },
     saveData() {
-      console.log(this.country);
-      // if (this.valid) {
-      //   // const payload = {
-      //   //   email_id: this.email,
-      //   //   name: this.name,
-      //   //   country_current: this.country,
-      //   //   gender: this.gender,
-      //   //   registered_type: this.isSmall ? "M" : "W",
-      //   //   app_id: this.$appId,
-      //   // };
-      //   localStorage.setItem("email_id", this.email);
-      //   localStorage.setItem("name", this.name);
-      //   localStorage.setItem("country_current", this.country);
-      //   localStorage.setItem("gender", this.gender);
-      //   localStorage.setItem("registered_type", this.isSmall ? "M" : "W");
-      //   localStorage.setItem("app_id", this.$appId);
-      //   localStorage.setItem("code", this.code);
-      //   this.email = "";
-      //   this.name = "";
-      //   this.country = null;
-      //   this.gender = "";
-
-      //   this.nextStep();
-      // }
+      if (this.valid) {
+        this.isSending = true;
+        const countryName = this.options
+          .filter((o) => o.value == this.country)
+          .map((op) => op.label)[0];
+        const payload = {
+          email_id: this.email,
+          name: this.name,
+          mobile_number: this.mobile,
+          country_current: this.country,
+          country_prefix: this.country,
+          gender: this.gender,
+          app_id: this.$appId,
+          registered_type: this.isSmall ? "M" : "W",
+          social_type: "G",
+          token: this.tokenProvider,
+          country_name: countryName,
+          image: this.imageSend ? this.imageSend : this.avatarProvider,
+        };
+        axios
+          .post(`/gypsy/save-social-user`, payload, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          })
+          .then((response) => {
+            const data = response.data;
+            console.log(data);
+            this.successMessage = data.message;
+            localStorage.setItem("name", data.data.name);
+            localStorage.setItem("g_id", data.data.gypsy_ref_no);
+            localStorage.setItem("user_image", data.data.image);
+            localStorage.setItem("token", data.data.token);
+            this.isSuccess = true;
+            this.email = "";
+            this.name = "";
+            this.country = null;
+            this.city = null;
+            this.mobile = "";
+            this.gender = "";
+            app.config.globalProperties.$eventBus.$emit(
+              "changeHeaderWelcome",
+              "Sign Up Completed"
+            );
+            this.nextStep();
+          })
+          .catch((error) => {
+            // eslint-disable-next-line
+            console.log(error);
+            const message =
+              error.response.data.message === ""
+                ? "Something Wrong!!!"
+                : error.response.data.message;
+            this.errorMessage = message;
+            this.isError = true;
+          })
+          .finally(() => {
+            this.isSending = false;
+          });
+      }
     },
 
     getCountryCode() {
@@ -825,7 +858,7 @@ export default {
   margin-top: 120px;
   margin-bottom: 50px;
   padding-top: 20px;
-  padding-bottom: 40px;
+  padding-bottom: 100px;
 }
 
 .login-footer-icon {
