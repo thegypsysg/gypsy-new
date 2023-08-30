@@ -18,61 +18,67 @@
             >
               <v-row>
                 <v-col cols="12">
-                  <v-form v-model="valid" @submit.prevent>
-                    <input
-                      ref="filePickerField"
-                      type="file"
-                      accept="image/*"
-                      hidden
-                      @change="launchCropper"
-                    />
+                  <input
+                    ref="filePickerField"
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    @change="launchCropper"
+                  >
+                  <div
+                    class="image-container d-flex justify-center w-100 mb-4"
+                    style="position: relative"
+                  >
                     <div
-                      class="image-container d-flex justify-center w-100 mb-4"
-                      style="position: relative"
+                      style="
+                        cursor: pointer;
+                        position: absolute;
+                        left: 0;
+                        top: 15px;
+                      "
+                      @click="goBack"
                     >
-                      <div
-                        style="
-                          cursor: pointer;
-                          position: absolute;
-                          left: 0;
-                          top: 15px;
-                        "
-                        @click="goBack"
+                      <v-icon>mdi-arrow-left</v-icon>
+                    </div>
+                    <div>
+                      <v-avatar
+                        size="100px"
+                        class="mt-5"
                       >
-                        <v-icon>mdi-arrow-left</v-icon>
-                      </div>
-                      <div>
-                        <v-avatar size="100px" class="mt-5">
-                          <v-img
-                            height="100"
-                            :src="
-                              image_path != ''
-                                ? image_path
-                                : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
-                            "
-                          />
-                        </v-avatar>
-                        <div class="mt-2 w-100 d-flex justify-center">
-                          <v-btn
-                            color="blue"
-                            variant="outlined"
-                            @click="$refs.filePickerField.click()"
-                          >
-                            Upload
-                          </v-btn>
-                        </div>
-                        <image-cropper-dialog
-                          ref="cropperDialog"
-                          :chosen-image="image"
-                          @onReset="$refs.filePickerField.value = null"
-                          @onCrop="
-                            (croppedImage) => {
-                              image_path = croppedImage;
-                            }
+                        <v-img
+                          height="100"
+                          :src="
+                            image_path != ''
+                              ? image_path
+                              : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
                           "
                         />
+                      </v-avatar>
+                      <div class="mt-2 w-100 d-flex justify-center">
+                        <v-btn
+                          color="blue"
+                          variant="outlined"
+                          @click="$refs.filePickerField.click()"
+                        >
+                          Upload
+                        </v-btn>
                       </div>
+                      <image-cropper-dialog
+                        ref="cropperDialog"
+                        :chosen-image="image"
+                        @onReset="$refs.filePickerField.value = null"
+                        @onCrop="
+                          (croppedImage) => {
+                            image_path = croppedImage;
+                          }
+                        "
+                      />
                     </div>
+                  </div>
+                  <v-form
+                    v-model="valid"
+                    @submit.prevent
+                  >
                     <div class="d-flex w-100 mb-2 justify-space-between">
                       <span
                         style="font-weight: 500"
@@ -81,29 +87,35 @@
                           'section-mobile ': isSmall,
                           'section-desktop': !isSmall,
                         }"
-                        >Full Name</span
-                      >
+                      >Full Name</span>
                     </div>
                     <input
                       v-model="name"
                       type="text"
+                      required
                       class="form-control pl-2 mt-2 mb-4"
                       placeholder="Enter Your Full Name"
-                    />
+                    >
+                    <h6
+                      v-if="isName == false"
+                      class="w-100 mt-n4 text-red"
+                    >
+                      You must fill the name.
+                    </h6>
                     <label
                       style="font-weight: 500"
                       :class="{
                         'section-mobile': isSmall,
                         'section-desktop': !isSmall,
                       }"
-                      >Email</label
-                    >
+                    >Email</label>
                     <input
                       v-model="email"
                       type="email"
+                      disabled
                       class="form-control pl-2 mt-2 mb-4"
                       placeholder="Enter Your Email Address"
-                    />
+                    >
 
                     <div class="d-flex justify-space-between">
                       <label
@@ -112,8 +124,7 @@
                           'section-mobile': isSmall,
                           'section-desktop ': !isSmall,
                         }"
-                        >Where are you now</label
-                      >
+                      >Where are you now</label>
                     </div>
 
                     <div class="w-100 d-flex align-center">
@@ -163,7 +174,10 @@
                         </div>
                       </MazSelect>
                     </div>
-                    <v-radio-group v-model="gender" inline>
+                    <v-radio-group
+                      v-model="gender"
+                      inline
+                    >
                       <v-radio
                         :class="{
                           'mr-2': !isSmall,
@@ -185,27 +199,30 @@
                         value="F"
                       >
                         <template #label>
-                          <span :class="{ 'gender-small': isSmall }"
-                            >Female</span
-                          >
+                          <span :class="{ 'gender-small': isSmall }">Female</span>
                         </template>
                       </v-radio>
                     </v-radio-group>
-                    <div class="d-flex justify-space-between mt-n8">
+                    <h6
+                      v-if="isGender == false"
+                      class="w-100 mt-n11 mb-6 text-red"
+                    >
+                      You must choose gender.
+                    </h6>
+                    <div class="d-flex justify-space-between">
                       <label
                         style="font-weight: 500"
                         :class="{
                           'section-mobile mb-2': isSmall,
                           'section-desktop w-50 mb-2 ': !isSmall,
                         }"
-                        >Mobile Number</label
-                      >
+                      >Mobile Number</label>
                     </div>
                     <MazPhoneNumberInput
                       v-model="mobile"
                       show-code-on-list
                       color="info"
-                      default-country-code="SG"
+                      :default-country-code="country ? country : 'SG'"
                       :preferred-countries="[
                         'SG',
                         'BD',
@@ -216,7 +233,12 @@
                       ]"
                       @update="phoneEvent = $event"
                     />
-                    <!-- <VuePhoneNumberInput v-model="yourValue" /> -->
+                    <h6
+                      v-if="isMobile == false"
+                      class="w-100 text-red"
+                    >
+                      You must fill the mobile number.
+                    </h6>
 
                     <div class="d-flex align-center justify-start">
                       <v-btn
@@ -247,7 +269,11 @@
           {{ successMessage }}
 
           <template #actions>
-            <v-btn color="white" variant="text" @click="isSuccess = false">
+            <v-btn
+              color="white"
+              variant="text"
+              @click="isSuccess = false"
+            >
               <v-icon>mdi-close</v-icon>
             </v-btn>
           </template>
@@ -273,13 +299,16 @@ export default {
   },
   data() {
     return {
+      isName: true,
+      isGender: true,
+      isMobile: true,
       valid: false,
       image: null,
       imageSend: null,
       image_path: "",
       name: "",
       email: "",
-      country: null,
+      country: "SG",
       gender: "",
       code: "",
       mobile: null,
@@ -291,6 +320,12 @@ export default {
         code: [],
       },
       options: [
+        { value: "SG", label: "Singapore" },
+        { value: "BD", label: "Bangladesh" },
+        { value: "IN", label: "India" },
+        { value: "MY", label: "Malaysia" },
+        { value: "GB", label: "United Kingdom" },
+        { value: "PH", label: "Philippines" },
         { value: "AF", label: "Afghanistan" },
         { value: "AX", label: "Aland Islands" },
         { value: "AL", label: "Albania" },
@@ -309,7 +344,6 @@ export default {
         { value: "AZ", label: "Azerbaijan" },
         { value: "BS", label: "Bahamas" },
         { value: "BH", label: "Bahrain" },
-        { value: "BD", label: "Bangladesh" },
         { value: "BB", label: "Barbados" },
         { value: "BY", label: "Belarus" },
         { value: "BE", label: "Belgium" },
@@ -341,7 +375,7 @@ export default {
         { value: "CO", label: "Colombia" },
         { value: "KM", label: "Comoros" },
         { value: "CG", label: "Congo" },
-        { value: "CD", label: "Congo}, Democratic Republic" },
+        { value: "CD", label: "Congo, Democratic Republic" },
         { value: "CK", label: "Cook Islands" },
         { value: "CR", label: "Costa Rica" },
         { value: "CI", label: "Cote D'Ivoire" },
@@ -391,9 +425,8 @@ export default {
         { value: "HK", label: "Hong Kong" },
         { value: "HU", label: "Hungary" },
         { value: "IS", label: "Iceland" },
-        { value: "IN", label: "India" },
         { value: "ID", label: "Indonesia" },
-        { value: "IR", label: "Iran}, Islamic Republic Of" },
+        { value: "IR", label: "Iran, Islamic Republic Of" },
         { value: "IQ", label: "Iraq" },
         { value: "IE", label: "Ireland" },
         { value: "IM", label: "Isle Of Man" },
@@ -422,7 +455,6 @@ export default {
         { value: "MK", label: "Macedonia" },
         { value: "MG", label: "Madagascar" },
         { value: "MW", label: "Malawi" },
-        { value: "MY", label: "Malaysia" },
         { value: "MV", label: "Maldives" },
         { value: "ML", label: "Mali" },
         { value: "MT", label: "Malta" },
@@ -432,7 +464,7 @@ export default {
         { value: "MU", label: "Mauritius" },
         { value: "YT", label: "Mayotte" },
         { value: "MX", label: "Mexico" },
-        { value: "FM", label: "Micronesia}, Federated States Of" },
+        { value: "FM", label: "Micronesia, Federated States Of" },
         { value: "MD", label: "Moldova" },
         { value: "MC", label: "Monaco" },
         { value: "MN", label: "Mongolia" },
@@ -458,12 +490,11 @@ export default {
         { value: "OM", label: "Oman" },
         { value: "PK", label: "Pakistan" },
         { value: "PW", label: "Palau" },
-        { value: "PS", label: "Palestinian Territory}, Occupied" },
+        { value: "PS", label: "Palestinian Territory, Occupied" },
         { value: "PA", label: "Panama" },
         { value: "PG", label: "Papua New Guinea" },
         { value: "PY", label: "Paraguay" },
         { value: "PE", label: "Peru" },
-        { value: "PH", label: "Philippines" },
         { value: "PN", label: "Pitcairn" },
         { value: "PL", label: "Poland" },
         { value: "PT", label: "Portugal" },
@@ -488,7 +519,6 @@ export default {
         { value: "RS", label: "Serbia" },
         { value: "SC", label: "Seychelles" },
         { value: "SL", label: "Sierra Leone" },
-        { value: "SG", label: "Singapore" },
         { value: "SK", label: "Slovakia" },
         { value: "SI", label: "Slovenia" },
         { value: "SB", label: "Solomon Islands" },
@@ -521,7 +551,6 @@ export default {
         { value: "UG", label: "Uganda" },
         { value: "UA", label: "Ukraine" },
         { value: "AE", label: "United Arab Emirates" },
-        { value: "GB", label: "United Kingdom" },
         { value: "US", label: "United States" },
         { value: "UM", label: "United States Outlying Islands" },
         { value: "UY", label: "Uruguay" },
@@ -585,7 +614,7 @@ export default {
       this.$emit("backStep");
       app.config.globalProperties.$eventBus.$emit(
         "changeHeaderWelcome",
-        "New Sign-Up"
+        "Sign-Up / Sign-in"
       );
     },
     onFileChangeInput(e) {
@@ -615,6 +644,21 @@ export default {
     },
     saveData() {
       if (this.valid) {
+        if (this.name == "") {
+          this.isName = false;
+        } else {
+          this.isName = true;
+        }
+        if (this.gender == "") {
+          this.isGender = false;
+        } else {
+          this.isGender = true;
+        }
+        if (this.mobile == null) {
+          this.isMobile = false;
+        } else {
+          this.isMobile = true;
+        }
         this.isSending = true;
         const countryName = this.options
           .filter((o) => o.value == this.country)
@@ -631,7 +675,7 @@ export default {
           social_type: "G",
           token: this.tokenProvider,
           country_name: countryName,
-          image: this.imageSend ? this.imageSend : this.avatarProvider,
+          image: this.imageSend != null ? this.imageSend : null,
         };
         axios
           .post(`/gypsy/save-social-user`, payload, {
@@ -645,7 +689,7 @@ export default {
             this.successMessage = data.message;
             localStorage.setItem("name", data.data.name);
             localStorage.setItem("g_id", data.data.gypsy_ref_no);
-            localStorage.setItem("user_image", data.data.image);
+            // localStorage.setItem("user_image", data.data.image);
             localStorage.setItem("token", data.data.token);
             this.isSuccess = true;
             this.email = "";
@@ -659,6 +703,7 @@ export default {
               "Sign Up Completed"
             );
             this.nextStep();
+            this.getUserData();
           })
           .catch((error) => {
             // eslint-disable-next-line
@@ -675,7 +720,29 @@ export default {
           });
       }
     },
-
+    getUserData() {
+      axios
+        .get(`/country`)
+        .then((response) => {
+          const data = response.data.data;
+          this.resource.code = data.map((country) => {
+            return {
+              name: `${country.country_name} (${country.country_code})`,
+              code: country.country_code,
+            };
+          });
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+          const message =
+            error.response.data.message === ""
+              ? "Something Wrong!!!"
+              : error.response.data.message;
+          this.errorMessage = message;
+          this.isError = true;
+        });
+    },
     getCountryCode() {
       axios
         .get(`/country`)

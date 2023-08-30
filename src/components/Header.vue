@@ -66,15 +66,46 @@
         </v-list>
       </v-menu>
     </div>
-    <v-btn v-if="!isWelcome" elevation="0" class="btn_sign__up" to="/welcome">
-      Sign up / Register
+    <v-btn
+      v-if="!isWelcome && userImage == null && userName == null"
+      elevation="0"
+      class="btn_sign__up"
+      to="/welcome"
+    >
+      Sign up / Sign In
     </v-btn>
-    <v-btn v-if="!isWelcome" icon @click="drawer = !drawer">
+    <v-btn
+      v-if="!isWelcome && userImage != null && userName != null"
+      elevation="0"
+      class="btn_log__out"
+      @click="logout"
+    >
+      Logout
+    </v-btn>
+    <div
+      v-if="!isWelcome"
+      style="height: 48px; width: 48px; border-radius: 50%; cursor: pointer"
+      icon
+      @click="drawer = !drawer"
+    >
+      <v-img
+        v-if="userImage != null"
+        :src="userImage"
+        cover
+        style="height: 100%; width: 100%; border-radius: 50%"
+      >
+        <template #placeholder>
+          <div class="skeleton" />
+        </template>
+      </v-img>
       <img
+        v-else-if="userImage == null && !isLoading"
         src="@/assets/images/icons/user_icon.png"
-        style="height: 48px; width: auto"
+        cover
+        height="48"
+        style="height: 100%; width: 100%; border-radius: 50%"
       />
-    </v-btn>
+    </div>
 
     <template v-if="!isWelcome" #extension>
       <div
@@ -178,7 +209,28 @@
     location="right"
   >
     <div class="drawer__top">
-      <a style="font-size: 1.125rem; color: white">Sign up / Register</a>
+      <a
+        v-if="userImage == null && userName == null"
+        style="font-size: 1.125rem; color: white"
+        >Sign up / Sign In</a
+      >
+      <v-list-item v-else class="mt-4" :prepend-avatar="userImage" nav>
+        <v-list-item-content>
+          <v-list-item-title style="font-size: 16px">
+            {{ userName }}
+          </v-list-item-title>
+          <v-list-item-subtitle style="font-size: 12px" class="mt-2">
+            Last Login: {{ userDated }}
+          </v-list-item-subtitle>
+          <div
+            class="text-red mt-2"
+            style="font-size: 14px; cursor: pointer"
+            @click="logout"
+          >
+            Logout
+          </div>
+        </v-list-item-content>
+      </v-list-item>
     </div>
     <div class="drawer__heading">
       <div class="drawer-logo">
@@ -269,9 +321,12 @@ export default {
       isLoading: false,
       // fileURL: "https://admin1.the-gypsy.sg",
       headerData: {},
+      userImage: "dasdasd",
+      userName: "dsas",
+      userDated: null,
       // selectedTag: null,
       trendingBtn: [],
-      titleWelcome: "New Sign-Up",
+      titleWelcome: "Sign-Up / Sign-in",
       //   {
       //     title: "View All",
       //   },
@@ -426,9 +481,16 @@ export default {
     this.getHeaderData();
     this.getCountry();
     this.getGroups();
+    if (localStorage.getItem("token")) {
+      this.getHeaderUserData();
+    }
     app.config.globalProperties.$eventBus.$on(
       "changeHeaderWelcome",
       this.changeHeaderWelcome
+    );
+    app.config.globalProperties.$eventBus.$on(
+      "changeHeaderWelcome2",
+      this.changeHeaderWelcome2
     );
   },
   beforeUnmount() {
@@ -436,19 +498,76 @@ export default {
       "changeHeaderWelcome",
       this.changeHeaderWelcome
     );
+    app.config.globalProperties.$eventBus.$off(
+      "changeHeaderWelcome2",
+      this.changeHeaderWelcome2
+    );
   },
   unmounted() {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
     ...mapMutations(["setActiveTag"]),
+    logout() {
+      const token = localStorage.getItem("token");
+      axios
+        .get(`/gypsy-logout`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((response) => {
+          const data = response.data.data;
+          console.log(data);
+          localStorage.setItem("name", null);
+          localStorage.setItem("g_id", null);
+          localStorage.setItem("user_image", null);
+          localStorage.setItem("token", null);
+          this.$router.push("/welcome");
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+        });
+    },
     changeHeaderWelcome(title) {
       this.titleWelcome = title;
+    },
+    changeHeaderWelcome2(title) {
+      this.titleWelcome = title;
+
+      this.getHeaderUserData();
     },
     selectTag(tag) {
       this.setActiveTag(tag); // Menetapkan tag yang dipilih sebagai tag aktif
 
       app.config.globalProperties.$eventBus.$emit("scrollToCardSection");
+    },
+    getHeaderUserData() {
+      this.isLoading = true;
+      const token = localStorage.getItem("token");
+      axios
+        .get(`/gypsy-user`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((response) => {
+          const data = response.data.data;
+          console.log(data);
+
+          this.userName = data.name;
+          this.userDated = data.last_login;
+          this.userImage = this.$fileURL + data.image;
+          // this.userImage = null;
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
     },
     getAppData() {
       // this.isLoading = true;

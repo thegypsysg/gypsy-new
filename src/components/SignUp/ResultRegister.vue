@@ -96,8 +96,8 @@ export default {
   methods: {
     changeHeader() {
       app.config.globalProperties.$eventBus.$emit(
-        "changeHeaderWelcome",
-        "New Sign-Up"
+        "changeHeaderWelcome2",
+        "Sign-Up / Sign-in"
       );
     },
     nextStep() {

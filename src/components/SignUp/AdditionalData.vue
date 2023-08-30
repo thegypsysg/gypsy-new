@@ -229,7 +229,7 @@ export default {
       this.$emit("backStep");
       app.config.globalProperties.$eventBus.$emit(
         "changeHeaderWelcome",
-        "New Sign-Up"
+        "Sign-Up / Sign-in"
       );
     },
     sendData() {

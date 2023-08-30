@@ -20,10 +20,11 @@
                 Welcome
               </h1>
               <p :class="{ 'mb-4': !isSmall, 'mb-12': isSmall }">
-                To begin please enter your email and press Get Started
+                Please use any one of your social accounts to Sign-Up or
+                Sign-In.
               </p>
               <v-form v-model="valid" @submit.prevent>
-                <label style="font-size: 24px; font-weight: 600"
+                <!-- <label style="font-size: 24px; font-weight: 600"
                   >Email ID</label
                 >
                 <v-text-field
@@ -62,20 +63,32 @@
                       :class="{ 'login-line-mobile': isSmall }"
                     />
                   </div>
-                </div>
+                </div> -->
 
-                <div
+                <!-- <div
                   v-if="isSmall"
                   class="d-flex flex-column justify-center text-center mt-10"
                   style="gap: 5px"
                 >
                   <h2>Social Media</h2>
                   <p>please select anyone from below</p>
-                </div>
+                </div> -->
                 <div
-                  class="login-footer-btn d-flex justify-center mt-5"
+                  class="login-footer-btn d-flex justify-center mt-14"
                   :class="{ 'login-footer-btn-mobile': isSmall }"
                 >
+                  <v-btn
+                    :size="!isSmall ? '40' : '50'"
+                    variant="text"
+                    color="white"
+                    style="background: #db4a39"
+                    icon
+                    @click="loginSocial('google')"
+                  >
+                    <v-icon :size="!isSmall ? '18' : '24'">
+                      <i class="fa-brands fa-google-plus-g" />
+                    </v-icon>
+                  </v-btn>
                   <v-btn
                     :size="!isSmall ? '40' : '50'"
                     variant="text"
@@ -87,19 +100,6 @@
                       <i class="fa-brands fa-tiktok" />
                     </v-icon>
                   </v-btn>
-
-                  <v-btn
-                    :size="!isSmall ? '40' : '50'"
-                    variant="text"
-                    style="background: #4267b2"
-                    color="white"
-                    icon
-                  >
-                    <v-icon :size="!isSmall ? '18' : '24'">
-                      <i class="fa-brands fa-facebook-f" />
-                    </v-icon>
-                  </v-btn>
-
                   <v-btn
                     :size="!isSmall ? '40' : '50'"
                     variant="text"
@@ -115,13 +115,12 @@
                   <v-btn
                     :size="!isSmall ? '40' : '50'"
                     variant="text"
+                    style="background: #4267b2"
                     color="white"
-                    style="background: #db4a39"
                     icon
-                    @click="loginSocial('google')"
                   >
                     <v-icon :size="!isSmall ? '18' : '24'">
-                      <i class="fa-brands fa-google-plus-g" />
+                      <i class="fa-brands fa-facebook-f" />
                     </v-icon>
                   </v-btn>
 
@@ -300,7 +299,7 @@ export default {
 .login-card {
   margin-top: 90px;
   padding-top: 15px;
-  padding-bottom: 120px;
+  padding-bottom: 50px;
 }
 
 .login-footer-icon {
