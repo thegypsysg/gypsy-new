@@ -67,7 +67,7 @@
       </v-menu>
     </div>
     <v-btn
-      v-if="!isWelcome && userName == null"
+      v-if="!isWelcome && !isLoading && userName == null"
       elevation="0"
       class="btn_sign__up"
       to="/welcome"

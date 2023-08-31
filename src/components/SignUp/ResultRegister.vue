@@ -32,7 +32,6 @@
                         'w-25 login-btn-mobile': isSmall,
                         'w-33': !isSmall,
                       }"
-                      :to="`/`"
                       @click="changeHeader()"
                     >
                       OK
@@ -95,6 +94,7 @@ export default {
   },
   methods: {
     changeHeader() {
+      window.location.href = "/";
       app.config.globalProperties.$eventBus.$emit(
         "changeHeaderWelcome2",
         "Sign-Up / Sign-in"
