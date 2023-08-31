@@ -67,7 +67,7 @@
       </v-menu>
     </div>
     <v-btn
-      v-if="!isWelcome && userImage == null && userName == null"
+      v-if="!isWelcome && userName == null"
       elevation="0"
       class="btn_sign__up"
       to="/welcome"
@@ -75,7 +75,7 @@
       Sign up / Sign In
     </v-btn>
     <v-btn
-      v-if="!isWelcome && userImage != null && userName != null"
+      v-if="!isWelcome && userName != null"
       elevation="0"
       class="btn_log__out"
       @click="logout"
@@ -103,7 +103,7 @@
         src="@/assets/images/icons/user_icon.png"
         cover
         height="48"
-        style="height: 100%; width: 100%; border-radius: 50%"
+        style="height: 100%; width: 100%"
       />
     </div>
 
@@ -209,28 +209,48 @@
     location="right"
   >
     <div class="drawer__top">
-      <a
-        v-if="userImage == null && userName == null"
-        style="font-size: 1.125rem; color: white"
-        >Sign up / Sign In</a
+      <router-link
+        v-if="userName == null"
+        class="text-decoration-none"
+        to="/welcome"
       >
-      <v-list-item v-else class="mt-4" :prepend-avatar="userImage" nav>
-        <v-list-item-content>
-          <v-list-item-title style="font-size: 16px">
-            {{ userName }}
-          </v-list-item-title>
-          <v-list-item-subtitle style="font-size: 12px" class="mt-2">
-            Last Login: {{ userDated }}
-          </v-list-item-subtitle>
-          <div
-            class="text-red mt-2"
-            style="font-size: 14px; cursor: pointer"
-            @click="logout"
+        <span style="font-size: 1.125rem; color: white">Sign up / Sign In</span>
+      </router-link>
+      <div v-else class="d-flex align-center">
+        <div style="width: 60px; height: 60px; border-radius: 50%">
+          <v-img
+            cover
+            style="border-radius: 50%; width: 100%; height: 100%"
+            :src="
+              userImage != null
+                ? userImage
+                : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
+            "
           >
-            Logout
-          </div>
-        </v-list-item-content>
-      </v-list-item>
+            <template #placeholder>
+              <div class="skeleton" />
+            </template>
+          </v-img>
+        </div>
+
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title style="font-size: 16px">
+              {{ userName }}
+            </v-list-item-title>
+            <v-list-item-subtitle style="font-size: 12px" class="mt-2">
+              Last Login: {{ userDated }}
+            </v-list-item-subtitle>
+            <div
+              class="text-red mt-2"
+              style="font-size: 14px; cursor: pointer"
+              @click="logout"
+            >
+              Logout
+            </div>
+          </v-list-item-content>
+        </v-list-item>
+      </div>
     </div>
     <div class="drawer__heading">
       <div class="drawer-logo">
@@ -321,8 +341,8 @@ export default {
       isLoading: false,
       // fileURL: "https://admin1.the-gypsy.sg",
       headerData: {},
-      userImage: "dasdasd",
-      userName: "dsas",
+      userImage: null,
+      userName: null,
       userDated: null,
       // selectedTag: null,
       trendingBtn: [],
@@ -450,6 +470,19 @@ export default {
     };
   },
   computed: {
+    tokenProvider() {
+      // Mendapatkan URL dari browser
+      const url = new URL(window.location.href);
+
+      // Mendapatkan nilai token dari parameter query 'token'
+      const tokenParam = url.searchParams.get("token");
+      if (tokenParam) {
+        localStorage.setItem("token", tokenParam);
+      }
+
+      // Mengupdate data 'token' dalam komponen dengan nilai yang ditemukan
+      return tokenParam;
+    },
     isSmall() {
       return this.screenWidth < 640;
     },
@@ -481,9 +514,7 @@ export default {
     this.getHeaderData();
     this.getCountry();
     this.getGroups();
-    if (localStorage.getItem("token")) {
-      this.getHeaderUserData();
-    }
+    this.getHeaderUserData();
     app.config.globalProperties.$eventBus.$on(
       "changeHeaderWelcome",
       this.changeHeaderWelcome
@@ -523,7 +554,7 @@ export default {
           localStorage.setItem("g_id", null);
           localStorage.setItem("user_image", null);
           localStorage.setItem("token", null);
-          this.$router.push("/welcome");
+          window.location.href = "/";
         })
         .catch((error) => {
           // eslint-disable-next-line
@@ -545,11 +576,14 @@ export default {
     },
     getHeaderUserData() {
       this.isLoading = true;
+      console.log(this.tokenProvider);
       const token = localStorage.getItem("token");
       axios
         .get(`/gypsy-user`, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${
+              this.tokenProvider ? this.tokenProvider : token
+            }`,
           },
         })
         .then((response) => {
@@ -558,7 +592,8 @@ export default {
 
           this.userName = data.name;
           this.userDated = data.last_login;
-          this.userImage = this.$fileURL + data.image;
+          this.userImage =
+            data.image != null ? this.$fileURL + data.image : null;
           // this.userImage = null;
         })
         .catch((error) => {
