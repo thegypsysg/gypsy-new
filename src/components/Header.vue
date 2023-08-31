@@ -70,7 +70,7 @@
       v-if="!isWelcome && !isLoading && userName == null"
       elevation="0"
       class="btn_sign__up"
-      to="/welcome"
+      to="/sign-in"
     >
       Sign up / Sign In
     </v-btn>
@@ -212,7 +212,7 @@
       <router-link
         v-if="userName == null"
         class="text-decoration-none"
-        to="/welcome"
+        to="/sign-in"
       >
         <span style="font-size: 1.125rem; color: white">Sign up / Sign In</span>
       </router-link>
