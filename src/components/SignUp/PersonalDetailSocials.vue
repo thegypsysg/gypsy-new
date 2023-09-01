@@ -24,7 +24,7 @@
                     accept="image/*"
                     hidden
                     @change="launchCropper"
-                  >
+                  />
                   <div
                     class="image-container d-flex justify-center w-100 mb-4"
                     style="position: relative"
@@ -41,10 +41,7 @@
                       <v-icon>mdi-arrow-left</v-icon>
                     </div>
                     <div>
-                      <v-avatar
-                        size="100px"
-                        class="mt-5"
-                      >
+                      <v-avatar size="100px" class="mt-5">
                         <v-img
                           height="100"
                           :src="
@@ -75,10 +72,7 @@
                       />
                     </div>
                   </div>
-                  <v-form
-                    v-model="valid"
-                    @submit.prevent
-                  >
+                  <v-form v-model="valid" @submit.prevent>
                     <div class="d-flex w-100 mb-2 justify-space-between">
                       <span
                         style="font-weight: 500"
@@ -87,7 +81,8 @@
                           'section-mobile ': isSmall,
                           'section-desktop': !isSmall,
                         }"
-                      >Full Name</span>
+                        >Full Name</span
+                      >
                     </div>
                     <input
                       v-model="name"
@@ -95,11 +90,8 @@
                       required
                       class="form-control pl-2 mt-2 mb-4"
                       placeholder="Enter Your Full Name"
-                    >
-                    <h6
-                      v-if="isName == false"
-                      class="w-100 mt-n4 text-red"
-                    >
+                    />
+                    <h6 v-if="isName == false" class="w-100 mt-n4 text-red">
                       You must fill the name.
                     </h6>
                     <label
@@ -108,14 +100,15 @@
                         'section-mobile': isSmall,
                         'section-desktop': !isSmall,
                       }"
-                    >Email</label>
+                      >Email</label
+                    >
                     <input
                       v-model="email"
                       type="email"
                       disabled
                       class="form-control pl-2 mt-2 mb-4"
                       placeholder="Enter Your Email Address"
-                    >
+                    />
 
                     <div class="d-flex justify-space-between">
                       <label
@@ -124,7 +117,8 @@
                           'section-mobile': isSmall,
                           'section-desktop ': !isSmall,
                         }"
-                      >Where are you now</label>
+                        >Where are you now</label
+                      >
                     </div>
 
                     <div class="w-100 d-flex align-center">
@@ -174,10 +168,7 @@
                         </div>
                       </MazSelect>
                     </div>
-                    <v-radio-group
-                      v-model="gender"
-                      inline
-                    >
+                    <v-radio-group v-model="gender" inline>
                       <v-radio
                         :class="{
                           'mr-2': !isSmall,
@@ -199,7 +190,9 @@
                         value="F"
                       >
                         <template #label>
-                          <span :class="{ 'gender-small': isSmall }">Female</span>
+                          <span :class="{ 'gender-small': isSmall }"
+                            >Female</span
+                          >
                         </template>
                       </v-radio>
                     </v-radio-group>
@@ -216,7 +209,8 @@
                           'section-mobile mb-2': isSmall,
                           'section-desktop w-50 mb-2 ': !isSmall,
                         }"
-                      >Mobile Number</label>
+                        >Mobile Number</label
+                      >
                     </div>
                     <MazPhoneNumberInput
                       v-model="mobile"
@@ -233,10 +227,7 @@
                       ]"
                       @update="phoneEvent = $event"
                     />
-                    <h6
-                      v-if="isMobile == false"
-                      class="w-100 text-red"
-                    >
+                    <h6 v-if="isMobile == false" class="w-100 text-red">
                       You must fill the mobile number.
                     </h6>
 
@@ -269,11 +260,7 @@
           {{ successMessage }}
 
           <template #actions>
-            <v-btn
-              color="white"
-              variant="text"
-              @click="isSuccess = false"
-            >
+            <v-btn color="white" variant="text" @click="isSuccess = false">
               <v-icon>mdi-close</v-icon>
             </v-btn>
           </template>
@@ -675,7 +662,7 @@ export default {
           social_type: "G",
           token: this.tokenProvider,
           country_name: countryName,
-          image: this.imageSend != null ? this.imageSend : null,
+          image: this.imageSend != null ? this.imageSend : this.avatarProvider,
         };
         axios
           .post(`/gypsy/save-social-user`, payload, {
