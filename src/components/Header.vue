@@ -268,11 +268,20 @@
         <v-list-item-title>Home</v-list-item-title>
       </li>
 
-      <li class="v-list-item">
+      <!-- <li class="v-list-item">
         <div class="v-list-item__icon">
           <img src="@/assets/images/icons/shop.png" />
         </div>
         <v-list-item-title>Merchants</v-list-item-title>
+      </li> -->
+
+      <li class="v-list-item">
+        <div class="v-list-item__icon">
+          <img src="@/assets/images/icons/menu-shopper.png" />
+        </div>
+        <router-link class="text-decoration-none text-black" to="/my-profile">
+          <v-list-item-title>My Profile</v-list-item-title>
+        </router-link>
       </li>
 
       <li class="v-list-item">

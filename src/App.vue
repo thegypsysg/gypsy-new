@@ -3,7 +3,9 @@
     <div>
       <Header
         :is-welcome="
-          currentRoute === '/sign-in' || currentRoute === '/social-sign-up'
+          currentRoute === '/sign-in' ||
+          currentRoute === '/social-sign-up' ||
+          currentRoute === '/my-profile'
             ? true
             : false
         "

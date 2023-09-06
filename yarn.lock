@@ -2828,6 +2828,11 @@
     "hash-sum" "^2.0.0"
     "watchpack" "^2.4.0"
 
+"vue-multiselect@^3.0.0-beta.2":
+  "integrity" "sha512-TFVHtI/KdWoD3Opzbkso8OIqkZlZEqFF7f2jlYx1ttgC4Jv/48IGlU5zn6cBR4p2bFDFGCHF5SkLCaadLhnBPQ=="
+  "resolved" "https://registry.npmjs.org/vue-multiselect/-/vue-multiselect-3.0.0-beta.2.tgz"
+  "version" "3.0.0-beta.2"
+
 "vue-observe-visibility@^0.4.4":
   "integrity" "sha512-xo0CEVdkjSjhJoDdLSvoZoQrw/H2BlzB5jrCBKGZNXN2zdZgMuZ9BKrxXDjNP2AxlcCoKc8OahI3F3r3JGLv2Q=="
   "resolved" "https://registry.npmjs.org/vue-observe-visibility/-/vue-observe-visibility-0.4.6.tgz"
