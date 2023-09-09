@@ -654,6 +654,11 @@ export default {
     isSmall() {
       return this.screenWidth < 640;
     },
+    socialProvider() {
+      return this.$route.query.social && this.$route.query.token
+        ? this.capitalizeFirstLetter(this.$route.query.social)
+        : "";
+    },
     ...mapState(["activeTag"]),
     token() {
       return localStorage.getItem("token");
@@ -676,6 +681,13 @@ export default {
     //     { title: "Overseas Study App", tag: "Overseas Study App" },
     //   ];
     // },
+  },
+  watch: {
+    socialProvider(newVal) {
+      if (newVal != "") {
+        localStorage.setItem("social", newVal);
+      }
+    },
   },
   created() {
     window.addEventListener("resize", this.handleResize);
@@ -715,6 +727,9 @@ export default {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    capitalizeFirstLetter(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1);
+    },
     getFooterData() {
       this.isLoading = true;
       axios

@@ -21,18 +21,23 @@
           />
         </div>
       </v-container>
+      <v-divider class="my-4" />
+      <Footer :header-data="headerData" :footer-data="footerData" />
     </div>
   </div>
 </template>
-
-<script>
+<script setup>
+import Footer from "@/components/Footer.vue";
 import axios from "@/util/axios";
+</script>
+<script>
 export default {
   name: "App",
   data() {
     return {
       drawer: false,
       privacyData: {},
+      footerData: {},
       isLoading: false,
       screenWidth: window.innerWidth,
     };
@@ -55,6 +60,7 @@ export default {
   },
   mounted() {
     this.getPrivacyData();
+    this.getFooterData();
   },
   unmounted() {
     window.removeEventListener("resize", this.handleResize);
@@ -71,6 +77,23 @@ export default {
           const data = response.data.data;
           console.log(data);
           this.privacyData = data;
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
+    },
+    getFooterData() {
+      this.isLoading = true;
+      axios
+        .get(`/footer`)
+        .then((response) => {
+          const data = response.data.data;
+          // console.log(data[0]);
+          this.footerData = data[0];
         })
         .catch((error) => {
           // eslint-disable-next-line

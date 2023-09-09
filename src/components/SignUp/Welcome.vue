@@ -1,3 +1,4 @@
+spanspan
 <template>
   <div>
     <div
@@ -11,7 +12,11 @@
               :elevation="!isSmall ? 1 : 0"
               :max-width="isSmall ? `${screenWidth - 30}px` : '450'"
               class="mx-auto"
-              :class="{ 'login-card px-12': !isSmall, 'py-10 px-2': isSmall }"
+              :class="{
+                'login-card px-12': !isSmall,
+                'py-10 px-2': isSmall,
+                'pb-16': !isSmall && isMobile,
+              }"
             >
               <h1
                 class="mb-1"
@@ -19,52 +24,20 @@
               >
                 Welcome
               </h1>
-              <p :class="{ 'mb-4': !isSmall, 'mb-12': isSmall }">
+              <p
+                class="text-grey"
+                :class="{ 'mb-3': !isSmall, 'mb-6': isSmall }"
+              >
                 Please use any one of your social accounts to Sign-Up or
                 Sign-In.
               </p>
+              <p
+                class="text-grey"
+                :class="{ 'mb-1': !isSmall, 'mb-12': isSmall }"
+              >
+                Last Used: {{ socialProvider }}
+              </p>
               <v-form v-model="valid" @submit.prevent>
-                <!-- <label style="font-size: 24px; font-weight: 600"
-                  >Email ID</label
-                >
-                <v-text-field
-                  v-model="email"
-                  :rules="emailRules"
-                  class="login-input mb-8"
-                  type="email"
-                  variant="outlined"
-                  placeholder="John@example.com"
-                  :persistent-hint="true"
-                />
-
-                <v-btn
-                  type="submit"
-                  variant="outlined"
-                  block
-                  class="login-btn"
-                  :class="{ 'login-btn-mobile': isSmall }"
-                  @click="sendData"
-                >
-                  Get Started
-                </v-btn>
-                <div class="login-footer mt-8">
-                  <div class="d-flex justify-center" style="gap: 25px">
-                    <div
-                      class="login-line"
-                      :class="{ 'login-line-mobile': isSmall }"
-                    />
-                    <span
-                      class="mt-n3"
-                      :class="{ 'login-footer-span': isSmall }"
-                      >OR</span
-                    >
-                    <div
-                      class="login-line"
-                      :class="{ 'login-line-mobile': isSmall }"
-                    />
-                  </div>
-                </div> -->
-
                 <!-- <div
                   v-if="isSmall"
                   class="d-flex flex-column justify-center text-center mt-10"
@@ -74,33 +47,25 @@
                   <p>please select anyone from below</p>
                 </div> -->
                 <div
-                  class="login-footer-btn d-flex justify-center mt-14"
+                  class="login-footer-btn d-flex justify-start mt-8"
                   :class="{ 'login-footer-btn-mobile': isSmall }"
                 >
                   <v-btn
                     :size="!isSmall ? '40' : '50'"
                     variant="text"
                     color="white"
-                    style="background: #db4a39"
+                    style="background: transparent"
                     icon
                     @click="loginSocial('google')"
                   >
-                    <v-icon :size="!isSmall ? '18' : '24'">
-                      <i class="fa-brands fa-google-plus-g" />
+                    <v-icon :size="!isSmall ? '35' : '40'">
+                      <v-img
+                        src="@/assets/images/icons/google.png"
+                        alt="Google Logo"
+                      />
                     </v-icon>
                   </v-btn>
-                  <v-btn
-                    :size="!isSmall ? '40' : '50'"
-                    variant="text"
-                    style="background: black"
-                    color="white"
-                    icon
-                  >
-                    <v-icon :size="!isSmall ? '18' : '24'">
-                      <i class="fa-brands fa-tiktok" />
-                    </v-icon>
-                  </v-btn>
-                  <v-btn
+                  <!-- <v-btn
                     :size="!isSmall ? '40' : '50'"
                     variant="text"
                     style="background: #fc2145"
@@ -110,7 +75,7 @@
                     <v-icon :size="!isSmall ? '18' : '24'">
                       <i class="fa-brands fa-instagram" />
                     </v-icon>
-                  </v-btn>
+                  </v-btn> -->
 
                   <v-btn
                     :size="!isSmall ? '40' : '50'"
@@ -136,7 +101,88 @@
                       <i class="fa-brands fa-linkedin-in" />
                     </v-icon>
                   </v-btn>
+                  <v-btn
+                    :size="!isSmall ? '40' : '50'"
+                    variant="text"
+                    style="background: black"
+                    color="white"
+                    icon
+                  >
+                    <v-icon :size="!isSmall ? '18' : '24'">
+                      <i class="fa-brands fa-tiktok" />
+                    </v-icon>
+                  </v-btn>
                 </div>
+                <div class="login-footer mt-8">
+                  <div class="d-flex justify-center" style="gap: 25px">
+                    <div
+                      class="login-line"
+                      :class="{ 'login-line-mobile': isSmall }"
+                    />
+                    <span
+                      class="mt-n3"
+                      :class="{ 'login-footer-span': isSmall }"
+                      >OR</span
+                    >
+                    <div
+                      class="login-line"
+                      :class="{ 'login-line-mobile': isSmall }"
+                    />
+                  </div>
+                </div>
+                <p
+                  v-if="!isMobile"
+                  class="text-grey mt-4"
+                  :class="{ 'mb-4': !isSmall, 'mb-6': isSmall }"
+                >
+                  Dont have Email . ?
+                  <span
+                    style="cursor: pointer"
+                    class="text-blue-darken-4"
+                    @click="
+                      () => {
+                        isMobile = true;
+                      }
+                    "
+                    >Enter Mobile number</span
+                  >
+                </p>
+                <template v-if="!isMobile">
+                  <label style="font-size: 24px; font-weight: 600">Email</label>
+                  <v-text-field
+                    v-model="email"
+                    :rules="emailRules"
+                    class="login-input mb-8"
+                    type="email"
+                    variant="outlined"
+                    placeholder="Email Address"
+                    :persistent-hint="true"
+                  />
+                </template>
+                <template v-else>
+                  <label class="mt-n4" style="font-size: 24px; font-weight: 600"
+                    >Mobile</label
+                  >
+                  <MazPhoneNumberInput
+                    v-model="mobile"
+                    show-code-on-list
+                    color="info"
+                    default-country-code="SG"
+                    :preferred-countries="['SG', 'BD', 'IN', 'MY', 'GB', 'PH']"
+                    @update="phoneEvent = $event"
+                  />
+                </template>
+                <v-btn
+                  type="submit"
+                  variant="outlined"
+                  block
+                  class="login-btn"
+                  :disabled="!isNext"
+                  :class="{ 'login-btn-mobile': isSmall, 'mt-6': isMobile }"
+                  @click="sendData"
+                >
+                  Next
+                </v-btn>
               </v-form>
             </v-card>
           </v-col>
@@ -160,6 +206,9 @@
     </div>
   </div>
 </template>
+<script setup>
+import MazPhoneNumberInput from "maz-ui/components/MazPhoneNumberInput";
+</script>
 
 <script>
 import axios from "@/util/axios";
@@ -169,7 +218,11 @@ export default {
   data() {
     return {
       valid: false,
-      email: "",
+      isMobile: false,
+      isNext: false,
+      email: null,
+      mobile: null,
+      phoneEvent: null,
       isError: false,
       errorMessage: "",
       emailRules: [
@@ -188,6 +241,31 @@ export default {
   computed: {
     isSmall() {
       return this.screenWidth < 640;
+    },
+    socialProvider() {
+      return localStorage.getItem("social")
+        ? localStorage.getItem("social")
+        : "-";
+    },
+  },
+  watch: {
+    isMobile(newVal) {
+      if (newVal) {
+        this.email = null;
+        this.isNext = false;
+      }
+    },
+    email(newVal) {
+      if (/.+@.+\..+/.test(newVal)) {
+        this.isNext = true;
+      }
+    },
+    mobile() {
+      if (this.mobile == null) {
+        this.isNext = false;
+      } else {
+        this.isNext = true;
+      }
     },
   },
   created() {
@@ -289,7 +367,7 @@ export default {
 }
 
 .login-line {
-  width: 70px;
+  width: 150px;
   height: 1px;
   background: #bababa;
 }
@@ -300,7 +378,7 @@ export default {
 .login-card {
   margin-top: 90px;
   padding-top: 15px;
-  padding-bottom: 50px;
+  padding-bottom: 30px;
 }
 
 .login-footer-icon {
