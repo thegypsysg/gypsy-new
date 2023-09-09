@@ -126,6 +126,15 @@
     <div class="footer_text">
       {{ footerData?.copyright }}
     </div>
+    <div v-if="isSmall" class="footer_text mt-4 mb-2">
+      <router-link class="text-decoration-none text-white" to="/privacy-policy">
+        Privacy Policy
+      </router-link>
+      |
+      <router-link class="text-decoration-none text-white" to="/our-terms">
+        Terms & Conditions
+      </router-link>
+    </div>
     <div style="display: flex; justify-content: center">
       <v-btn
         :href="footerData?.facebook"
@@ -151,6 +160,25 @@
         color="#00CDCD"
         icon="mdi-youtube"
       />
+      <v-btn
+        :href="footerData?.tiktok"
+        variant="text"
+        color="#00CDCD"
+        icon="fa-brands fa-tiktok"
+      >
+        <v-icon :size="!isSmall ? '18' : '20'">
+          <i class="fa-brands fa-tiktok" />
+        </v-icon>
+      </v-btn>
+    </div>
+    <div v-if="!isSmall" class="footer_text">
+      <router-link class="text-decoration-none text-white" to="/privacy-policy">
+        Privacy Policy
+      </router-link>
+      |
+      <router-link class="text-decoration-none text-white" to="/our-terms">
+        Terms & Conditions
+      </router-link>
     </div>
   </v-footer>
 </template>
@@ -167,10 +195,22 @@ export default {
     return {
       // fileURL: "https://admin1.the-gypsy.sg",
       trendingCard: [],
+      screenWidth: window.innerWidth,
     };
+  },
+  computed: {
+    isSmall() {
+      return this.screenWidth < 640;
+    },
+  },
+  created() {
+    window.addEventListener("resize", this.handleResize);
   },
   mounted() {
     this.getAppData();
+  },
+  unmounted() {
+    window.removeEventListener("resize", this.handleResize);
   },
   methods: {
     scrollToTrending() {
@@ -229,6 +269,9 @@ export default {
       // .finally(() => {
       //   this.isLoading = false;
       // });
+    },
+    handleResize() {
+      this.screenWidth = window.innerWidth;
     },
   },
 };

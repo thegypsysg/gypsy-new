@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "../views/HomeView.vue";
 import MyProfile from "../views/MyProfile.vue";
+import PrivacyTerms from "../views/PrivacyTerms.vue";
 import SignUp from "../views/SignUpForm.vue";
 import SocialLogin from "../views/SocialLoginForm.vue";
 
@@ -17,6 +18,16 @@ const routes = [
     path: "/sign-in",
     name: "Welcome",
     component: SignUp,
+  },
+  {
+    path: "/privacy-policy",
+    name: "Privacy Policy",
+    component: PrivacyTerms,
+  },
+  {
+    path: "/our-terms",
+    name: "OurTerms",
+    component: PrivacyTerms,
   },
   {
     path: "/social-sign-up",

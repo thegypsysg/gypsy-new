@@ -18,6 +18,8 @@
     "libphonenumber-js": "^1.10.41",
     "maz-ui": "^3.9.0",
     "mitt": "^3.0.0",
+    "moment": "^2.29.4",
+    "moment-timezone": "^0.5.43",
     "roboto-fontface": "*",
     "vue": "^3.2.38",
     "vue-country-code-select": "^1.6.7",

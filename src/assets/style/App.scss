@@ -295,7 +295,7 @@ header {
 }
 .drawer__bottom {
   position: absolute;
-  bottom: 5%;
+  bottom: 0;
   width: 100%;
 }
 .text-muted {
@@ -508,6 +508,7 @@ header {
 .footer__content {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   font-family: Nunito;
   font-size: 16px;
   font-weight: 600;

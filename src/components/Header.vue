@@ -1,6 +1,8 @@
 <template>
   <v-app-bar
-    :class="{ 'app-bar-mobile': isSmall && !isWelcome }"
+    :class="{
+      'app-bar-mobile': isSmall && !isWelcome && !isPrivacy && !isTerms,
+    }"
     color="white"
     elevation="1"
     fixed
@@ -11,7 +13,7 @@
           class="logo-img"
           :src="$fileURL + headerData?.app_logo"
           height="90"
-          :class="{ 'ml-8': isWelcome }"
+          :class="{ 'ml-8': isWelcome && isPrivacy && isTerms }"
         >
           <template #placeholder>
             <div class="skeleton" />
@@ -19,12 +21,65 @@
         </v-img>
       </div>
     </router-link>
+    <v-btn
+      v-if="isHome"
+      style="background: #f4f5f7; color: black"
+      variant="text"
+      color="black"
+      icon="mdi-share-outline"
+      width="40"
+      height="40"
+    >
+      <v-icon color="rgb(38, 38, 38)" size="22"> mdi-share-outline </v-icon>
+      <v-menu activator="parent">
+        <v-list>
+          <v-list-item @click="console.log('share')">
+            <v-list-item-title>
+              <v-icon class="mr-4" color="black" size="18">
+                mdi-email-outline </v-icon
+              >Email
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="console.log('share')">
+            <v-list-item-title>
+              <v-icon class="mr-4" size="18">
+                <i class="fa-brands fa-facebook-f" /> </v-icon
+              >Facebook
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="console.log('share')">
+            <v-list-item-title>
+              <v-icon class="mr-4" color="black" size="18"> mdi-twitter </v-icon
+              >Twitter
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="console.log('share')">
+            <v-list-item-title>
+              <v-icon class="mr-4" size="18">
+                <i class="fa-brands fa-linkedin-in" /> </v-icon
+              >Linkedin
+            </v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </v-btn>
     <div v-if="isWelcome" class="ml-10 d-flex flex-row header-info">
       <div :class="{ divider: !isSmall, 'divider-2': isSmall }" />
       <span :class="{ 'header-info-span': isSmall }">{{ titleWelcome }}</span>
     </div>
-    <v-spacer v-if="isWelcome" />
-    <form v-if="!isWelcome" class="navbar__search navbar__search__desktop">
+    <div v-if="isPrivacy" class="ml-md-10 ml-sm-6 d-flex flex-row header-info">
+      <div :class="{ divider: !isSmall, 'divider-2': isSmall }" />
+      <span :class="{ 'header-info-span': isSmall }">Privacy Policy</span>
+    </div>
+    <div v-if="isTerms" class="ml-md-10 ml-sm-6 d-flex flex-row header-info">
+      <div :class="{ divider: !isSmall, 'divider-2': isSmall }" />
+      <span :class="{ 'header-info-span-2': isSmall }">Terms & Conditions</span>
+    </div>
+    <v-spacer v-if="isWelcome || isPrivacy || isTerms" />
+    <form
+      v-if="!isWelcome && !isPrivacy && !isTerms"
+      class="navbar__search navbar__search__desktop"
+    >
       <input
         id="product_name"
         class="form-control mr-sm-2"
@@ -37,7 +92,7 @@
         <v-icon color="white"> mdi-magnify </v-icon>
       </button>
     </form>
-    <div v-if="!isWelcome" class="desktop__app">
+    <div v-if="!isWelcome && !isPrivacy && !isTerms" class="desktop__app">
       <v-menu>
         <template #activator="{ props }">
           <v-btn
@@ -67,7 +122,9 @@
       </v-menu>
     </div>
     <v-btn
-      v-if="!isWelcome && !isLoading && userName == null"
+      v-if="
+        !isWelcome && !isPrivacy && !isTerms && !isLoading && userName == null
+      "
       elevation="0"
       class="btn_sign__up"
       to="/sign-in"
@@ -75,7 +132,7 @@
       Sign up / Sign In
     </v-btn>
     <v-btn
-      v-if="!isWelcome && userName != null"
+      v-if="!isWelcome && !isPrivacy && !isTerms && userName != null"
       elevation="0"
       class="btn_log__out"
       @click="logout"
@@ -86,6 +143,7 @@
       v-if="!isWelcome"
       style="height: 48px; width: 48px; border-radius: 50%; cursor: pointer"
       icon
+      :class="{ 'mr-2': isPrivacy || isTerms }"
       @click="drawer = !drawer"
     >
       <v-img
@@ -107,7 +165,7 @@
       />
     </div>
 
-    <template v-if="!isWelcome" #extension>
+    <template v-if="!isWelcome && !isPrivacy && !isTerms" #extension>
       <div
         class="mobile__app text-center scroll-container d-flex flex-column justify-center align-content-space-between mx-2"
       >
@@ -208,7 +266,7 @@
     temporary
     location="right"
   >
-    <div class="drawer__top">
+    <div class="drawer__top py-6">
       <router-link
         v-if="userName == null"
         class="text-decoration-none"
@@ -254,13 +312,59 @@
     </div>
     <div class="drawer__heading">
       <div class="drawer-logo">
-        <span class="logo">MALL-</span>
-        <span class="text-danger">e</span>
+        <v-img height="40" width="80" :src="$fileURL + headerData?.app_logo" />
       </div>
+      <v-menu contained style="z-index: 1000">
+        <template #activator="{ props }">
+          <v-btn
+            style="background: #f4f5f7; color: black"
+            variant="text"
+            color="black"
+            icon="mdi-share-outline"
+            width="40"
+            height="40"
+            class="mx-4"
+            v-bind="props"
+          >
+            <v-icon color="rgb(38, 38, 38)" size="22">
+              mdi-share-outline
+            </v-icon>
+          </v-btn>
+        </template>
+        <v-list style="z-index: 1000">
+          <v-list-item @click="console.log('share')">
+            <v-list-item-title>
+              <v-icon class="mr-4" color="black" size="18">
+                mdi-email-outline </v-icon
+              >Email
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="console.log('share')">
+            <v-list-item-title>
+              <v-icon class="mr-4" size="18">
+                <i class="fa-brands fa-facebook-f" /> </v-icon
+              >Facebook
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="console.log('share')">
+            <v-list-item-title>
+              <v-icon class="mr-4" color="black" size="18"> mdi-twitter </v-icon
+              >Twitter
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="console.log('share')">
+            <v-list-item-title>
+              <v-icon class="mr-4" size="18">
+                <i class="fa-brands fa-linkedin-in" /> </v-icon
+              >Linkedin
+            </v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
       <div class="text-muted" style="font-size: 10px">Version 1.0</div>
     </div>
     <v-divider />
-    <ul nav dense>
+    <ul class="pt-4" nav dense>
       <li class="v-list-item">
         <div class="v-list-item__icon">
           <img src="@/assets/images/icons/home.png" />
@@ -268,14 +372,14 @@
         <v-list-item-title>Home</v-list-item-title>
       </li>
 
-      <!-- <li class="v-list-item">
+      <li class="v-list-item">
         <div class="v-list-item__icon">
           <img src="@/assets/images/icons/shop.png" />
         </div>
-        <v-list-item-title>Merchants</v-list-item-title>
-      </li> -->
+        <v-list-item-title>Send Inquiry</v-list-item-title>
+      </li>
 
-      <li class="v-list-item">
+      <li v-if="userName != null" class="v-list-item">
         <div class="v-list-item__icon">
           <img src="@/assets/images/icons/menu-shopper.png" />
         </div>
@@ -286,48 +390,91 @@
 
       <li class="v-list-item">
         <div class="v-list-item__icon">
-          <img src="@/assets/images/icons/shopping-mall.png" />
-        </div>
-        <v-list-item-title>Mall owner</v-list-item-title>
-      </li>
-
-      <li class="v-list-item">
-        <div class="v-list-item__icon">
           <img src="@/assets/images/icons/menu-drivers.png" />
         </div>
         <v-list-item-title>Drivers / Riders</v-list-item-title>
       </li>
-    </ul>
+      <li class="v-list-item">
+        <div class="v-list-item__icon">
+          <img src="" />
+        </div>
+        <router-link
+          class="text-decoration-none text-black"
+          to="/privacy-policy"
+        >
+          <v-list-item-title>Privacy Policy</v-list-item-title>
+        </router-link>
+      </li>
+      <li class="v-list-item">
+        <div class="v-list-item__icon">
+          <img src="" />
+        </div>
 
+        <router-link class="text-decoration-none text-black" to="/our-terms">
+          <v-list-item-title>Terms & Conditions</v-list-item-title>
+        </router-link>
+      </li>
+    </ul>
     <div class="drawer__bottom">
       <div class="text-center" style="width: 100%">
-        <p style="font-size: 16px; margin-bottom: 2px">Made in Singapore</p>
+        <p style="font-size: 16px" class="mb-2">Made in Singapore</p>
         <h3 style="font-size: 13px">Get connected</h3>
-        <div class="d-flex justify-center">
-          <img
-            src="@/assets/images/icons/facebook.png"
-            height="48"
-            width="auto"
-          />
-          <img src="@/assets/images/icons/insta.png" height="48" width="auto" />
-        </div>
+        <v-row class="d-flex justify-center mt-1 mb-2">
+          <v-col cols="3">
+            <v-img
+              src="@/assets/images/icons/facebook.png"
+              height="48"
+              width="48"
+            />
+          </v-col>
+          <v-col cols="3">
+            <v-img
+              src="@/assets/images/icons/insta.png"
+              height="48"
+              width="48"
+            />
+          </v-col>
+          <v-col cols="3">
+            <v-img
+              src="@/assets/images/icons/tiktok.png"
+              class="mt-1"
+              height="40"
+              width="40"
+            />
+          </v-col>
+        </v-row>
         <div class="drawer-social d-flex" style="width: 100%">
           <div>
-            <h6>WhatsApp</h6>
+            <h4>WhatsApp</h4>
             <a
-              style="text-decoration: none"
-              href="https://api.whatsapp.com/send?phone=+65.94694136&text=Hello!"
+              style="text-decoration: none; font-size: 12px"
+              :href="`https://api.whatsapp.com/send?phone=${footerData?.whats_app}&text=Hello!`"
             >
-              +65 9469 4136
+              {{ footerData?.whats_app }}
             </a>
           </div>
           <div>
-            <h6>Contact us</h6>
-            <a style="text-decoration: none" href="mailto:help@mall-e.net"
-              >help@mall-e.net</a
+            <h4>Contact us</h4>
+            <a
+              style="text-decoration: none; font-size: 12px"
+              :href="`mailto:${footerData?.email_id}`"
+              >{{ footerData?.email_id }}</a
             >
           </div>
         </div>
+        <v-divider class="my-4" />
+        <v-container class="footer-bottom pt-2 pb-3 d-flex justify-center">
+          <div class="d-flag d-flex justify-space-between w-100 align-center">
+            <img
+              style="max-width: 50px; border: 1px solid black"
+              src="data:image/png;base64,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"
+              alt="Singapore"
+            />
+            <div id="footerCurrentTime" style="font-size: 0.7rem">
+              {{ currentTime }}
+            </div>
+          </div>
+        </v-container>
       </div>
     </div>
   </v-navigation-drawer>
@@ -337,6 +484,7 @@
 import { mapState, mapMutations } from "vuex";
 import app from "@/util/eventBus";
 import axios from "@/util/axios";
+import moment from "moment-timezone";
 
 // import eventBus from "@/util/eventBus";
 // import eventBus from "@/util/eventBus";
@@ -476,6 +624,8 @@ export default {
       selectedType: 0,
       activeIndex: 1,
       screenWidth: window.innerWidth,
+      currentTime: "",
+      footerData: null,
     };
   },
   computed: {
@@ -492,10 +642,22 @@ export default {
       // Mengupdate data 'token' dalam komponen dengan nilai yang ditemukan
       return tokenParam;
     },
+    isHome() {
+      return this.$route.path == "/";
+    },
+    isPrivacy() {
+      return this.$route.path == "/privacy-policy";
+    },
+    isTerms() {
+      return this.$route.path == "/our-terms";
+    },
     isSmall() {
       return this.screenWidth < 640;
     },
     ...mapState(["activeTag"]),
+    token() {
+      return localStorage.getItem("token");
+    },
     // trendingBtn() {
     //   return [
     //     {
@@ -517,13 +679,17 @@ export default {
   },
   created() {
     window.addEventListener("resize", this.handleResize);
+    setInterval(this.updateTime, 1000);
   },
   mounted() {
     this.getAppData();
     this.getHeaderData();
     this.getCountry();
+    this.getFooterData();
     this.getGroups();
-    this.getHeaderUserData();
+    if (this.tokenProvider != null) {
+      this.getHeaderUserData();
+    }
     app.config.globalProperties.$eventBus.$on(
       "changeHeaderWelcome",
       this.changeHeaderWelcome
@@ -532,8 +698,10 @@ export default {
       "changeHeaderWelcome2",
       this.changeHeaderWelcome2
     );
+    // this.interval = setInterval(this.setCurrentTime, 1000);
   },
   beforeUnmount() {
+    // clearInterval(this.interval);
     app.config.globalProperties.$eventBus.$off(
       "changeHeaderWelcome",
       this.changeHeaderWelcome
@@ -547,7 +715,30 @@ export default {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    getFooterData() {
+      this.isLoading = true;
+      axios
+        .get(`/footer`)
+        .then((response) => {
+          const data = response.data.data;
+          // console.log(data[0]);
+          this.footerData = data[0];
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
+    },
     ...mapMutations(["setActiveTag"]),
+    updateTime() {
+      // Ambil zona waktu Singapore
+      const singaporeTime = moment().tz("Asia/Singapore");
+      // Format waktu dalam hh:mm:ss
+      this.currentTime = singaporeTime.format("HH:mm:ss");
+    },
     logout() {
       const token = localStorage.getItem("token");
       axios
@@ -798,6 +989,10 @@ export default {
 
 .header-info-span {
   font-size: 25px;
+  font-weight: 800;
+}
+.header-info-span-2 {
+  font-size: 22px;
   font-weight: 800;
 }
 

@@ -571,6 +571,9 @@ export default {
     avatarProvider() {
       return this.$route.query.avatar || "";
     },
+    socialProvider() {
+      return this.capitalizeFirstLetter(this.$route.query.social) || "";
+    },
   },
 
   created() {
@@ -584,7 +587,7 @@ export default {
     this.getCountryCode();
     app.config.globalProperties.$eventBus.$emit(
       "changeHeaderWelcome",
-      "Google Registration"
+      this.socialProvider + " Registration"
     );
     console.log(this.emailProvider);
     console.log(this.nameProvider);
@@ -594,6 +597,9 @@ export default {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    capitalizeFirstLetter(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1);
+    },
     nextStep() {
       this.$emit("nextStep");
     },

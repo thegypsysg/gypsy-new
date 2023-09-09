@@ -118,6 +118,7 @@
                     style="background: #4267b2"
                     color="white"
                     icon
+                    @click="loginSocial('facebook')"
                   >
                     <v-icon :size="!isSmall ? '18' : '24'">
                       <i class="fa-brands fa-facebook-f" />
