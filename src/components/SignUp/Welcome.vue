@@ -142,9 +142,27 @@ spanspan
                     @click="
                       () => {
                         isMobile = true;
+                        email = null;
                       }
                     "
                     >Enter Mobile number</span
+                  >
+                </p>
+                <p
+                  v-if="isMobile"
+                  class="text-grey mt-4"
+                  :class="{ 'mb-4': !isSmall, 'mb-6': isSmall }"
+                >
+                  <span
+                    style="cursor: pointer"
+                    class="text-blue-darken-4"
+                    @click="
+                      () => {
+                        isMobile = false;
+                        mobile = null;
+                      }
+                    "
+                    >Register by Email</span
                   >
                 </p>
                 <template v-if="!isMobile">
@@ -252,11 +270,14 @@ export default {
     isMobile(newVal) {
       if (newVal) {
         this.email = null;
+        this.mobile = null;
         this.isNext = false;
       }
     },
     email(newVal) {
-      if (/.+@.+\..+/.test(newVal)) {
+      if (this.email == null) {
+        this.isNext = false;
+      } else if (/.+@.+\..+/.test(newVal)) {
         this.isNext = true;
       }
     },
