@@ -300,11 +300,21 @@ export default {
       this.$emit("nextStep");
     },
     loginSocial(social_name) {
-      axios.get(`/gypsy-login/${social_name}`).then((response) => {
-        console.log(response);
-        window.location.assign(response.data.target_url);
-        console.log(response.data.target_url);
-      });
+      axios
+        .get(`/gypsy-login/${social_name}`)
+        .then((response) => {
+          console.log(response);
+          if (response) {
+            window.open(response.data.target_url);
+          } else {
+            window.location.href = "/sign-in";
+          }
+          console.log(response.data.target_url);
+        })
+        .catch((error) => {
+          console.log(error);
+          window.location.href = "/sign-in";
+        });
     },
     sendData() {
       if (this.valid) {
