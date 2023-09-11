@@ -1,6 +1,9 @@
 <template>
   <div>
-    <v-container>
+    <div v-if="isLoading" class="text-center loading-page">
+      <v-progress-circular :size="50" color="primary" indeterminate />
+    </div>
+    <v-container v-if="!isLoading">
       <template v-if="!isSmall">
         <div class="card-container d-flex flex-wrap justify-space-between">
           <v-card class="first-section px-16 py-2">
@@ -102,6 +105,8 @@
                   v-model="input.nationality"
                   class="mt-2"
                   :options="resource.nationality"
+                  track-by="id"
+                  label="title"
                   placeholder="Select Nationality"
                 />
                 <!-- <select v-model="input.nationality" class="form-control mt-2">
@@ -426,7 +431,7 @@
                 </v-row>
                 <hr class="mt-8" />
               </v-container>
-              <v-container>
+              <!-- <v-container>
                 <div
                   class="d-flex w-100 justify-space-between align-center mb-4 mt-n4"
                 >
@@ -451,16 +456,6 @@
                       :options="resource.nearest"
                       placeholder="Select Nearest Mall"
                     />
-                    <!-- <v-autocomplete
-                      v-model="input.nearest"
-                      :items="resource.nearest"
-                      placeholder="Select Nearest Mall"
-                      variant="outlined"
-                      clearable
-                      class="mt-2"
-                      density="compact"
-                      :rules="rules.nearestRules"
-                    /> -->
                   </v-col>
                 </v-row>
               </v-container>
@@ -479,15 +474,6 @@
                       :options="resource.favorite"
                       placeholder="Select Mall"
                     />
-                    <!-- <v-autocomplete
-                      v-model="input.favorite1"
-                      :items="resource.favorite"
-                      variant="outlined"
-                      placeholder="Select Mall"
-                      clearable
-                      class="mt-2"
-                      density="compact"
-                    /> -->
                   </v-col>
                   <v-col cols="4">
                     <VueMultiselect
@@ -496,15 +482,6 @@
                       :options="resource.favorite"
                       placeholder="Select Mall"
                     />
-                    <!-- <v-autocomplete
-                      v-model="input.favorite2"
-                      :items="resource.favorite"
-                      variant="outlined"
-                      placeholder="Select Mall"
-                      clearable
-                      class="mt-2"
-                      density="compact"
-                    /> -->
                   </v-col>
                   <v-col cols="4">
                     <VueMultiselect
@@ -513,18 +490,9 @@
                       :options="resource.favorite"
                       placeholder="Select Mall"
                     />
-                    <!-- <v-autocomplete
-                      v-model="input.favorite3"
-                      :items="resource.favorite"
-                      variant="outlined"
-                      placeholder="Select Mall"
-                      clearable
-                      class="mt-2 py-0"
-                      density="compact"
-                    /> -->
                   </v-col>
                 </v-row>
-              </v-container>
+              </v-container> -->
             </v-card-text>
           </v-card>
         </div>
@@ -739,12 +707,12 @@
                 <v-radio
                   style="font-size: 10px !important"
                   label="Male"
-                  value="male"
+                  value="M"
                 />
                 <v-radio
                   style="font-size: 10px !important"
                   label="Female"
-                  value="female"
+                  value="F"
                 />
               </v-radio-group>
             </v-col>
@@ -756,6 +724,8 @@
                 v-model="input.nationality"
                 class="mt-2"
                 :options="resource.nationality"
+                track-by="id"
+                label="title"
                 placeholder="Select Nationality"
               />
               <!-- <v-select
@@ -812,6 +782,7 @@ import VueMultiselect from "vue-multiselect";
 import "vue-multiselect/dist/vue-multiselect.css";
 import app from "@/util/eventBus";
 import ImageCropperDialog from "../components/ImageCropperDialog.vue";
+import axios from "@/util/axios";
 
 import MazPhoneNumberInput from "maz-ui/components/MazPhoneNumberInput";
 export default {
@@ -822,6 +793,7 @@ export default {
   },
   data() {
     return {
+      isLoading: false,
       screenWidth: window.innerWidth,
       isEmailVerified: false,
       isPhoneVerified: false,
@@ -850,10 +822,6 @@ export default {
         location: null,
         city: null,
         country: null,
-        nearest: null,
-        favorite1: null,
-        favorite2: null,
-        favorite3: null,
       },
       rules: {
         nameRules: [
@@ -972,11 +940,84 @@ export default {
       "changeHeaderWelcome",
       "My Profile"
     );
+    this.getUserData();
+    this.getNationality();
   },
   unmounted() {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    getNationality() {
+      this.isLoading = true;
+      axios
+        .get(`/country`)
+        .then((response) => {
+          const data = response.data.data;
+          console.log(data);
+          this.resource.nationality = data.map((country) => {
+            return {
+              id: country.country_id,
+              title: country.nationality,
+            };
+          });
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
+    },
+    getUserData() {
+      this.isLoading = true;
+      const token = localStorage.getItem("token");
+      axios
+        .get(`/gypsy-user`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((response) => {
+          const data = response.data.data;
+          console.log(data);
+          // country_current: 28,
+          // date_of_birth: null,
+          // gender: "M",
+          // image: "cea8b5aca2c523ec0b425738e4d80b3d.jpg",
+          // last_login: "11/09/2023",
+          // marital_status: null,
+          // mobile_number: "+6288216758205",
+          // name: "Aji Prasetyo",
+          this.image_path = this.$fileURL + data.image;
+          this.input = {
+            image_path: "",
+            image: null,
+            gender: data.gender,
+            marital: data.marital_status,
+            nationality: data.country_current,
+            name: data.name,
+            email: data.email_id,
+            countryCode: null,
+            phone: data.mobile_number,
+            phoneNew: data.mobile_number,
+            password: "",
+            date: data.date_of_birth,
+            age: "",
+
+            location: null,
+            city: null,
+            country: null,
+          };
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
+    },
     onFileChangeInput(e) {
       var files = e.target.files || e.dataTransfer.files;
       this.image = files[0];
@@ -1136,5 +1177,15 @@ export default {
 .form-control[readonly] {
   background-color: #e9ecef;
   opacity: 1;
+}
+
+.loading-page {
+  margin-top: 300px;
+}
+
+@media (max-width: 599px) {
+  .loading-page {
+    margin-top: 450px;
+  }
 }
 </style>

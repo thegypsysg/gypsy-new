@@ -112,6 +112,13 @@ spanspan
                       <i class="fa-brands fa-tiktok" />
                     </v-icon>
                   </v-btn>
+                  <v-btn
+                    :size="!isSmall ? '40' : '50'"
+                    variant="text"
+                    style="background: #1c96e8"
+                    color="white"
+                    icon="mdi-twitter"
+                  />
                 </div>
                 <div class="login-footer mt-8">
                   <div class="d-flex justify-center" style="gap: 25px">
@@ -262,7 +269,7 @@ export default {
     },
     socialProvider() {
       return localStorage.getItem("social")
-        ? localStorage.getItem("social")
+        ? localStorage.getItem("social") + " Login"
         : "-";
     },
   },
@@ -305,7 +312,7 @@ export default {
         .then((response) => {
           console.log(response);
           if (response) {
-            window.open(response.data.target_url);
+            window.location.assign(response.data.target_url);
           } else {
             window.location.href = "/sign-in";
           }
