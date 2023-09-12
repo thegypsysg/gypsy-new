@@ -94,11 +94,11 @@ export default {
   },
   methods: {
     changeHeader() {
-      window.location.href = "/";
       app.config.globalProperties.$eventBus.$emit(
         "changeHeaderWelcome2",
         "Sign-Up / Sign-in"
       );
+      this.$router.push("/");
     },
     nextStep() {
       this.$emit("nextStep");

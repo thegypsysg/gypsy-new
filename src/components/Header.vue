@@ -830,9 +830,14 @@ export default {
       this.titleWelcome = title;
     },
     changeHeaderWelcome2(title) {
-      this.titleWelcome = title;
-
+      this.userName = localStorage.getItem("name");
+      this.userDated = localStorage.getItem("last_login");
+      this.userImage = this.$fileURL + localStorage.getItem("user_image");
+      console.log(this.userName);
+      console.log(this.userDated);
+      console.log(this.userImage);
       this.getHeaderUserData();
+      this.titleWelcome = title;
     },
     selectTag(tag) {
       this.setActiveTag(tag); // Menetapkan tag yang dipilih sebagai tag aktif

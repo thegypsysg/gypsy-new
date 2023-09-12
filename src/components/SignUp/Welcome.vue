@@ -96,6 +96,7 @@ spanspan
                     style="background: #0072b1"
                     color="white"
                     icon
+                    @click="loginSocial('linkedin-openid')"
                   >
                     <v-icon :size="!isSmall ? '18' : '24'">
                       <i class="fa-brands fa-linkedin-in" />

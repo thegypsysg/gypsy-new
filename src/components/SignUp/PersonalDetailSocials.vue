@@ -569,10 +569,34 @@ export default {
       return this.$route.query.token || "";
     },
     avatarProvider() {
-      return this.$route.query.avatar || "";
+      const { social, avatar } = this.$route.query;
+
+      let avatarURL = "";
+      if (social == "Linkedin-openid") {
+        const url = this.$route.fullPath;
+        const startIndex = url.indexOf("&avatar=") + 8;
+        const endIndex = url.indexOf("&email=");
+        avatarURL = url.substring(startIndex, endIndex);
+      } else {
+        avatarURL = avatar;
+      }
+
+      return avatarURL;
     },
     socialProvider() {
-      return this.capitalizeFirstLetter(this.$route.query.social) || "";
+      return this.capitalizeFirstLetter(this.$route.query.social) ==
+        "Linkedin-openid"
+        ? "LinkedIn"
+        : this.capitalizeFirstLetter(this.$route.query.social);
+    },
+    socialType() {
+      return this.$route.query.social.toLowerCase() == "linkedin-openid"
+        ? "L"
+        : this.$route.query.social.toLowerCase() == "google"
+        ? "G"
+        : this.$route.query.social.toLowerCase() == "facebook"
+        ? "F"
+        : "";
     },
   },
 
@@ -580,6 +604,7 @@ export default {
     window.addEventListener("resize", this.handleResize);
   },
   mounted() {
+    // http://127.0.0.1:3000/social-sign-up?social=Linkedin-openid&token=AQXU1SSjbJsVPkS_W1OXUhFknOBnsoZtvFStOKDxzpflfpTsvPnh-H9vemA8yEJAnI8wg8pyxOBzMsypz8pV7ibIu0mfMWae8aJT9bUYZE4LYLyvYTupaLWdG-zT5N4RSnwR3jsZBwHi_bf9Og6PC9ivTR9UdHBN5GbmQDnWK3yTN7ykFmUf72prhJ9JTP4ZSwV47L8ibgGi-w--bDhlTvKuBgeU2cEbzXnyYqaB-3dOYjFRYVb-t5zDRGuJJPEng7o-bXGLBhrE26N8TE_0wqC4z_BHnaCNcIiffBdPoErLae3kw_dc0H1shZHZoaTCApogFAVd_QqdmCLyXgUetuV_zJ3ErQ&name=Aji%20Prasetyo&avatar=https://media.licdn.com/dms/image/C5603AQFpUB0qnqPngg/profile-displayphoto-shrink_100_100/0/1633493208219?e=1700092800&v=beta&t=NjQ44W-k9N0rZmq99yEMVaTiri1OKazhny-u8hjNV-U&email=aji.2467@students.amikom.ac.id
     this.email = this.emailProvider;
     this.password = "";
     this.name = this.nameProvider;
@@ -665,7 +690,7 @@ export default {
           gender: this.gender,
           app_id: this.$appId,
           registered_type: this.isSmall ? "M" : "W",
-          social_type: "G",
+          social_type: this.socialType,
           token: this.tokenProvider,
           country_name: countryName,
           image: this.imageSend != null ? this.imageSend : this.avatarProvider,
@@ -682,7 +707,8 @@ export default {
             this.successMessage = data.message;
             localStorage.setItem("name", data.data.name);
             localStorage.setItem("g_id", data.data.gypsy_ref_no);
-            // localStorage.setItem("user_image", data.data.image);
+            localStorage.setItem("user_image", data.data.image);
+            localStorage.setItem("last_login", data.data.last_login);
             localStorage.setItem("token", data.data.token);
             this.isSuccess = true;
             this.email = "";
