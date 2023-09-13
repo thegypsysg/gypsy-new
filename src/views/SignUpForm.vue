@@ -4,12 +4,9 @@
       <Welcome @nextStep="nextStep" />
     </div>
     <div v-else-if="currentStep === 2">
-      <PersonalDetails @nextStep="nextStep" @backStep="backStep" />
+      <PersonalDetailMobile @nextStep="nextStep" @backStep="backStep" />
     </div>
     <div v-else-if="currentStep === 3">
-      <AdditionalData @nextStep="nextStep" @backStep="backStep" />
-    </div>
-    <div v-else-if="currentStep === 4">
       <ResultRegister @nextStep="nextStep" @backStep="backStep" />
     </div>
     <!-- <div v-else-if="currentStep === 4">
@@ -36,9 +33,8 @@
 <script>
 import Welcome from "@/components/SignUp/Welcome.vue";
 // import InputEmail from '@/components/SignUp/InputEmail.vue';
-import PersonalDetails from "@/components/SignUp/PersonalDetails.vue";
-import ResultRegister from "@/components/SignUp/ResultRegister.vue";
-import AdditionalData from "@/components/SignUp/AdditionalData.vue";
+import PersonalDetailMobile from "@/components/SignUpMobile/PersonalDetailMobile.vue";
+import ResultRegister from "@/components/SignUpMobile/ResultRegister.vue";
 // import EmailVerification from "@/components/SignUp/EmailVerification.vue";
 // import WhereAreYou from "@/components/SignUp/WhereAreYou.vue";
 // import AdditionalInformation from "@/components/SignUp/AdditionalInformation.vue";
@@ -49,9 +45,8 @@ export default {
   components: {
     Welcome,
     // EmailVerification,
-    PersonalDetails,
+    PersonalDetailMobile,
     ResultRegister,
-    AdditionalData,
   },
   data() {
     return {

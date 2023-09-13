@@ -185,7 +185,7 @@ spanspan
                     :persistent-hint="true"
                   />
                 </template>
-                <template v-else>
+                <template v-else-if="isMobile && !isSendOtp">
                   <label class="mt-n4" style="font-size: 24px; font-weight: 600"
                     >Mobile</label
                   >
@@ -198,16 +198,55 @@ spanspan
                     @update="phoneEvent = $event"
                   />
                 </template>
+                <!-- <template v-else-if="isMobile && isSendOtp">
+                  <label class="mt-n4" style="font-size: 24px; font-weight: 600"
+                    >Mobile</label
+                  >
+                  <MazPhoneNumberInput
+                    v-model="mobile"
+                    show-code-on-list
+                    color="info"
+                    default-country-code="SG"
+                    :preferred-countries="['SG', 'BD', 'IN', 'MY', 'GB', 'PH']"
+                    @update="phoneEvent = $event"
+                  />
+                </template> -->
                 <v-btn
+                  v-if="!isMobile"
                   type="submit"
                   variant="outlined"
                   block
                   class="login-btn"
                   :disabled="!isNext"
                   :class="{ 'login-btn-mobile': isSmall, 'mt-6': isMobile }"
-                  @click="sendData"
+                  to="/sign-up-email"
                 >
                   Next
+                </v-btn>
+                <!-- <v-btn
+                  v-if="isMobile"
+                  type="submit"
+                  variant="outlined"
+                  block
+                  class="login-btn"
+                  :disabled="!isNext"
+                  :class="{ 'login-btn-mobile': isSmall, 'mt-6': isMobile }"
+                  @click="nextStep()"
+                >
+                  Next
+                </v-btn> -->
+                <v-btn
+                  v-if="isMobile"
+                  color="#F0882D"
+                  size="large"
+                  variant="flat"
+                  class="login-btn text-none text-white w-100 mt-3"
+                  :disabled="!isNext"
+                  :class="{ 'login-btn-mobile': isSmall, 'mt-6': isMobile }"
+                  @click="nextStep()"
+                >
+                  <!-- @click="isSendOtp = true" -->
+                  Send OTP
                 </v-btn>
               </v-form>
             </v-card>
@@ -243,6 +282,7 @@ export default {
   name: "Welcome",
   data() {
     return {
+      isSendOtp: false,
       valid: false,
       isMobile: false,
       isNext: false,
