@@ -156,23 +156,29 @@ spanspan
                     >Enter Mobile number</span
                   >
                 </p>
-                <p
-                  v-if="isMobile"
+                <div
+                  v-if="isMobile && !isSendOTP"
                   class="text-grey mt-4"
                   :class="{ 'mb-4': !isSmall, 'mb-6': isSmall }"
                 >
-                  <span
+                  <p
                     style="cursor: pointer"
                     class="text-blue-darken-4"
                     @click="
                       () => {
                         isMobile = false;
+                        isSendOTP = false;
                         mobile = null;
                       }
                     "
-                    >Register by Email</span
                   >
-                </p>
+                    Register by Email
+                  </p>
+                  <p class="text-grey">
+                    (Use this Mobile Registration only if you dont have Email
+                    ID)
+                  </p>
+                </div>
                 <template v-if="!isMobile">
                   <label style="font-size: 24px; font-weight: 600">Email</label>
                   <v-text-field
@@ -185,7 +191,7 @@ spanspan
                     :persistent-hint="true"
                   />
                 </template>
-                <template v-else-if="isMobile && !isSendOtp">
+                <template v-if="isMobile && !isSendOtp">
                   <label class="mt-n4" style="font-size: 24px; font-weight: 600"
                     >Mobile</label
                   >
@@ -198,19 +204,76 @@ spanspan
                     @update="phoneEvent = $event"
                   />
                 </template>
-                <!-- <template v-else-if="isMobile && isSendOtp">
-                  <label class="mt-n4" style="font-size: 24px; font-weight: 600"
-                    >Mobile</label
-                  >
-                  <MazPhoneNumberInput
-                    v-model="mobile"
-                    show-code-on-list
-                    color="info"
-                    default-country-code="SG"
-                    :preferred-countries="['SG', 'BD', 'IN', 'MY', 'GB', 'PH']"
-                    @update="phoneEvent = $event"
-                  />
-                </template> -->
+                <template v-if="isMobile && isSendOtp">
+                  <div class="d-flex">
+                    <input
+                      v-model="mobile"
+                      type="text"
+                      required
+                      disabled
+                      class="form-control mt-2"
+                      placeholder="Phone Number"
+                    />
+                    <v-btn
+                      class="text-none text-subtitle-1 mt-2"
+                      color="blue"
+                      variant="flat"
+                      @click="isChangeMobile = !isChangeMobile"
+                    >
+                      Change
+                    </v-btn>
+                  </div>
+                  <div v-if="isChangeMobile" class="mt-2">
+                    <MazPhoneNumberInput
+                      v-model="mobile"
+                      show-code-on-list
+                      color="info"
+                      default-country-code="SG"
+                      :preferred-countries="[
+                        'SG',
+                        'BD',
+                        'IN',
+                        'MY',
+                        'GB',
+                        'PH',
+                      ]"
+                      @update="phoneEvent = $event"
+                    />
+                    <v-btn
+                      class="text-none text-white w-100 mt-3"
+                      color="#F0882D"
+                      size="large"
+                      variant="flat"
+                      @click="resendOTP"
+                    >
+                      Resend OTP
+                    </v-btn>
+                  </div>
+                  <v-alert
+                    class="my-2"
+                    v-model="isResendOTP"
+                    type="success"
+                    :text="`OTP is sent successfully to ${mobile}`"
+                  ></v-alert>
+                  <div class="d-flex">
+                    <input
+                      v-model="otp"
+                      type="number"
+                      required
+                      class="form-control mt-2"
+                      placeholder="Enter 6 Digit OTP"
+                    />
+                    <v-btn
+                      :disabled="otp?.length != 6"
+                      class="text-none text-subtitle-1 mt-2"
+                      color="green"
+                      variant="flat"
+                      @click="nextStep"
+                    >
+                      Continue
+                    </v-btn>
+                  </div>
+                </template>
                 <v-btn
                   v-if="!isMobile"
                   type="submit"
@@ -220,6 +283,7 @@ spanspan
                   :disabled="!isNext"
                   :class="{ 'login-btn-mobile': isSmall, 'mt-6': isMobile }"
                   to="/sign-up-email"
+                  @click="sendOTP"
                 >
                   Next
                 </v-btn>
@@ -236,16 +300,16 @@ spanspan
                   Next
                 </v-btn> -->
                 <v-btn
-                  v-if="isMobile"
+                  v-if="isMobile && !isSendOtp"
                   color="#F0882D"
                   size="large"
                   variant="flat"
                   class="login-btn text-none text-white w-100 mt-3"
                   :disabled="!isNext"
                   :class="{ 'login-btn-mobile': isSmall, 'mt-6': isMobile }"
-                  @click="nextStep()"
+                  @click="isSendOtp = true"
                 >
-                  <!-- @click="isSendOtp = true" -->
+                  <!-- @click="nextStep()" -->
                   Send OTP
                 </v-btn>
               </v-form>
@@ -283,11 +347,14 @@ export default {
   data() {
     return {
       isSendOtp: false,
+      isChangeMobile: false,
+      isResendOTP: false,
       valid: false,
       isMobile: false,
       isNext: false,
       email: null,
       mobile: null,
+      otp: "",
       phoneEvent: null,
       isError: false,
       errorMessage: "",
@@ -309,9 +376,10 @@ export default {
       return this.screenWidth < 640;
     },
     socialProvider() {
-      return localStorage.getItem("social")
-        ? localStorage.getItem("social") + " Login"
-        : "-";
+      return this.capitalizeFirstLetter(localStorage.getItem("social")) ==
+        "Linkedin-openid"
+        ? "LinkedIn Login"
+        : this.capitalizeFirstLetter(localStorage.getItem("social")) + " Login";
     },
   },
   watch: {
@@ -344,6 +412,18 @@ export default {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    sendOTP() {
+      window.open("/try-email", "_blank");
+    },
+    resendOTP() {
+      this.isResendOTP = true;
+      setTimeout(() => {
+        this.isResendOTP = false;
+      }, 3000);
+    },
+    capitalizeFirstLetter(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1);
+    },
     nextStep() {
       this.$emit("nextStep");
     },
@@ -468,5 +548,72 @@ export default {
 }
 .login-footer-btn-mobile {
   gap: 20px;
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  border: 1px solid #ced4da;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff;
+  background-clip: padding-box;
+  border-radius: 0.25rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .form-control {
+    transition: none;
+  }
+}
+
+.form-control::-ms-expand {
+  background-color: transparent;
+  border: 0;
+}
+
+.form-control:focus {
+  color: #495057;
+  background-color: #fff;
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+.form-control:-webkit-autofill {
+  background-color: #fff;
+}
+
+.form-control::-webkit-input-placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+.form-control::-moz-placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+.form-control:-ms-input-placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+.form-control::-ms-input-placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+.form-control::placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+.form-control:disabled,
+.form-control[readonly] {
+  background-color: #e9ecef;
+  opacity: 1;
 }
 </style>

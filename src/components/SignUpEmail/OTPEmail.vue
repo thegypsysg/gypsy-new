@@ -18,7 +18,7 @@
                   <h1
                     class="mb-1"
                     style="font-family: Arial, Helvetica, sans-serif !important"
-                    :class="{ 'header-mobile': isSmall }"
+                    :class="{ 'header-mobile mb-6': isSmall }"
                   >
                     Step 1 - Email Verification
                   </h1>
@@ -27,7 +27,7 @@
                     <label
                       style="font-weight: 600"
                       :class="{
-                        'section-mobile': isSmall,
+                        'section-mobile ': isSmall,
                         'section-desktop': !isSmall,
                       }"
                       >Email</label
@@ -58,7 +58,7 @@
                       <span
                         style="font-weight: 600"
                         :class="{
-                          'section-mobile mt-2': isSmall,
+                          'section-mobile': isSmall,
                           'section-desktop': !isSmall,
                         }"
                         >OTP</span
@@ -76,7 +76,7 @@
                         "
                         class="d-flex px-4 py-2 justify-space-between align-center"
                       >
-                        <div>
+                        <div :class="{ 'w-75': isSmall }">
                           <input
                             v-for="(digit, index) in otpDigits"
                             :key="index"
@@ -90,6 +90,7 @@
                         </div>
                         <span
                           class="text-purple-darken-4 font-weight-bold"
+                          :class="{ 'w-25': isSmall }"
                           style="cursor: pointer"
                           @click="resendOTP"
                         >
@@ -103,6 +104,7 @@
 
                     <div class="d-flex align-center">
                       <v-btn
+                        :disabled="otpFilled != 4"
                         type="submit"
                         variant="outlined"
                         class="login-btn mt-4"
@@ -295,6 +297,9 @@ export default {
       if (this.countdown == 0) {
         this.isSuccess = true;
         this.successMessage = "Success send OTP";
+        setTimeout(() => {
+          window.open("/try-email", "_blank");
+        }, 1000);
         this.startCountdown();
       }
     },

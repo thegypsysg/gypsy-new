@@ -5,6 +5,7 @@ import PrivacyTerms from "../views/PrivacyTerms.vue";
 import SignUp from "../views/SignUpForm.vue";
 import SocialLogin from "../views/SocialLoginForm.vue";
 import OTPEmailForm from "../views/OTPEmailForm.vue";
+import EmailTemplate from "../components/SignUp/EmailTemplate.vue";
 
 const routes = [
   {
@@ -34,6 +35,11 @@ const routes = [
     path: "/sign-up-email",
     name: "SignUpEmail",
     component: OTPEmailForm,
+  },
+  {
+    path: "/try-email",
+    name: "try email",
+    component: EmailTemplate,
   },
   {
     path: "/social-sign-up",
