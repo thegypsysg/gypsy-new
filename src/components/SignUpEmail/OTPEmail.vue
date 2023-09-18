@@ -112,7 +112,7 @@
                           'w-66 login-btn-mobile mt-10': isSmall,
                           'w-50': !isSmall,
                         }"
-                        @click="nextStep()"
+                        @click="saveData()"
                       >
                         Next
                       </v-btn>
@@ -162,6 +162,20 @@
             </v-btn>
           </template>
         </v-snackbar>
+        <v-snackbar
+          v-model="isError"
+          location="top"
+          color="red"
+          :timeout="3000"
+        >
+          {{ errorMessage }}
+
+          <template #actions>
+            <v-btn color="white" variant="text" @click="isError = false">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
+        </v-snackbar>
       </v-container>
     </div>
   </div>
@@ -193,7 +207,9 @@ export default {
         ],
       },
       screenWidth: window.innerWidth,
+      isError: false,
       isSuccess: false,
+      errorMessage: "",
       successMessage: "",
       countdown: 0,
       timer: null,
@@ -282,12 +298,42 @@ export default {
         //   registered_type: this.isSmall ? "M" : "W",
         //   app_id: this.$appId,
         // };
-        localStorage.setItem("email_id", this.email);
-        localStorage.setItem("otp", this.otp);
-        this.email = "";
-        this.otp = null;
+        this.isSending = true;
+        const payload = {
+          email_id: this.email,
+          otp: this.otp,
+        };
+        axios
+          .post(`/send-otp`, payload)
+          .then((response) => {
+            const data = response.data;
+            console.log(data);
+            this.isSuccess = true;
+            this.successMessage = "Success verify OTP";
+            this.email = "";
+            this.otp = null;
 
-        this.nextStep();
+            this.nextStep();
+            this.startCountdown();
+          })
+          .catch((error) => {
+            // eslint-disable-next-line
+            console.log(error);
+            const message = error.response.data.email_id
+              ? error.response.data.email_id[0]
+              : error.response.data.message
+              ? error.response.data.message
+              : "Something Wrong!!!";
+            this.errorMessage = message;
+            this.isError = true;
+            this.email = "";
+            this.otp = null;
+
+            this.startCountdown();
+          })
+          .finally(() => {
+            this.isSending = false;
+          });
       }
     },
     handleResize() {
@@ -295,12 +341,36 @@ export default {
     },
     resendOTP() {
       if (this.countdown == 0) {
-        this.isSuccess = true;
-        this.successMessage = "Success send OTP";
-        setTimeout(() => {
-          window.open("/try-email", "_blank");
-        }, 1000);
-        this.startCountdown();
+        this.isSending = true;
+        const payload = {
+          email_id: localStorage.getItem("email"),
+        };
+        axios
+          .post(`/send-otp`, payload)
+          .then((response) => {
+            const data = response.data;
+            console.log(data);
+            this.isSuccess = true;
+            this.successMessage = "Success send OTP";
+            // setTimeout(() => {
+            //   window.open("/try-email", "_blank");
+            // }, 1000);
+            this.startCountdown();
+          })
+          .catch((error) => {
+            // eslint-disable-next-line
+            console.log(error);
+            const message = error.response.data.email_id
+              ? error.response.data.email_id[0]
+              : error.response.data.message
+              ? error.response.data.message
+              : "Something Wrong!!!";
+            this.errorMessage = message;
+            this.isError = true;
+          })
+          .finally(() => {
+            this.isSending = false;
+          });
       }
     },
   },

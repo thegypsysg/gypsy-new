@@ -1,4 +1,3 @@
-spanspan
 <template>
   <div>
     <div
@@ -258,7 +257,6 @@ spanspan
                   <div class="d-flex">
                     <input
                       v-model="otp"
-                      type="number"
                       required
                       class="form-control mt-2"
                       placeholder="Enter 6 Digit OTP"
@@ -280,12 +278,17 @@ spanspan
                   variant="outlined"
                   block
                   class="login-btn"
-                  :disabled="!isNext"
+                  :disabled="!isNext || isSending"
                   :class="{ 'login-btn-mobile': isSmall, 'mt-6': isMobile }"
-                  to="/sign-up-email"
                   @click="sendOTP"
                 >
-                  Next
+                  <v-progress-circular
+                    v-if="isSending"
+                    :size="20"
+                    color="primary"
+                    indeterminate
+                  />
+                  <span v-else>Next</span>
                 </v-btn>
                 <!-- <v-btn
                   v-if="isMobile"
@@ -331,6 +334,20 @@ spanspan
             </v-btn>
           </template>
         </v-snackbar>
+        <v-snackbar
+          v-model="isSuccess"
+          location="top"
+          color="green"
+          :timeout="3000"
+        >
+          {{ successMessage }}
+
+          <template #actions>
+            <v-btn color="white" variant="text" @click="isSuccess = false">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
+        </v-snackbar>
       </v-container>
     </div>
   </div>
@@ -357,7 +374,9 @@ export default {
       otp: "",
       phoneEvent: null,
       isError: false,
+      isSuccess: false,
       errorMessage: "",
+      successMessage: "",
       emailRules: [
         (value) => {
           if (value) return true;
@@ -413,7 +432,35 @@ export default {
   },
   methods: {
     sendOTP() {
-      window.open("/try-email", "_blank");
+      this.isSending = true;
+      const payload = {
+        email_id: this.email,
+      };
+      axios
+        .post(`/send-otp`, payload)
+        .then((response) => {
+          const data = response.data;
+          console.log(data);
+          this.successMessage = data.message;
+          this.isSuccess = true;
+          localStorage.setItem("email", data.data.email_id);
+          // this.email = "";
+          this.$router.push("/sign-up-email");
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+          const message = error.response.data.email_id
+            ? error.response.data.email_id[0]
+            : error.response.data.message
+            ? error.response.data.message
+            : "Something Wrong!!!";
+          this.errorMessage = message;
+          this.isError = true;
+        })
+        .finally(() => {
+          this.isSending = false;
+        });
     },
     resendOTP() {
       this.isResendOTP = true;
@@ -426,6 +473,7 @@ export default {
     },
     nextStep() {
       this.$emit("nextStep");
+      localStorage.setItem("mobile", this.mobile);
     },
     loginSocial(social_name) {
       axios

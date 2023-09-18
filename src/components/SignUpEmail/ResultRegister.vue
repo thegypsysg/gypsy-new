@@ -95,7 +95,7 @@ export default {
   methods: {
     changeHeader() {
       app.config.globalProperties.$eventBus.$emit(
-        "changeHeaderWelcome",
+        "changeHeaderWelcome2",
         "Sign-Up / Sign-in"
       );
       this.$router.push("/");

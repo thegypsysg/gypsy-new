@@ -105,7 +105,6 @@
                     <input
                       v-model="email"
                       type="email"
-                      disabled
                       class="form-control pl-2 mt-2 mb-4"
                       placeholder="Enter Your Email Address"
                     />
@@ -240,7 +239,7 @@
                           'w-66 login-btn-mobile mt-8 mb-6': isSmall,
                           'w-50 mt-8': !isSmall,
                         }"
-                        @click="nextStep()"
+                        @click="saveData()"
                       >
                         Next
                       </v-btn>
@@ -261,6 +260,20 @@
 
           <template #actions>
             <v-btn color="white" variant="text" @click="isSuccess = false">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
+        </v-snackbar>
+        <v-snackbar
+          v-model="isError"
+          location="top"
+          color="red"
+          :timeout="3000"
+        >
+          {{ errorMessage }}
+
+          <template #actions>
+            <v-btn color="white" variant="text" @click="isError = false">
               <v-icon>mdi-close</v-icon>
             </v-btn>
           </template>
@@ -301,7 +314,9 @@ export default {
       mobile: null,
       phoneEvent: null,
       screenWidth: window.innerWidth,
+      isError: false,
       isSuccess: false,
+      errorMessage: "",
       successMessage: "",
       resource: {
         code: [],
@@ -573,6 +588,9 @@ export default {
       "changeHeaderWelcome",
       "Sign-up by Mobile"
     );
+    this.mobile = localStorage.getItem("mobile")
+      ? localStorage.getItem("mobile")
+      : "";
   },
   unmounted() {
     window.removeEventListener("resize", this.handleResize);
@@ -638,21 +656,18 @@ export default {
           .filter((o) => o.value == this.country)
           .map((op) => op.label)[0];
         const payload = {
-          email_id: this.email,
           name: this.name,
           mobile_number: this.mobile,
-          country_current: this.country,
           country_prefix: this.country,
           gender: this.gender,
           app_id: this.$appId,
           registered_type: this.isSmall ? "M" : "W",
-          social_type: "",
-          token: "",
           country_name: countryName,
           image: this.imageSend || null,
+          email_id: this.email || null,
         };
         axios
-          .post(`/gypsy/save-social-user`, payload, {
+          .post(`/gypsy/save-normal-user-by-mobile`, payload, {
             headers: {
               "Content-Type": "multipart/form-data",
             },
@@ -662,6 +677,7 @@ export default {
             console.log(data);
             this.successMessage = data.message;
             localStorage.setItem("name", data.data.name);
+            localStorage.setItem("email", data.data.email_id);
             localStorage.setItem("g_id", data.data.gypsy_ref_no);
             localStorage.setItem("user_image", data.data.image);
             localStorage.setItem("last_login", data.data.last_login);
@@ -678,15 +694,15 @@ export default {
               "Sign Up Completed"
             );
             this.nextStep();
-            this.getUserData();
           })
           .catch((error) => {
             // eslint-disable-next-line
             console.log(error);
-            const message =
-              error.response.data.message === ""
-                ? "Something Wrong!!!"
-                : error.response.data.message;
+            const message = error.response.data.email_id
+              ? error.response.data.email_id[0]
+              : error.response.data.message === ""
+              ? "Something Wrong!!!"
+              : error.response.data.message;
             this.errorMessage = message;
             this.isError = true;
           })

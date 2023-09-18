@@ -26,7 +26,7 @@
                   <v-img
                     style="width: 100%; height: 100%; border-radius: 20px"
                     :src="
-                      image_path != ''
+                      image_path
                         ? image_path
                         : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
                     "
@@ -61,6 +61,8 @@
                   v-model="input.gender"
                   class="mt-2"
                   :options="resource.gender"
+                  track-by="value"
+                  label="title"
                   placeholder="Select Gender"
                 />
 
@@ -83,6 +85,8 @@
                   v-model="input.marital"
                   class="mt-2"
                   :options="resource.marital"
+                  track-by="value"
+                  label="title"
                   placeholder="Select Marital Status"
                 />
                 <!-- <select v-model="input.marital" class="form-control mt-2">
@@ -103,6 +107,7 @@
 
                 <VueMultiselect
                   v-model="input.nationality"
+                  @select="onInputNationality()"
                   class="mt-2"
                   :options="resource.nationality"
                   track-by="id"
@@ -326,6 +331,7 @@
                         class="text-none text-subtitle-1 mt-2"
                         color="success"
                         variant="flat"
+                        @click="isChangePassword = !isChangePassword"
                       >
                         Save Changes
                       </v-btn>
@@ -673,6 +679,7 @@
                   class="text-none text-subtitle-1 mt-2"
                   color="success"
                   variant="flat"
+                  @click="isChangePassword = !isChangePassword"
                 >
                   Save Changes
                 </v-btn>
@@ -698,7 +705,7 @@
               </div>
 
               <v-radio-group
-                v-model="input.gender"
+                v-model="input.gender2"
                 :rules="rules.genderRules"
                 inline
                 class="mt-3 ml-n4"
@@ -722,6 +729,7 @@
               <label>Nationality</label>
               <VueMultiselect
                 v-model="input.nationality"
+                @select="onInputNationality()"
                 class="mt-2"
                 :options="resource.nationality"
                 track-by="id"
@@ -747,6 +755,8 @@
                 v-model="input.marital"
                 class="mt-2"
                 :options="resource.marital"
+                track-by="value"
+                label="title"
                 placeholder="Select Marital Status"
               />
             </v-col>
@@ -758,6 +768,7 @@
                 color="success"
                 size="large"
                 variant="flat"
+                @click="saveData()"
               >
                 Save Changes
               </v-btn>
@@ -765,6 +776,29 @@
           </v-row>
         </div>
       </template>
+      <v-snackbar
+        v-model="isSuccess"
+        location="top"
+        color="green"
+        :timeout="3000"
+      >
+        {{ successMessage }}
+
+        <template #actions>
+          <v-btn color="white" variant="text" @click="isSuccess = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </template>
+      </v-snackbar>
+      <v-snackbar v-model="isError" location="top" color="red" :timeout="3000">
+        {{ errorMessage }}
+
+        <template #actions>
+          <v-btn color="white" variant="text" @click="isError = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </template>
+      </v-snackbar>
     </v-container>
     <input
       ref="fileuploadinput"
@@ -801,13 +835,19 @@ export default {
       isChangePhone: false,
       showPassword: false,
       menuOpen: false,
-
+      isError: false,
+      isSuccess: false,
+      errorMessage: "",
+      successMessage: "",
       image_path: "",
       image: null,
+      imageSend: null,
       input: {
+        id: null,
         image_path: "",
         image: null,
         gender: null,
+        gender2: null,
         marital: null,
         nationality: null,
         name: "",
@@ -865,27 +905,19 @@ export default {
       },
       resource: {
         gender: [
-          "Male",
-          "Female",
-          // { label: "Male", value: "M" },
-          // { label: "Female", value: "F" },
+          // "Male",
+          // "Female",
+          { title: "Male", value: "M" },
+          { title: "Female", value: "F" },
         ],
         marital: [
-          "Single",
-          "Married",
-          "Others",
-          // { label: "Single", value: "S" },
-          // { label: "Married", value: "M" },
-          // { label: "Others", value: "O" },
+          // "Single",
+          // "Married",
+          // "Others",
+          { title: "Single", value: "S" },
+          { title: "Married", value: "M" },
         ],
-        nationality: [
-          "Singaporean",
-          "Indian",
-          "Malaysian",
-          "Filipino",
-          "English",
-          "Bangladeshi",
-        ],
+        nationality: [],
         countryCodes: [],
         favorite: [],
         nearest: [
@@ -940,26 +972,28 @@ export default {
       "changeHeaderWelcome",
       "My Profile"
     );
-    this.getUserData();
     this.getNationality();
   },
   unmounted() {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    onInputNationality() {
+      console.log("ok", this.input.nationality);
+    },
     getNationality() {
       this.isLoading = true;
       axios
         .get(`/country`)
         .then((response) => {
           const data = response.data.data;
-          console.log(data);
           this.resource.nationality = data.map((country) => {
             return {
               id: country.country_id,
               title: country.nationality,
             };
           });
+          this.getUserData();
         })
         .catch((error) => {
           // eslint-disable-next-line
@@ -981,21 +1015,40 @@ export default {
         .then((response) => {
           const data = response.data.data;
           console.log(data);
+          // this.input.nationality = this.resource.nationality.filter(
+          //   (i) => i.id == 2
+          // )[0];
+          // this.input.marital = this.resource.marital.filter(
+          //   (i) => i.value == "S"
+          // )[0];
+          // this.input.gender = this.resource.gender.filter(
+          //   (i) => i.value == "F"
+          // )[0];
+          // this.input.gender2 = "F";
+
           // country_current: 28,
           // date_of_birth: null,
           // gender: "M",
           // image: "cea8b5aca2c523ec0b425738e4d80b3d.jpg",
           // last_login: "11/09/2023",
           // marital_status: null,
-          // mobile_number: "+6288216758205",
-          // name: "Aji Prasetyo",
-          this.image_path = this.$fileURL + data.image;
+
+          this.image_path =
+            data.image != null ? this.$fileURL + data.image : null;
           this.input = {
+            id: data.gypsy_id,
             image_path: "",
             image: null,
-            gender: data.gender,
-            marital: data.marital_status,
-            nationality: data.country_current,
+            gender: this.resource.gender.filter(
+              (i) => i.value == data.gender
+            )[0],
+            gender2: data.gender || null,
+            marital: this.resource.marital.filter(
+              (i) => i.value == data.marital_status
+            )[0],
+            nationality: this.resource.nationality.filter(
+              (i) => i.id == data.country_current
+            )[0],
             name: data.name,
             email: data.email_id,
             countryCode: null,
@@ -1009,6 +1062,9 @@ export default {
             city: null,
             country: null,
           };
+          this.input.nationality = this.resource.nationality.filter(
+            (i) => i.id == data.country_current
+          );
         })
         .catch((error) => {
           // eslint-disable-next-line
@@ -1016,6 +1072,64 @@ export default {
         })
         .finally(() => {
           this.isLoading = false;
+        });
+    },
+    saveData() {
+      this.isSending = true;
+      const payload = {
+        // "marital_status":"M",
+        // "country_current":1,
+        // "image":[file upload]
+
+        gypsy_id: this.input.id,
+        name: this.input.name,
+        mobile_number: this.input.phoneNew || this.input.phone,
+        email_id: this.input.email,
+        gender: this.input.gender.value,
+        app_id: this.$appId,
+        // password: this.input.password,
+        marital_status: this.input.marital.value,
+        // date_of_birth: this.input.date,
+        country_current: this.input.nationality.id,
+        image: this.imageSend || null,
+      };
+      console.log(payload);
+      const token = localStorage.getItem("token");
+      axios
+        .post(`/save-gypsy-user`, payload, {
+          headers: {
+            Authorization: `Bearer ${
+              this.tokenProvider ? this.tokenProvider : token
+            }`,
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          const data = response.data;
+          console.log(data);
+          this.isSuccess = true;
+          this.successMessage = data.message;
+          this.getUserData();
+          // localStorage.setItem("name", data.data.name);
+          // localStorage.setItem("email", data.data.email_id);
+          // localStorage.setItem("g_id", data.data.gypsy_ref_no);
+          // localStorage.setItem("user_image", data.data.image);
+          // localStorage.setItem("last_login", data.data.last_login);
+          // localStorage.setItem("token", data.data.token);
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+          const message = error.response.data.mobile_number
+            ? error.response.data.mobile_number[0]
+            : error.response.data.message === ""
+            ? "Something Wrong!!!"
+            : error.response.data.message;
+          this.errorMessage = message;
+          this.isError = true;
+        })
+        .finally(() => {
+          this.isSending = false;
         });
     },
     onFileChangeInput(e) {
@@ -1031,7 +1145,6 @@ export default {
       this.imageSend = file;
       this.$refs.cropperDialog.initCropper(file.type);
     },
-
     async toBase64(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
