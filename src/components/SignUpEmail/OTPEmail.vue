@@ -54,7 +54,7 @@
                         Change
                       </span>
                     </div>
-                    <div class="d-flex mb-2 justify-start align-center">
+                    <!-- <div class="d-flex mb-2 justify-start align-center">
                       <span
                         style="font-weight: 600"
                         :class="{
@@ -64,8 +64,8 @@
                         >OTP</span
                       >
                       <span class="text-blue-darken-4 ml-4"> (4 digits)</span>
-                    </div>
-                    <div
+                    </div> -->
+                    <!-- <div
                       class="d-flex w-100 align-center justify-space-between"
                     >
                       <div
@@ -100,11 +100,11 @@
                       <div class="text-grey pl-3" style="width: 20%">
                         {{ countdown }} sec
                       </div>
-                    </div>
+                    </div> -->
 
                     <div class="d-flex align-center">
+                      <!-- :disabled="otpFilled != 4" -->
                       <v-btn
-                        :disabled="otpFilled != 4"
                         type="submit"
                         variant="outlined"
                         class="login-btn mt-4"
