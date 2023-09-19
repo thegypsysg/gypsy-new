@@ -290,7 +290,7 @@ export default {
 
 <style scoped>
 .login-container {
-  background-image: url("@/assets/Syringe-Signup-main.jpg");
+  background-image: url("@/assets/header.png");
   background-position: center;
   background-size: cover;
   background-color: #cccccc;
@@ -302,18 +302,95 @@ export default {
 }
 
 .section-desktop {
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .section-mobile {
-  font-size: 16px;
+  font-size: 14px;
+}
+
+.gender-small {
+  font-size: 14px;
+}
+
+.country-no {
+  left: 30px;
+}
+.country-yes {
+  left: 40px;
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  border: 1px solid #ced4da;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff;
+  background-clip: padding-box;
+  border-radius: 0.25rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .form-control {
+    transition: none;
+  }
+}
+
+.form-control::-ms-expand {
+  background-color: transparent;
+  border: 0;
+}
+
+.form-control:focus {
+  color: #495057;
+  background-color: #fff;
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+.form-control:-webkit-autofill {
+  background-color: #fff;
+}
+
+.form-control::-webkit-input-placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+.form-control::-moz-placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+.form-control:-ms-input-placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+.form-control::-ms-input-placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+.form-control::placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+.form-control:disabled,
+.form-control[readonly] {
+  background-color: #e9ecef;
+  opacity: 1;
 }
 
 .login-input .v-text-field input:-webkit-autofill {
   -webkit-box-shadow: 0 0 0 30px #f5f5f5 inset !important;
   -webkit-text-fill-color: #333 !important;
 }
-
 /* Firefox */
 .login-input .v-text-field input:-moz-autofill {
   -moz-box-shadow: 0 0 0 30px #f5f5f5 inset !important;
@@ -324,7 +401,7 @@ export default {
   width: 400px;
   height: 50px;
 
-  background: #fa2964;
+  background: #5d87ff;
   border-radius: 10px;
   color: white !important;
   font-weight: 500;
@@ -356,9 +433,10 @@ export default {
 }
 
 .login-card {
-  margin-top: 90px;
-  padding-top: 15px;
-  padding-bottom: 120px;
+  margin-top: 120px;
+  margin-bottom: 50px;
+  padding-top: 20px;
+  padding-bottom: 100px;
 }
 
 .login-footer-icon {
@@ -369,5 +447,9 @@ export default {
 }
 .login-footer-btn-mobile {
   gap: 40px;
+}
+
+.flag-text {
+  margin-left: 10px;
 }
 </style>
