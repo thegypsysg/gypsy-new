@@ -48,6 +48,7 @@
                         }"
                         :rules="passwordRules"
                         type="password"
+                        :maxLength="8"
                         variant="outlined"
                         placeholder="Password"
                       />
@@ -59,6 +60,7 @@
                         }"
                         :rules="password2Rules"
                         type="password"
+                        :maxLength="8"
                         variant="outlined"
                         placeholder="Re-enter Password"
                       />
