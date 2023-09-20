@@ -654,72 +654,81 @@ export default {
         const countryName = this.options
           .filter((o) => o.value == this.country)
           .map((op) => op.label)[0];
-        // this.isSending = true;
-        // const payload = {
-        //   email_id: this.email,
-        //   name: this.name,
-        //   country_prefix: this.country,
-        //   mobile_number: this.mobile,
-        //   gender: this.gender,
-        //   app_id: this.$appId,
-        //   registered_type: this.isSmall ? "M" : "W",
-        //   country_name: countryName,
-        //   image: this.imageSend || null,
-        // };
-        localStorage.setItem("p_email", this.email);
-        localStorage.setItem("p_name", this.name);
-        localStorage.setItem("p_country", this.country);
-        localStorage.setItem("p_mobile", this.mobile);
-        localStorage.setItem("p_gender", this.gender);
-        localStorage.setItem("p_countryName", countryName);
-        if (this.imageSend !== null) {
-          localStorage.setItem("p_image", this.imageSend);
+        this.isSending = true;
+        const payload = {
+          email_id: this.email,
+          name: this.name,
+          country_prefix: this.country,
+          mobile_number: this.mobile,
+          gender: this.gender,
+          app_id: this.$appId,
+          registered_type: this.isSmall ? "M" : "W",
+          country_name: countryName,
+          image: this.imageSend || null,
+        };
+
+        // localStorage.setItem("p_email", this.email);
+        // localStorage.setItem("p_name", this.name);
+        // localStorage.setItem("p_country", this.country);
+        // localStorage.setItem("p_mobile", this.mobile);
+        // localStorage.setItem("p_gender", this.gender);
+        // localStorage.setItem("p_countryName", countryName);
+        // if (this.imageSend !== null) {
+        //   localStorage.setItem("p_image", this.imageSend);
+        // }
+        // this.nextStep();
+
+        if (
+          this.isMobile == true &&
+          this.isName == true &&
+          this.isGender == true
+        ) {
+          axios
+            .post(`/gypsy/save-normal-user`, payload, {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            })
+            .then((response) => {
+              const data = response.data;
+              console.log(data);
+              this.successMessage = data.message;
+              localStorage.setItem("name", data.data.name);
+              localStorage.setItem("email", data.data.email_id);
+              localStorage.setItem("g_id", data.data.gypsy_ref_no);
+              localStorage.setItem("gypsy_id", data.data.gypsy_id);
+              localStorage.setItem("user_image", data.data.image);
+              localStorage.setItem("last_login", data.data.last_login);
+              localStorage.setItem("token", data.data.token);
+              this.isSuccess = true;
+              // this.email = "";
+              // this.name = "";
+              // this.country = null;
+              // this.city = null;
+              // this.mobile = "";
+              // this.gender = "";
+              // app.config.globalProperties.$eventBus.$emit(
+              //   "changeHeaderWelcome",
+              //   "Sign Up Completed"
+              // );
+              this.nextStep();
+              // this.getUserData();
+            })
+            .catch((error) => {
+              // eslint-disable-next-line
+              console.log(error);
+              const message = error.response.data.email_id
+                ? error.response.data.email_id[0]
+                : error.response.data.message === ""
+                ? "Something Wrong!!!"
+                : error.response.data.message;
+              this.errorMessage = message;
+              this.isError = true;
+            })
+            .finally(() => {
+              this.isSending = false;
+            });
         }
-        this.nextStep();
-        // axios
-        //   .post(`/gypsy/save-normal-user`, payload, {
-        //     headers: {
-        //       "Content-Type": "multipart/form-data",
-        //     },
-        //   })
-        //   .then((response) => {
-        //     const data = response.data;
-        //     console.log(data);
-        //     this.successMessage = data.message;
-        //     localStorage.setItem("name", data.data.name);
-        //     localStorage.setItem("email", data.data.email_id);
-        //     localStorage.setItem("g_id", data.data.gypsy_ref_no);
-        //     localStorage.setItem("user_image", data.data.image);
-        //     localStorage.setItem("last_login", data.data.last_login);
-        //     localStorage.setItem("token", data.data.token);
-        //     this.isSuccess = true;
-        //     this.email = "";
-        //     this.name = "";
-        //     this.country = null;
-        //     this.city = null;
-        //     this.mobile = "";
-        //     this.gender = "";
-        //     app.config.globalProperties.$eventBus.$emit(
-        //       "changeHeaderWelcome",
-        //       "Sign Up Completed"
-        //     );
-        //     this.nextStep();
-        //     // this.getUserData();
-        //   })
-        //   .catch((error) => {
-        //     // eslint-disable-next-line
-        //     console.log(error);
-        //     const message = error.response.data.email_id
-        //       ? error.response.data.email_id[0]
-        //       : error.response.data.message === ""
-        //       ? "Something Wrong!!!"
-        //       : error.response.data.message;
-        //     this.errorMessage = message;
-        //     this.isError = true;
-        //   })
-        //   .finally(() => {
-        //     this.isSending = false;
-        //   });
       }
     },
     getUserData() {

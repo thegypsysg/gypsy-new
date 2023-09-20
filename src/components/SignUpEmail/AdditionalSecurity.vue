@@ -160,6 +160,8 @@ export default {
       mobile: "",
       gender: "",
       countryName: "",
+      gypsyId: null,
+      token: "",
       imageSend: null,
       passwordRules: [
         (v) => !!v || "Password is required",
@@ -187,13 +189,16 @@ export default {
     window.addEventListener("resize", this.handleResize);
   },
   mounted() {
-    this.email = localStorage.getItem("p_email");
-    this.name = localStorage.getItem("p_name");
-    this.country = localStorage.getItem("p_country");
-    this.mobile = localStorage.getItem("p_mobile");
-    this.gender = localStorage.getItem("p_gender");
-    this.countryName = localStorage.getItem("p_countryName");
-    this.imageSend = localStorage.getItem("p_image") || null;
+    // this.email = localStorage.getItem("p_email");
+    // this.name = localStorage.getItem("p_name");
+    // this.country = localStorage.getItem("p_country");
+    // this.mobile = localStorage.getItem("p_mobile");
+    // this.gender = localStorage.getItem("p_gender");
+    // this.countryName = localStorage.getItem("p_countryName");
+    // this.imageSend = localStorage.getItem("p_image") || null;
+    this.email = localStorage.getItem("email");
+    this.gypsyId = localStorage.getItem("gypsy_id");
+    this.token = localStorage.getItem("token");
   },
   unmounted() {
     window.removeEventListener("resize", this.handleResize);
@@ -208,59 +213,38 @@ export default {
     handleResize() {
       this.screenWidth = window.innerWidth;
     },
-    dataURItoBlob(dataURI) {
-      const byteString = atob(dataURI.split(",")[1]);
-      const mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
-      const ab = new ArrayBuffer(byteString.length);
-      const ia = new Uint8Array(ab);
-      for (let i = 0; i < byteString.length; i++) {
-        ia[i] = byteString.charCodeAt(i);
-      }
-      return new Blob([ab], { type: mimeString });
-    },
     saveData() {
       if (this.valid) {
         this.isSending = true;
         const payload = {
+          gypsy_id: this.gypsyId,
           email_id: this.email,
-          name: this.name,
-          country_prefix: this.country,
-          mobile_number: this.mobile,
-          gender: this.gender,
-          app_id: this.$appId,
-          registered_type: this.isSmall ? "M" : "W",
-          country_name: this.countryName,
           password: this.password2,
         };
-        if (this.imageSend !== null) {
-          const blob = this.dataURItoBlob(this.imageSend);
-          const file = new File([blob], "image.jpg", { type: "image/jpeg" });
-          payload["image"] = file;
-          // payload["image"] = this.imageSend;
-        }
         axios
-          .post(`/gypsy/save-normal-user`, payload, {
+          .post(`/gypsy-set-password`, payload, {
             headers: {
               "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${this.token}`,
             },
           })
           .then((response) => {
             const data = response.data;
             console.log(data);
             this.successMessage = data.message;
-            localStorage.setItem("name", data.data.name);
-            localStorage.setItem("email", data.data.email_id);
-            localStorage.setItem("g_id", data.data.gypsy_ref_no);
-            localStorage.setItem("user_image", data.data.image);
-            localStorage.setItem("last_login", data.data.last_login);
-            localStorage.setItem("token", data.data.token);
+            // localStorage.setItem("name", data.data.name);
+            // localStorage.setItem("email", data.data.email_id);
+            // localStorage.setItem("g_id", data.data.gypsy_ref_no);
+            // localStorage.setItem("user_image", data.data.image);
+            // localStorage.setItem("last_login", data.data.last_login);
+            // localStorage.setItem("token", data.data.token);
             this.isSuccess = true;
-            this.email = "";
-            this.name = "";
-            this.country = null;
-            this.city = null;
-            this.mobile = "";
-            this.gender = "";
+            // this.email = "";
+            // this.name = "";
+            // this.country = null;
+            // this.city = null;
+            // this.mobile = "";
+            // this.gender = "";
             app.config.globalProperties.$eventBus.$emit(
               "changeHeaderWelcome",
               "Sign Up Completed"
