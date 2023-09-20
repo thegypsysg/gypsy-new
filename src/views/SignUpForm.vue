@@ -7,6 +7,9 @@
       <PersonalDetailMobile @nextStep="nextStep" @backStep="backStep" />
     </div>
     <div v-else-if="currentStep === 3">
+      <AdditionalSecurity @nextStep="nextStep" @backStep="backStep" />
+    </div>
+    <div v-else-if="currentStep === 4">
       <ResultRegister @nextStep="nextStep" @backStep="backStep" />
     </div>
     <!-- <div v-else-if="currentStep === 4">
@@ -35,6 +38,7 @@ import Welcome from "@/components/SignUp/Welcome.vue";
 // import InputEmail from '@/components/SignUp/InputEmail.vue';
 import PersonalDetailMobile from "@/components/SignUpMobile/PersonalDetailMobile.vue";
 import ResultRegister from "@/components/SignUpMobile/ResultRegister.vue";
+import AdditionalSecurity from "@/components/SignUpMobile/AdditionalSecurity.vue";
 // import EmailVerification from "@/components/SignUp/EmailVerification.vue";
 // import WhereAreYou from "@/components/SignUp/WhereAreYou.vue";
 // import AdditionalInformation from "@/components/SignUp/AdditionalInformation.vue";
@@ -46,6 +50,7 @@ export default {
     Welcome,
     // EmailVerification,
     PersonalDetailMobile,
+    AdditionalSecurity,
     ResultRegister,
   },
   data() {

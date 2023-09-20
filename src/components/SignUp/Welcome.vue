@@ -183,12 +183,56 @@
                   <v-text-field
                     v-model="email"
                     :rules="emailRules"
-                    class="login-input mb-8"
+                    class="login-input mb-4"
                     type="email"
                     variant="outlined"
                     placeholder="Email Address"
                     :persistent-hint="true"
                   />
+                  <transition name="fade">
+                    <div v-if="isLogin">
+                      <label style="font-size: 24px; font-weight: 600"
+                        >Password</label
+                      >
+                      <v-text-field
+                        v-model="password"
+                        :append-inner-icon="
+                          showPassword ? 'mdi-eye' : 'mdi-eye-off'
+                        "
+                        :type="showPassword ? 'text' : 'password'"
+                        :rules="passwordRules"
+                        variant="outlined"
+                        class="login-input mb-3"
+                        placeholder="Password"
+                        @click:append-inner="showPassword = !showPassword"
+                      ></v-text-field>
+                      <div class="d-flex align-center">
+                        <v-checkbox v-model="rememberMe" class="black--text">
+                          <template v-slot:label>
+                            <span
+                              style="
+                                font-weight: 400;
+                                font-size: 14px;
+                                color: #000 !important;
+                              "
+                              >Remember this Device</span
+                            >
+                          </template>
+                        </v-checkbox>
+                        <a
+                          href="#"
+                          class="text-body-2 font-weight-regular mt-n4"
+                          style="
+                            text-decoration: none;
+                            color: #4b80b1;
+                            font-weight: 400;
+                            font-size: 12px;
+                          "
+                          >Forgot Password?</a
+                        >
+                      </div>
+                    </div>
+                  </transition>
                 </template>
                 <template v-if="isMobile && !isSendOtp">
                   <label class="mt-n4" style="font-size: 24px; font-weight: 600"
@@ -273,14 +317,14 @@
                   </div>
                 </template>
                 <v-btn
-                  v-if="!isMobile"
+                  v-if="!isMobile && !isLogin"
                   type="submit"
                   variant="outlined"
                   block
                   class="login-btn"
                   :disabled="!isNext || isSending"
                   :class="{ 'login-btn-mobile': isSmall, 'mt-6': isMobile }"
-                  @click="sendData"
+                  @click="sendDataEmail"
                 >
                   <v-progress-circular
                     v-if="isSending"
@@ -289,6 +333,23 @@
                     indeterminate
                   />
                   <span v-else>Next</span>
+                </v-btn>
+                <v-btn
+                  v-if="isLogin && !isMobile"
+                  type="submit"
+                  variant="outlined"
+                  block
+                  class="login-btn"
+                  :disabled="!isNext || isSending"
+                  :class="{ 'login-btn-mobile': isSmall, 'mt-6': isMobile }"
+                >
+                  <v-progress-circular
+                    v-if="isSending"
+                    :size="20"
+                    color="primary"
+                    indeterminate
+                  />
+                  <span v-else>Sign In</span>
                 </v-btn>
                 <!-- <v-btn
                   v-if="isMobile"
@@ -310,10 +371,10 @@
                   class="login-btn text-none text-white w-100 mt-3"
                   :disabled="!isNext"
                   :class="{ 'login-btn-mobile': isSmall, 'mt-6': isMobile }"
-                  @click="isSendOtp = true"
+                  @click="sendDataMobile"
                 >
                   <!-- @click="nextStep()" -->
-                  Send OTP
+                  Next
                 </v-btn>
               </v-form>
             </v-card>
@@ -369,7 +430,11 @@ export default {
       valid: false,
       isMobile: false,
       isNext: false,
+      isLogin: false,
+      rememberMe: false,
+      showPassword: false,
       email: null,
+      password: "",
       mobile: null,
       otp: "",
       phoneEvent: null,
@@ -385,6 +450,12 @@ export default {
         (value) => {
           if (/.+@.+\..+/.test(value)) return true;
           return "E-mail must be valid.";
+        },
+      ],
+      passwordRules: [
+        (value) => {
+          if (value) return true;
+          return "Password is requred.";
         },
       ],
       screenWidth: window.innerWidth,
@@ -473,7 +544,6 @@ export default {
     },
     nextStep() {
       this.$emit("nextStep");
-      localStorage.setItem("mobile", this.mobile);
     },
     loginSocial(social_name) {
       axios
@@ -492,7 +562,40 @@ export default {
           window.location.href = "/sign-in";
         });
     },
-    sendData() {
+    sendDataMobile() {
+      if (this.valid) {
+        this.isSending = true;
+        const payload = {
+          mobile_number: this.mobile,
+        };
+        axios
+          .post(`/gypsy-registration/check-mobile-exists`, payload)
+          .then((response) => {
+            const data = response.data;
+            this.successMessage = data.message;
+            this.isSuccess = true;
+            localStorage.setItem("mobile", this.mobile);
+            // this.email = "";
+            this.nextStep();
+          })
+          .catch((error) => {
+            // eslint-disable-next-line
+            console.log(error);
+            const message = error.response.data.mobile_number
+              ? error.response.data.mobile_number[0]
+              : error.response.data.message
+              ? error.response.data.message
+              : "Something Wrong!!!";
+            this.errorMessage = message;
+            this.isError = true;
+            this.isSending = false;
+          })
+          .finally(() => {
+            this.isSending = false;
+          });
+      }
+    },
+    sendDataEmail() {
       if (this.valid) {
         this.isSending = true;
         const payload = {
@@ -518,6 +621,8 @@ export default {
               : "Something Wrong!!!";
             this.errorMessage = message;
             this.isError = true;
+            this.isLogin = true;
+            this.isSending = false;
           })
           .finally(() => {
             this.isSending = false;
@@ -540,14 +645,23 @@ export default {
   min-height: 100vh;
 }
 
-.login-input .v-text-field input:-webkit-autofill {
-  -webkit-box-shadow: 0 0 0 30px #f5f5f5 inset !important;
+.login-input ::v-deep input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 30px #fff inset !important;
+  -webkit-text-fill-color: #333 !important;
+}
+.login-input ::v-deep input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 30px #fff inset !important;
   -webkit-text-fill-color: #333 !important;
 }
 
 /* Firefox */
-.login-input .v-text-field input:-moz-autofill {
-  -moz-box-shadow: 0 0 0 30px #f5f5f5 inset !important;
+.login-input ::v-deep input:-moz-autofill {
+  -moz-box-shadow: 0 0 0 30px #fff inset !important;
+  -moz-text-fill-color: #333 !important;
+}
+/* Firefox */
+.login-input ::v-deep input:-moz-autofill:focus {
+  -moz-box-shadow: 0 0 0 30px #fff inset !important;
   -moz-text-fill-color: #333 !important;
 }
 
@@ -663,5 +777,14 @@ export default {
 .form-control[readonly] {
   background-color: #e9ecef;
   opacity: 1;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

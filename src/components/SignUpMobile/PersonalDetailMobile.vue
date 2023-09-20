@@ -682,22 +682,28 @@ export default {
               console.log(data);
               this.successMessage = data.message;
               localStorage.setItem("name", data.data.name);
-              localStorage.setItem("email", data.data.email_id);
+              localStorage.setItem("mobile", data.data.mobile_number);
+              if (data.data.email_id) {
+                localStorage.setItem("email", data.data.email_id);
+              } else {
+                localStorage.setItem("email", "");
+              }
               localStorage.setItem("g_id", data.data.gypsy_ref_no);
+              localStorage.setItem("gypsy_id", data.data.gypsy_id);
               localStorage.setItem("user_image", data.data.image);
               localStorage.setItem("last_login", data.data.last_login);
               localStorage.setItem("token", data.data.token);
               this.isSuccess = true;
-              this.email = "";
-              this.name = "";
-              this.country = null;
-              this.city = null;
-              this.mobile = "";
-              this.gender = "";
-              app.config.globalProperties.$eventBus.$emit(
-                "changeHeaderWelcome",
-                "Sign Up Completed"
-              );
+              // this.email = "";
+              // this.name = "";
+              // this.country = null;
+              // this.city = null;
+              // this.mobile = "";
+              // this.gender = "";
+              // app.config.globalProperties.$eventBus.$emit(
+              //   "changeHeaderWelcome",
+              //   "Sign Up Completed"
+              // );
               this.nextStep();
             })
             .catch((error) => {
@@ -705,6 +711,8 @@ export default {
               console.log(error);
               const message = error.response.data.email_id
                 ? error.response.data.email_id[0]
+                : error.response.data.mobile_number
+                ? error.response.data.mobile_number[0]
                 : error.response.data.message === ""
                 ? "Something Wrong!!!"
                 : error.response.data.message;

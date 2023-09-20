@@ -295,14 +295,19 @@
                   <v-col cols="6">
                     <label>Password </label>
                     <div class="d-flex align-center">
-                      <input
-                        v-model="input.password"
-                        type="password"
-                        required
-                        class="form-control mt-2"
-                        placeholder="Enter Password"
-                        :disabled="!isChangePassword"
-                      />
+                      <div>
+                        <input
+                          v-model="input.password"
+                          type="password"
+                          required
+                          class="form-control mt-2"
+                          placeholder="Enter Password"
+                          :disabled="!isChangePassword"
+                        />
+                        <h6 v-if="isPassword == false" class="w-100 text-red">
+                          Password must be 8 characters
+                        </h6>
+                      </div>
                       <!-- <v-text-field
                         v-model="input.password"
                         :append-inner-icon="
@@ -322,20 +327,28 @@
                         class="text-none text-subtitle-1 mt-2"
                         color="blue"
                         variant="flat"
-                        @click="changePassword"
+                        @click="isChangePassword = !isChangePassword"
                       >
                         Change
                       </v-btn>
                       <v-btn
                         v-if="isChangePassword"
-                        class="text-none text-subtitle-1 mt-2"
+                        class="text-none text-subtitle-1"
+                        :class="{ 'mt-2': isPassword, 'mt-n2': !isPassword }"
                         color="success"
                         variant="flat"
-                        @click="isChangePassword = !isChangePassword"
+                        @click="changePassword()"
                       >
                         Save Changes
                       </v-btn>
                     </div>
+
+                    <v-alert
+                      class="my-2"
+                      v-model="isPasswordChanged"
+                      type="success"
+                      :text="successMessage"
+                    ></v-alert>
                   </v-col>
                 </v-row>
                 <v-row
@@ -657,33 +670,45 @@
             <v-col>
               <label>Password </label>
               <div class="d-flex align-center">
-                <input
-                  v-model="input.password"
-                  type="password"
-                  required
-                  class="form-control mt-2"
-                  placeholder="Enter Password"
-                  :disabled="!isChangePassword"
-                />
+                <div>
+                  <input
+                    v-model="input.password"
+                    type="password"
+                    required
+                    class="form-control mt-2"
+                    placeholder="Enter Password"
+                    :disabled="!isChangePassword"
+                  />
+                  <h6 v-if="isPassword == false" class="w-100 text-red">
+                    Password must be 8 characters
+                  </h6>
+                </div>
                 <v-btn
                   v-if="!isChangePassword"
                   class="text-none text-subtitle-1 mt-2"
                   color="blue"
                   variant="flat"
-                  @click="changePassword"
+                  @click="isChangePassword = !isChangePassword"
                 >
                   Change
                 </v-btn>
                 <v-btn
                   v-if="isChangePassword"
-                  class="text-none text-subtitle-1 mt-2"
+                  class="text-none text-subtitle-1"
+                  :class="{ 'mt-2': isPassword, 'mt-n2': !isPassword }"
                   color="success"
                   variant="flat"
-                  @click="isChangePassword = !isChangePassword"
+                  @click="changePassword()"
                 >
                   Save Changes
                 </v-btn>
               </div>
+              <v-alert
+                class="my-2"
+                v-model="isPasswordChanged"
+                type="success"
+                :text="successMessage"
+              ></v-alert>
             </v-col>
           </v-row>
           <v-row>
@@ -832,6 +857,8 @@ export default {
       isEmailVerified: false,
       isPhoneVerified: false,
       isChangePassword: false,
+      isPasswordChanged: false,
+      isPassword: true,
       isChangePhone: false,
       showPassword: false,
       menuOpen: false,
@@ -1132,6 +1159,74 @@ export default {
           this.isSending = false;
         });
     },
+    changePassword() {
+      if (this.input.password.length != 8) {
+        this.isPassword = false;
+      } else {
+        this.isPassword = true;
+      }
+      this.isSending = true;
+      const payload = {
+        gypsy_id: this.input.id,
+        email_id: this.input.email,
+        password: this.input.password,
+      };
+      const token = localStorage.getItem("token");
+      if (this.isPassword == true) {
+        axios
+          .post(`/gypsy-change-password`, payload, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+            },
+          })
+          .then((response) => {
+            const data = response.data;
+            console.log(data);
+            this.successMessage = data.message;
+            // localStorage.setItem("name", data.data.name);
+            // localStorage.setItem("email", data.data.email_id);
+            // localStorage.setItem("g_id", data.data.gypsy_ref_no);
+            // localStorage.setItem("user_image", data.data.image);
+            // localStorage.setItem("last_login", data.data.last_login);
+            // localStorage.setItem("token", data.data.token);
+            // this.isSuccess = true;
+            this.isChangePassword = false;
+            this.isPasswordChanged = true;
+            setTimeout(() => {
+              this.isPasswordChanged = false;
+            }, 5000);
+            this.input.password = "";
+            // this.email = "";
+            // this.name = "";
+            // this.country = null;
+            // this.city = null;
+            // this.mobile = "";
+            // this.gender = "";
+            // app.config.globalProperties.$eventBus.$emit(
+            //   "changeHeaderWelcome",
+            //   "Sign Up Completed"
+            // );
+            // this.nextStep();
+            // this.getUserData();
+          })
+          .catch((error) => {
+            // eslint-disable-next-line
+            console.log(error);
+            const message = error.response.data.email_id
+              ? error.response.data.email_id[0]
+              : error.response.data.message === ""
+              ? "Something Wrong!!!"
+              : error.response.data.message;
+            this.errorMessage = message;
+            this.isError = true;
+            this.isChangePassword = false;
+          })
+          .finally(() => {
+            this.isSending = false;
+          });
+      }
+    },
     onFileChangeInput(e) {
       var files = e.target.files || e.dataTransfer.files;
       this.image = files[0];
@@ -1155,10 +1250,6 @@ export default {
     },
     handleResize() {
       this.screenWidth = window.innerWidth;
-    },
-    changePassword() {
-      this.input.password = "";
-      this.isChangePassword = true;
     },
     onDateInput() {
       // You can perform any necessary processing here when the date is inputted
