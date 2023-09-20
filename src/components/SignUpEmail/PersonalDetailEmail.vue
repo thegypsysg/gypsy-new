@@ -619,7 +619,7 @@ export default {
       if (!event) return;
       var file = event.target.files[0];
       this.image = await this.toBase64(file);
-      this.imageSend = await this.toBase64(file);
+      this.imageSend = file;
       this.$refs.cropperDialog.initCropper(file.type);
     },
 

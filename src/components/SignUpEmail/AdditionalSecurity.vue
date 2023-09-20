@@ -47,10 +47,14 @@
                           'mt-4': isSmall,
                         }"
                         :rules="passwordRules"
-                        type="password"
+                        :append-inner-icon="
+                          showPassword1 ? 'mdi-eye' : 'mdi-eye-off'
+                        "
+                        :type="showPassword1 ? 'text' : 'password'"
                         :maxLength="8"
                         variant="outlined"
                         placeholder="Password"
+                        @click:append-inner="showPassword1 = !showPassword1"
                       />
                       <v-text-field
                         v-model="password2"
@@ -59,10 +63,14 @@
                           'mt-2': !isSmall,
                         }"
                         :rules="password2Rules"
-                        type="password"
+                        :append-inner-icon="
+                          showPassword2 ? 'mdi-eye' : 'mdi-eye-off'
+                        "
+                        :type="showPassword2 ? 'text' : 'password'"
                         :maxLength="8"
                         variant="outlined"
                         placeholder="Re-enter Password"
+                        @click:append-inner="showPassword2 = !showPassword2"
                       />
                     </div>
 
@@ -176,6 +184,8 @@ export default {
       screenWidth: window.innerWidth,
       isError: false,
       isSuccess: false,
+      showPassword1: false,
+      showPassword2: false,
       errorMessage: "",
       successMessage: "",
     };

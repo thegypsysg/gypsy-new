@@ -280,7 +280,7 @@
                   class="login-btn"
                   :disabled="!isNext || isSending"
                   :class="{ 'login-btn-mobile': isSmall, 'mt-6': isMobile }"
-                  @click="sendOTP"
+                  @click="sendData"
                 >
                   <v-progress-circular
                     v-if="isSending"
@@ -506,7 +506,7 @@ export default {
             this.isSuccess = true;
             localStorage.setItem("email", this.email);
             // this.email = "";
-            this.nextStep();
+            this.$router.push("/sign-up-email");
           })
           .catch((error) => {
             // eslint-disable-next-line
