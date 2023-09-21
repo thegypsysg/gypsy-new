@@ -88,7 +88,7 @@
                       >
                         Next
                       </v-btn>
-                      <div
+                      <!-- <div
                         :class="{
                           'w-33 login-btn-mobile': isSmall,
                           'w-25': !isSmall,
@@ -103,7 +103,7 @@
                         @click="backStep"
                       >
                         Back
-                      </div>
+                      </div> -->
                     </div>
                   </v-form>
                 </v-col>

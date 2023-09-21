@@ -204,6 +204,7 @@
                         variant="outlined"
                         class="login-input mb-3"
                         placeholder="Password"
+                        :maxLength="8"
                         @click:append-inner="showPassword = !showPassword"
                       ></v-text-field>
                       <div class="d-flex align-center">
@@ -321,7 +322,7 @@
                   type="submit"
                   variant="outlined"
                   block
-                  class="login-btn"
+                  class="login-btn mt-8"
                   :disabled="!isNext || isSending"
                   :class="{ 'login-btn-mobile': isSmall, 'mt-6': isMobile }"
                   @click="sendDataEmail"
@@ -340,8 +341,9 @@
                   variant="outlined"
                   block
                   class="login-btn"
-                  :disabled="!isNext || isSending"
+                  :disabled="!isNext || isSending || !this.password"
                   :class="{ 'login-btn-mobile': isSmall, 'mt-6': isMobile }"
+                  @click="loginEmail()"
                 >
                   <v-progress-circular
                     v-if="isSending"
@@ -419,6 +421,7 @@ import MazPhoneNumberInput from "maz-ui/components/MazPhoneNumberInput";
 
 <script>
 import axios from "@/util/axios";
+import app from "@/util/eventBus";
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: "Welcome",
@@ -439,6 +442,7 @@ export default {
       otp: "",
       phoneEvent: null,
       isError: false,
+      token: null,
       isSuccess: false,
       errorMessage: "",
       successMessage: "",
@@ -602,14 +606,46 @@ export default {
           email_id: this.email,
         };
         axios
-          .post(`/gypsy-registration/check-email-exists`, payload)
+          .post(`/gypsy/check-info-by-email`, payload)
           .then((response) => {
-            const data = response.data;
-            this.successMessage = data.message;
-            this.isSuccess = true;
-            localStorage.setItem("email", this.email);
-            // this.email = "";
-            this.$router.push("/sign-up-email");
+            const data = response.data.data;
+            console.log(data);
+            if (data == null) {
+              localStorage.setItem("email", this.email);
+              this.$router.push("/sign-up-email");
+            } else if (data.social_type == "E" && data.password) {
+              this.isLogin = true;
+            } else if (data.social_type == "E" && !data.password) {
+              localStorage.setItem("email", data.email_id);
+              localStorage.setItem("gypsy_id", data.gypsy_id);
+              localStorage.setItem("token", data.token);
+              this.$router.push("/signup-email");
+            } else if (data.social_type == "G") {
+              this.successMessage =
+                "You last used Google to Sign up . Please use Google only to Login again.  Thank you";
+              this.isSuccess = true;
+            } else if (data.social_type == "F") {
+              this.successMessage =
+                "You last used Facebook to Sign up . Please use Facebook only to Login again.  Thank you";
+              this.isSuccess = true;
+            } else if (data.social_type == "L") {
+              this.successMessage =
+                "You last used Linked In to Sign up . Please use Linked In only to Login again.  Thank you";
+              this.isSuccess = true;
+            } else if (data.social_type == "T") {
+              this.successMessage =
+                "You last used Tik Tok to Sign up . Please use Tik Tok only to Login again.  Thank you";
+              this.isSuccess = true;
+            } else if (data.social_type == "X") {
+              this.successMessage =
+                "You last used Twitter to Sign up . Please use Twitter only to Login again.  Thank you";
+              this.isSuccess = true;
+            }
+            // this.successMessage = data.message;
+            // this.isSuccess = true;
+            // localStorage.setItem("email", this.email);
+            // // this.email = "";
+            // this.$router.push("/sign-up-email");
           })
           .catch((error) => {
             // eslint-disable-next-line
@@ -621,13 +657,53 @@ export default {
               : "Something Wrong!!!";
             this.errorMessage = message;
             this.isError = true;
-            this.isLogin = true;
-            this.isSending = false;
           })
           .finally(() => {
             this.isSending = false;
           });
       }
+    },
+    loginEmail() {
+      this.isSending = true;
+      const payload = {
+        email_id: this.email,
+        password: this.password,
+      };
+      axios
+        .post(`/gypsy/login`, payload)
+        .then((response) => {
+          const data = response.data;
+          console.log(data);
+          this.successMessage = data.message;
+          this.isSuccess = true;
+          // localStorage.setItem("name", data.data.name);
+          // localStorage.setItem("email", data.data.email_id);
+          // localStorage.setItem("g_id", data.data.gypsy_ref_no);
+          // localStorage.setItem("user_image", data.data.image);
+          // localStorage.setItem("last_login", data.data.last_login);
+          localStorage.setItem("token", data.token);
+          // this.email = "";
+          // this.name = "";
+          // this.country = null;
+          // this.city = null;
+          // this.mobile = "";
+          // this.gender = "";
+
+          app.config.globalProperties.$eventBus.$emit(
+            "changeHeaderWelcome3",
+            "Sign-Up / Sign-in"
+          );
+          this.$router.push("/");
+          // this.getUserData();
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          this.errorMessage = "Wrong Password";
+          this.isError = true;
+        })
+        .finally(() => {
+          this.isSending = false;
+        });
     },
     handleResize() {
       this.screenWidth = window.innerWidth;

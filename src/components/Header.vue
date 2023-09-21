@@ -760,6 +760,10 @@ export default {
       "changeHeaderWelcome2",
       this.changeHeaderWelcome2
     );
+    app.config.globalProperties.$eventBus.$on(
+      "changeHeaderWelcome3",
+      this.changeHeaderWelcome3
+    );
     // this.interval = setInterval(this.setCurrentTime, 1000);
   },
   beforeUnmount() {
@@ -771,6 +775,10 @@ export default {
     app.config.globalProperties.$eventBus.$off(
       "changeHeaderWelcome2",
       this.changeHeaderWelcome2
+    );
+    app.config.globalProperties.$eventBus.$off(
+      "changeHeaderWelcome3",
+      this.changeHeaderWelcome3
     );
   },
   unmounted() {
@@ -839,6 +847,10 @@ export default {
       this.getHeaderUserData();
       this.titleWelcome = title;
     },
+    changeHeaderWelcome3(title) {
+      this.getHeaderUserData2();
+      this.titleWelcome = title;
+    },
     selectTag(tag) {
       this.setActiveTag(tag); // Menetapkan tag yang dipilih sebagai tag aktif
 
@@ -854,6 +866,33 @@ export default {
             Authorization: `Bearer ${
               this.tokenProvider ? this.tokenProvider : token
             }`,
+          },
+        })
+        .then((response) => {
+          const data = response.data.data;
+          console.log(data);
+
+          this.userName = data.name;
+          this.userDated = data.last_login;
+          this.userImage =
+            data.image != null ? this.$fileURL + data.image : null;
+          // this.userImage = null;
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
+    },
+    getHeaderUserData2() {
+      this.isLoading = true;
+      const token = localStorage.getItem("token");
+      axios
+        .get(`/gypsy-user`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
         })
         .then((response) => {

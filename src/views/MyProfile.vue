@@ -101,7 +101,7 @@
                 </select> -->
               </v-col>
             </v-row>
-            <v-row class="mb-2">
+            <v-row>
               <v-col>
                 <label>Nationality</label>
 
@@ -124,6 +124,18 @@
                     {{ nation }}
                   </option>
                 </select> -->
+              </v-col>
+            </v-row>
+            <v-row class="mb-2">
+              <v-col class="d-flex justify-center">
+                <v-btn
+                  class="text-none text-subtitle-1"
+                  color="success"
+                  size="large"
+                  variant="flat"
+                >
+                  Save Changes
+                </v-btn>
               </v-col>
             </v-row>
           </v-card>
@@ -303,6 +315,7 @@
                           class="form-control mt-2"
                           placeholder="Enter Password"
                           :disabled="!isChangePassword"
+                          maxlength="8"
                         />
                         <h6 v-if="isPassword == false" class="w-100 text-red">
                           Password must be 8 characters
@@ -361,7 +374,9 @@
                       v-model="input.date"
                       required
                       class="form-control mt-2"
-                      type="date"
+                      type="text"
+                      id="dateInput"
+                      placeholder="DD/MM/YYYY"
                       @input="onDateInput"
                     />
                   </v-col>
@@ -517,7 +532,7 @@
         </div>
       </template>
       <template v-if="isSmall">
-        <div class="mobile-container">
+        <div class="mobile-container pb-16">
           <input
             ref="filePickerField"
             type="file"
@@ -678,6 +693,7 @@
                     class="form-control mt-2"
                     placeholder="Enter Password"
                     :disabled="!isChangePassword"
+                    maxlength="8"
                   />
                   <h6 v-if="isPassword == false" class="w-100 text-red">
                     Password must be 8 characters
@@ -720,7 +736,9 @@
                 v-model="input.date"
                 required
                 class="form-control mt-2"
-                type="date"
+                type="text"
+                id="dateInput"
+                placeholder="DD/MM/YYYY"
                 @input="onDateInput"
               />
             </v-col>
@@ -786,19 +804,20 @@
               />
             </v-col>
           </v-row>
-          <v-row>
-            <v-col>
-              <v-btn
-                class="text-none text-subtitle-1 w-100"
-                color="success"
-                size="large"
-                variant="flat"
-                @click="saveData()"
-              >
-                Save Changes
-              </v-btn>
-            </v-col>
-          </v-row>
+          <v-container
+            style="position: fixed; bottom: 1.5rem; left: 0; z-index: 99999"
+            class="d-flex justify-center align-center"
+          >
+            <v-btn
+              class="text-none text-subtitle-1"
+              color="success"
+              size="large"
+              variant="flat"
+              @click="saveData()"
+            >
+              Save Changes
+            </v-btn>
+          </v-container>
         </div>
       </template>
       <v-snackbar
@@ -1116,7 +1135,7 @@ export default {
         app_id: this.$appId,
         // password: this.input.password,
         marital_status: this.input.marital.value,
-        // date_of_birth: this.input.date,
+        date_of_birth: this.input.date,
         country_current: this.input.nationality.id,
         image: this.imageSend || null,
       };
@@ -1136,7 +1155,69 @@ export default {
           console.log(data);
           this.isSuccess = true;
           this.successMessage = data.message;
+          // localStorage.setItem("name", data.data.name);
+          // localStorage.setItem("user_image", data.data.image);
+          // localStorage.setItem("last_login", data.data.last_login);
+          // localStorage.setItem("token", data.data.token);
           this.getUserData();
+          // localStorage.setItem("name", data.data.name);
+          // localStorage.setItem("email", data.data.email_id);
+          // localStorage.setItem("g_id", data.data.gypsy_ref_no);
+          // localStorage.setItem("user_image", data.data.image);
+          // localStorage.setItem("last_login", data.data.last_login);
+          // localStorage.setItem("token", data.data.token);
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+          const message = error.response.data.mobile_number
+            ? error.response.data.mobile_number[0]
+            : error.response.data.message === ""
+            ? "Something Wrong!!!"
+            : error.response.data.message;
+          this.errorMessage = message;
+          this.isError = true;
+        })
+        .finally(() => {
+          this.isSending = false;
+        });
+    },
+    saveImage() {
+      this.isSending = true;
+      const payload = {
+        // "marital_status":"M",
+        // "country_current":1,
+        // "image":[file upload]
+
+        // name: this.input.name,
+        // mobile_number: this.input.phoneNew || this.input.phone,
+        // email_id: this.input.email,
+        // gender: this.input.gender.value,
+        // app_id: this.$appId,
+        // // password: this.input.password,
+        // marital_status: this.input.marital.value,
+        // // date_of_birth: this.input.date,
+        // country_current: this.input.nationality.id,
+        gypsy_id: this.input.id,
+        image: this.imageSend || null,
+      };
+      console.log(payload);
+      const token = localStorage.getItem("token");
+      axios
+        .post(`/save-gypsy-user`, payload, {
+          headers: {
+            Authorization: `Bearer ${
+              this.tokenProvider ? this.tokenProvider : token
+            }`,
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          const data = response.data;
+          console.log(data);
+          this.isSuccess = true;
+          this.successMessage = data.message;
+          // this.getUserData();
           // localStorage.setItem("name", data.data.name);
           // localStorage.setItem("email", data.data.email_id);
           // localStorage.setItem("g_id", data.data.gypsy_ref_no);
@@ -1238,6 +1319,9 @@ export default {
       var file = event.target.files[0];
       this.image = await this.toBase64(file);
       this.imageSend = file;
+      if (this.imageSend != null) {
+        this.saveImage();
+      }
       this.$refs.cropperDialog.initCropper(file.type);
     },
     async toBase64(file) {
@@ -1252,8 +1336,21 @@ export default {
       this.screenWidth = window.innerWidth;
     },
     onDateInput() {
-      // You can perform any necessary processing here when the date is inputted
-      // For example, you can call the calculateAge method to update the age
+      const formattedDate = this.input.date.replace(/\D/g, "");
+
+      // Memisahkan tanggal, bulan, dan tahun
+      const day = formattedDate.substring(0, 2);
+      const month = formattedDate.substring(2, 4);
+      const year = formattedDate.substring(4, 8);
+
+      // Memeriksa apakah tanggal, bulan, dan tahun valid
+      if (day && month && year) {
+        // Mengatur format tanggal yang benar
+        this.input.date = `${day}/${month}/${year}`;
+      } else {
+        this.input.date = formattedDate; // Tidak valid, tetapkan nilai yang sama
+      }
+      console.log(this.input.date);
       this.calculateAge(this.input.date);
     },
     calculateAge(date) {
@@ -1262,8 +1359,23 @@ export default {
         return;
       }
 
+      const formattedDate = date.split("/");
+      if (formattedDate.length !== 3) {
+        this.age = null;
+        return;
+      }
+
+      const day = parseInt(formattedDate[0]);
+      const month = parseInt(formattedDate[1]) - 1; // Subtract 1 to adjust for JavaScript's 0-based month indexing
+      const year = parseInt(formattedDate[2]);
+
+      if (isNaN(day) || isNaN(month) || isNaN(year)) {
+        this.age = null;
+        return;
+      }
+
       const today = new Date();
-      const birthDate = new Date(date);
+      const birthDate = new Date(year, month, day); // Corrected month here
       let age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
 

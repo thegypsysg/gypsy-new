@@ -5,6 +5,7 @@
         :is-welcome="
           currentRoute === '/sign-in' ||
           currentRoute === '/social-sign-up' ||
+          currentRoute === '/signup-email' ||
           currentRoute === '/sign-up-email' ||
           currentRoute === '/my-profile'
             ? true
