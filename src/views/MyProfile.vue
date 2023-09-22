@@ -195,13 +195,31 @@
                         }}</span
                       ></label
                     >
-                    <input
-                      v-model="input.email"
-                      type="email"
-                      disabled
-                      class="form-control mt-2"
-                      placeholder="Enter Email"
-                    />
+                    <div
+                      class="d-flex align-center mt-2 py-0"
+                      style="border: 1px solid #ced4da; border-radius: 0.25rem"
+                      :class="{
+                        'back-grey': !isChangeEmail,
+                        'bg-white': isChangeEmail,
+                      }"
+                    >
+                      <input
+                        v-model="input.email"
+                        type="email"
+                        :disabled="!isChangeEmail"
+                        class="form-control"
+                        style="border: none"
+                        placeholder="Enter Email"
+                      />
+                      <span
+                        v-if="!isChangeEmail"
+                        class="text-blue-darken-4 mx-2"
+                        style="cursor: pointer"
+                        @click="isChangeEmail = true"
+                      >
+                        Change
+                      </span>
+                    </div>
                     <!-- <v-text-field
                       v-model="input.email"
                       :rules="rules.emailRules"
@@ -879,6 +897,7 @@ export default {
       isPasswordChanged: false,
       isPassword: true,
       isChangePhone: false,
+      isChangeEmail: false,
       showPassword: false,
       menuOpen: false,
       isError: false,
@@ -1137,7 +1156,69 @@ export default {
         marital_status: this.input.marital.value,
         date_of_birth: this.input.date,
         country_current: this.input.nationality.id,
-        image: this.imageSend || null,
+        // image: this.imageSend || null,
+      };
+      console.log(payload);
+      const token = localStorage.getItem("token");
+      axios
+        .post(`/save-gypsy-user`, payload, {
+          headers: {
+            Authorization: `Bearer ${
+              this.tokenProvider ? this.tokenProvider : token
+            }`,
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          const data = response.data;
+          console.log(data);
+          this.isSuccess = true;
+          this.successMessage = data.message;
+          // localStorage.setItem("name", data.data.name);
+          // localStorage.setItem("user_image", data.data.image);
+          // localStorage.setItem("last_login", data.data.last_login);
+          // localStorage.setItem("token", data.data.token);
+          this.getUserData();
+          // localStorage.setItem("name", data.data.name);
+          // localStorage.setItem("email", data.data.email_id);
+          // localStorage.setItem("g_id", data.data.gypsy_ref_no);
+          // localStorage.setItem("user_image", data.data.image);
+          // localStorage.setItem("last_login", data.data.last_login);
+          // localStorage.setItem("token", data.data.token);
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+          const message = error.response.data.mobile_number
+            ? error.response.data.mobile_number[0]
+            : error.response.data.message === ""
+            ? "Something Wrong!!!"
+            : error.response.data.message;
+          this.errorMessage = message;
+          this.isError = true;
+        })
+        .finally(() => {
+          this.isSending = false;
+        });
+    },
+    saveData1() {
+      this.isSending = true;
+      const payload = {
+        // "marital_status":"M",
+        // "country_current":1,
+        // "image":[file upload]
+
+        gypsy_id: this.input.id,
+        // name: this.input.name,
+        // mobile_number: this.input.phoneNew || this.input.phone,
+        // email_id: this.input.email,
+        gender: this.input.gender.value,
+        // app_id: this.$appId,
+        // password: this.input.password,
+        marital_status: this.input.marital.value,
+        // date_of_birth: this.input.date,
+        country_current: this.input.nationality.id,
+        // image: this.imageSend || null,
       };
       console.log(payload);
       const token = localStorage.getItem("token");
@@ -1497,6 +1578,10 @@ export default {
 
 .loading-page {
   margin-top: 300px;
+}
+
+.back-grey {
+  background: #e9ecef;
 }
 
 @media (max-width: 599px) {

@@ -341,7 +341,7 @@
                   variant="outlined"
                   block
                   class="login-btn"
-                  :disabled="!isNext || isSending || !this.password"
+                  :disabled="!isNext || isSending || !password"
                   :class="{ 'login-btn-mobile': isSmall, 'mt-6': isMobile }"
                   @click="loginEmail()"
                 >
