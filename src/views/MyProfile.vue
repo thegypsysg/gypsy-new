@@ -344,20 +344,6 @@
                         Password must be 8 characters
                       </h6>
                     </div>
-                    <!-- <v-text-field
-                        v-model="input.password"
-                        :append-inner-icon="
-                          showPassword ? 'mdi-eye' : 'mdi-eye-off'
-                        "
-                        :type="showPassword ? 'text' : 'password'"
-                        variant="outlined"
-                        placeholder="Enter Password"
-                        class="my-2 custom-input"
-                        density="compact"
-                        :disabled="!isChangePassword"
-                        :rules="rules.passwordRules"
-                        @click:append-inner="showPassword = !showPassword"
-                      /> -->
                     <div v-if="isChangePassword">
                       <div
                         class="d-flex align-center mt-4 py-0"
@@ -444,33 +430,14 @@
                     Save Changes
                   </v-btn>
                 </div>
-                <v-row>
-                  <v-col cols="6">
-                    <VueMultiselect
-                      v-model="input.location"
-                      class="mt-2"
-                      :options="resource.location"
-                      placeholder="Select Location"
-                    />
-                    <!-- <v-autocomplete
-                      v-model="input.location"
-                      :items="resource.location"
-                      variant="outlined"
-                      placeholder="Select Location"
-                      clearable
-                      class="mt-2"
-                      density="compact"
-                      :rules="rules.locationRules"
-                    /> -->
-                  </v-col>
-                </v-row>
+
                 <v-row>
                   <v-col cols="6">
                     <VueMultiselect
                       v-model="input.country"
                       class="mt-2"
                       :options="resource.country"
-                      placeholder="Select Country"
+                      placeholder="Current Country"
                     />
                     <!-- <v-autocomplete
                       v-model="input.country"
@@ -484,15 +451,12 @@
                     /> -->
                   </v-col>
                 </v-row>
-                <v-row
-                  style="border-bottom: 1px solid rgb(189, 189, 189)"
-                  class="mb-n8 pb-2"
-                >
+                <v-row>
                   <v-col cols="6">
                     <VueMultiselect
                       v-model="input.city"
                       :options="resource.city"
-                      placeholder="Select City"
+                      placeholder="Current City"
                     />
                     <!-- <v-autocomplete
                       v-model="input.city"
@@ -503,6 +467,26 @@
                       class="mt-2"
                       density="compact"
                       :rules="rules.cityRules"
+                    /> -->
+                  </v-col>
+                </v-row>
+                <v-row class="mb-n8 pb-2">
+                  <v-col cols="6">
+                    <VueMultiselect
+                      v-model="input.town"
+                      class="mt-2"
+                      :options="resource.town"
+                      placeholder="Current Town"
+                    />
+                    <!-- <v-autocomplete
+                      v-model="input.location"
+                      :items="resource.location"
+                      variant="outlined"
+                      placeholder="Select Location"
+                      clearable
+                      class="mt-2"
+                      density="compact"
+                      :rules="rules.locationRules"
                     /> -->
                   </v-col>
                 </v-row>
@@ -766,34 +750,59 @@
           <v-row>
             <v-col>
               <label>Password </label>
-              <div class="d-flex align-center">
-                <div>
-                  <input
-                    v-model="input.password"
-                    type="password"
-                    required
-                    class="form-control mt-2"
-                    placeholder="Enter Password"
-                    :disabled="!isChangePassword"
-                    maxlength="8"
-                  />
-                  <h6 v-if="isPassword == false" class="w-100 text-red">
-                    Password must be 8 characters
-                  </h6>
-                </div>
-                <v-btn
-                  v-if="!isChangePassword"
-                  class="text-none text-subtitle-1 mt-2"
-                  color="blue"
-                  variant="flat"
+              <div
+                class="d-flex align-center mt-2 py-0 back-grey"
+                style="border: 1px solid #ced4da; border-radius: 0.25rem"
+              >
+                <input
+                  v-model="input.password"
+                  type="password"
+                  required
+                  disabled
+                  class="form-control"
+                  style="border: none"
+                  placeholder="Enter Password"
+                  maxlength="8"
+                />
+                <span
+                  class="text-blue-darken-4 mx-2"
+                  style="cursor: pointer"
                   @click="isChangePassword = !isChangePassword"
                 >
                   Change
-                </v-btn>
+                </span>
+                <h6 v-if="isPassword == false" class="w-100 text-red">
+                  Password must be 8 characters
+                </h6>
+              </div>
+              <div v-if="isChangePassword">
+                <div
+                  class="d-flex align-center mt-4 py-0"
+                  style="border: 1px solid #ced4da; border-radius: 0.25rem"
+                >
+                  <input
+                    v-model="input.passwordNew"
+                    :type="!showPassword ? 'password' : 'text'"
+                    required
+                    class="form-control"
+                    style="border: none"
+                    placeholder="Enter Password"
+                    maxlength="8"
+                  />
+                  <span
+                    class="toggle-password mr-4 ml-2 mdi"
+                    :class="{
+                      'mdi-eye': showPassword,
+                      'mdi-eye-off': !showPassword,
+                    }"
+                    style="cursor: pointer; font-size: 26px"
+                    @click="showPassword = !showPassword"
+                  >
+                  </span>
+                </div>
                 <v-btn
-                  v-if="isChangePassword"
                   class="text-none text-subtitle-1"
-                  :class="{ 'mt-2': isPassword, 'mt-n2': !isPassword }"
+                  :class="{ 'mt-4': isPassword, 'mt-n2': !isPassword }"
                   color="success"
                   variant="flat"
                   @click="changePassword()"
@@ -801,6 +810,7 @@
                   Save Changes
                 </v-btn>
               </div>
+
               <v-alert
                 class="my-2"
                 v-model="isPasswordChanged"
@@ -1052,7 +1062,7 @@ export default {
         nationality: [],
         countryCodes: [],
         favorite: [],
-        nearest: [
+        town: [
           "Parkway Parade",
           "Waterway Point",
           "Causeway Point",
@@ -1060,14 +1070,6 @@ export default {
           "Tampines Mall",
           "Jewel",
           "Our Tampines Hub",
-        ],
-        location: [
-          "Singapore",
-          "India",
-          "Malaysia",
-          // { name: "Singapore", value: "Singapore" },
-          // { name: "India", value: "India" },
-          // { name: "Malaysia:", value: "Malaysia" },
         ],
         city: ["Alexandra", "Ang Mo Kio", "Bedok", "Bukit Panjang"],
         country: ["Singapore"],
@@ -1081,8 +1083,12 @@ export default {
     age() {
       if (!this.input.date) return null;
 
+      const [day, month, year] = this.input.date.split("/").map(Number);
+      if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
+
       const today = new Date();
-      const birthDate = new Date(this.input.date);
+      const birthDate = new Date(year, month - 1, day); // Month is 0-based in JavaScript
+
       let age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
 
@@ -1689,50 +1695,12 @@ export default {
 
       // Memeriksa apakah tanggal, bulan, dan tahun valid
       if (day && month && year) {
-        // Mengatur format tanggal yang benar
-        this.input.date = `${day}/${month}/${year}`;
+        // Mengatur format tanggal yang sesuai dengan JavaScript (mm/dd/yyyy)
+        this.input.date = `${month}/${day}/${year}`;
       } else {
         this.input.date = formattedDate; // Tidak valid, tetapkan nilai yang sama
       }
       console.log(this.input.date);
-      this.calculateAge(this.input.date);
-    },
-    calculateAge(date) {
-      if (!date) {
-        this.age = null;
-        return;
-      }
-
-      const dateParts = date.split("/");
-
-      if (dateParts.length !== 3) {
-        this.age = null; // Tidak valid, set umur menjadi null
-        return;
-      }
-
-      const day = parseInt(dateParts[0]);
-      const month = parseInt(dateParts[1]) - 1; // Januari dimulai dari indeks 0
-      const year = parseInt(dateParts[2]);
-
-      // Validasi tanggal, bulan, dan tahun
-      if (isNaN(day) || isNaN(month) || isNaN(year)) {
-        this.age = null; // Tidak valid, set umur menjadi null
-        return;
-      }
-
-      const today = new Date();
-      const birthDate = new Date(year, month, day);
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const monthDiff = today.getMonth() - birthDate.getMonth();
-
-      if (
-        monthDiff < 0 ||
-        (monthDiff === 0 && today.getDate() < birthDate.getDate())
-      ) {
-        age--;
-      }
-
-      this.age = age;
     },
   },
 };
