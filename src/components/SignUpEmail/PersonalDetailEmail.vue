@@ -634,6 +634,21 @@ export default {
     goBack() {
       this.$emit("backStep");
     },
+    hideEmail(email) {
+      const atIndex = email.indexOf("@");
+      if (atIndex >= 0) {
+        const username = email.substring(0, atIndex);
+        const hiddenPart = username
+          .substring(0, Math.max(0, username.length - 6))
+          .replace(/./g, "*");
+        const visiblePart = username.substring(
+          Math.max(0, username.length - 6)
+        );
+        return hiddenPart + visiblePart + email.substring(atIndex);
+      } else {
+        return email;
+      }
+    },
     saveData() {
       if (this.valid) {
         if (this.name == "") {
@@ -717,11 +732,20 @@ export default {
             .catch((error) => {
               // eslint-disable-next-line
               console.log(error);
-              const message = error.response.data.email_id
-                ? error.response.data.email_id[0]
-                : error.response.data.message === ""
-                ? "Something Wrong!!!"
-                : error.response.data.message;
+              const message =
+                error.response.status == 422 &&
+                error.response.data.email_id &&
+                error.response.data.message
+                  ? `This Mobile Number ${
+                      this.mobile
+                    } is already registered to ${this.hideEmail(
+                      error.response.data.email_id
+                    )} pls log in use that email or type a new Mobile number`
+                  : error.response.data.email_id
+                  ? error.response.data.email_id[0]
+                  : error.response.data.message === ""
+                  ? "Something Wrong!!!"
+                  : error.response.data.message;
               this.errorMessage = message;
               this.isError = true;
             })
