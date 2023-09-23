@@ -105,7 +105,6 @@
                     <input
                       v-model="email"
                       type="email"
-                      disabled
                       class="form-control pl-2 mt-2 mb-4"
                       placeholder="Enter Your Email Address"
                     />
@@ -596,6 +595,10 @@ export default {
         ? "G"
         : this.$route.query.social.toLowerCase() == "facebook"
         ? "F"
+        : this.$route.query.social.toLowerCase() == "tiktok"
+        ? "T"
+        : this.$route.query.social.toLowerCase() == "twitter"
+        ? "X"
         : "";
     },
   },

@@ -107,6 +107,7 @@
                     style="background: black"
                     color="white"
                     icon
+                    @click="loginSocial('tiktok')"
                   >
                     <v-icon :size="!isSmall ? '18' : '24'">
                       <i class="fa-brands fa-tiktok" />
