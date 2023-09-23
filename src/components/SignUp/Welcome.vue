@@ -119,6 +119,7 @@
                     style="background: #1c96e8"
                     color="white"
                     icon="mdi-twitter"
+                    @click="loginSocial('twitter')"
                   />
                 </div>
                 <div class="login-footer mt-8">
