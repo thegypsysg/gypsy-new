@@ -25,6 +25,7 @@
                 >
                   <v-img
                     style="width: 100%; height: 100%; border-radius: 20px"
+                    cover
                     :src="
                       image_path
                         ? image_path
@@ -32,14 +33,28 @@
                     "
                   />
                 </div>
-                <div class="mt-2 w-100 d-flex justify-center">
+                <div
+                  class="mt-4 w-100 d-flex align-center"
+                  :class="{
+                    'justify-space-between': image_path,
+                    'justify-center': !image_path,
+                  }"
+                >
                   <v-btn
+                    size="small"
                     color="blue"
                     variant="outlined"
                     @click="$refs.filePickerField.click()"
                   >
                     Upload Picture
                   </v-btn>
+                  <v-icon
+                    v-if="image_path"
+                    @click="deleteImage()"
+                    color="red"
+                    icon="mdi-trash-can-outline"
+                  >
+                  </v-icon>
                 </div>
                 <image-cropper-dialog
                   ref="cropperDialog"
@@ -133,6 +148,7 @@
                   color="success"
                   size="large"
                   variant="flat"
+                  @click="saveDataDesktop1()"
                 >
                   Save Changes
                 </v-btn>
@@ -153,6 +169,7 @@
                   color="success"
                   size="large"
                   variant="flat"
+                  @click="saveDataDesktop2()"
                 >
                   Save Changes
                 </v-btn>
@@ -196,41 +213,41 @@
                       ></label
                     >
                     <div
-                      class="d-flex align-center mt-2 py-0"
+                      class="d-flex align-center mt-2 py-0 back-grey"
                       style="border: 1px solid #ced4da; border-radius: 0.25rem"
-                      :class="{
-                        'back-grey': !isChangeEmail,
-                        'bg-white': isChangeEmail,
-                      }"
                     >
                       <input
                         v-model="input.email"
                         type="email"
-                        :disabled="!isChangeEmail"
+                        disabled
                         class="form-control"
                         style="border: none"
                         placeholder="Enter Email"
                       />
                       <span
-                        v-if="!isChangeEmail"
                         class="text-blue-darken-4 mx-2"
                         style="cursor: pointer"
-                        @click="isChangeEmail = true"
+                        @click="isChangeEmail = !isChangeEmail"
                       >
                         Change
                       </span>
                     </div>
-                    <!-- <v-text-field
-                      v-model="input.email"
-                      :rules="rules.emailRules"
-                      placeholder="Enter Email"
-                      type="email"
-                      class="mt-2"
-                      hint="example@email.com"
-                      density="compact"
-                      variant="outlined"
-                      required
-                    /> -->
+                    <div v-if="isChangeEmail">
+                      <input
+                        v-model="input.emailNew"
+                        type="email"
+                        class="form-control mt-4"
+                        placeholder="Enter Email"
+                      />
+                      <v-btn
+                        class="text-none text-subtitle-1 mt-4"
+                        color="success"
+                        variant="flat"
+                        @click="saveEmail()"
+                      >
+                        Save Changes
+                      </v-btn>
+                    </div>
                   </v-col>
                 </v-row>
                 <v-row>
@@ -247,33 +264,26 @@
                         }}</span
                       ></label
                     >
-                    <div class="d-flex">
+                    <div
+                      class="d-flex align-center mt-2 py-0 back-grey"
+                      style="border: 1px solid #ced4da; border-radius: 0.25rem"
+                    >
                       <input
                         v-model="input.phone"
                         type="text"
                         required
-                        class="form-control mt-2"
+                        disabled
+                        class="form-control"
+                        style="border: none"
                         placeholder="Phone Number"
                       />
-                      <!-- <v-text-field
-                        v-model="input.phone"
-                        :counter="phoneNumberCounter"
-                        required
-                        disabled
-                        class="mt-2"
-                        type="number"
-                        density="compact"
-                        placeholder="Phone Number"
-                        variant="outlined"
-                      /> -->
-                      <v-btn
-                        class="text-none text-subtitle-1 mt-2"
-                        color="blue"
-                        variant="flat"
+                      <span
+                        class="text-blue-darken-4 mx-2"
+                        style="cursor: pointer"
                         @click="isChangePhone = !isChangePhone"
                       >
                         Change
-                      </v-btn>
+                      </span>
                     </div>
                     <div v-if="isChangePhone" class="mt-2">
                       <MazPhoneNumberInput
@@ -291,55 +301,50 @@
                         ]"
                         @update="phoneEvent = $event"
                       />
-                      <!-- <div class="d-flex mt-2">
-                        <v-autocomplete
-                          v-model="input.countryCode"
-                          :items="resource.countryCodes"
-                          label="Country Code"
-                          item-text="name"
-                          item-value="code"
-                          density="compact"
-                          outlined
-                        />
-
-                        <v-text-field
-                          v-model="input.phoneNew"
-                          :counter="phoneNumberCounter"
-                          required
-                          type="number"
-                          density="compact"
-                          placeholder="Phone Number"
-                          variant="outlined"
-                        />
-                      </div> -->
                       <v-btn
-                        class="text-none text-white w-100 mt-3"
+                        class="text-none text-subtitle-1 text-white w-100 mt-3"
                         color="#F0882D"
-                        size="large"
                         variant="flat"
+                        @click="saveMobile()"
                       >
-                        Send OTP
+                        Save
                       </v-btn>
                     </div>
+                    <v-alert
+                      class="my-2"
+                      v-model="isMobileChanged"
+                      type="success"
+                      :text="successMessage"
+                    ></v-alert>
                   </v-col>
                   <v-col cols="6">
                     <label>Password </label>
-                    <div class="d-flex align-center">
-                      <div>
-                        <input
-                          v-model="input.password"
-                          type="password"
-                          required
-                          class="form-control mt-2"
-                          placeholder="Enter Password"
-                          :disabled="!isChangePassword"
-                          maxlength="8"
-                        />
-                        <h6 v-if="isPassword == false" class="w-100 text-red">
-                          Password must be 8 characters
-                        </h6>
-                      </div>
-                      <!-- <v-text-field
+                    <div
+                      class="d-flex align-center mt-2 py-0 back-grey"
+                      style="border: 1px solid #ced4da; border-radius: 0.25rem"
+                    >
+                      <input
+                        v-model="input.password"
+                        type="password"
+                        required
+                        disabled
+                        class="form-control"
+                        style="border: none"
+                        placeholder="Enter Password"
+                        maxlength="8"
+                      />
+                      <span
+                        class="text-blue-darken-4 mx-2"
+                        style="cursor: pointer"
+                        @click="isChangePassword = !isChangePassword"
+                      >
+                        Change
+                      </span>
+                      <h6 v-if="isPassword == false" class="w-100 text-red">
+                        Password must be 8 characters
+                      </h6>
+                    </div>
+                    <!-- <v-text-field
                         v-model="input.password"
                         :append-inner-icon="
                           showPassword ? 'mdi-eye' : 'mdi-eye-off'
@@ -353,19 +358,37 @@
                         :rules="rules.passwordRules"
                         @click:append-inner="showPassword = !showPassword"
                       /> -->
-                      <v-btn
-                        v-if="!isChangePassword"
-                        class="text-none text-subtitle-1 mt-2"
-                        color="blue"
-                        variant="flat"
-                        @click="isChangePassword = !isChangePassword"
+                    <div v-if="isChangePassword">
+                      <div
+                        class="d-flex align-center mt-4 py-0"
+                        style="
+                          border: 1px solid #ced4da;
+                          border-radius: 0.25rem;
+                        "
                       >
-                        Change
-                      </v-btn>
+                        <input
+                          v-model="input.passwordNew"
+                          :type="!showPassword ? 'password' : 'text'"
+                          required
+                          class="form-control"
+                          style="border: none"
+                          placeholder="Enter Password"
+                          maxlength="8"
+                        />
+                        <span
+                          class="toggle-password mr-4 ml-2 mdi"
+                          :class="{
+                            'mdi-eye': showPassword,
+                            'mdi-eye-off': !showPassword,
+                          }"
+                          style="cursor: pointer; font-size: 26px"
+                          @click="showPassword = !showPassword"
+                        >
+                        </span>
+                      </div>
                       <v-btn
-                        v-if="isChangePassword"
                         class="text-none text-subtitle-1"
-                        :class="{ 'mt-2': isPassword, 'mt-n2': !isPassword }"
+                        :class="{ 'mt-4': isPassword, 'mt-n2': !isPassword }"
                         color="success"
                         variant="flat"
                         @click="changePassword()"
@@ -440,6 +463,8 @@
                       :rules="rules.locationRules"
                     /> -->
                   </v-col>
+                </v-row>
+                <v-row>
                   <v-col cols="6">
                     <VueMultiselect
                       v-model="input.country"
@@ -558,7 +583,7 @@
             hidden
             @change="launchCropper"
           />
-          <div class="image-container w-100 mb-4">
+          <div class="image-container d-flex justify-center w-100 w-100 mb-4">
             <!-- <v-img
                     style="width: 100%; height: 100%; border-radius: 20px"
                     :src="
@@ -567,35 +592,55 @@
                         : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
                     "
                   /> -->
-            <v-img
-              height="90"
-              :src="
-                image_path != ''
-                  ? image_path
-                  : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
-              "
-              class="avatar mx-auto"
-              :class="{ 'avatar-mobile': isSmall }"
-            />
-            <div class="mt-2 w-100 d-flex justify-center">
-              <v-btn
-                color="blue"
-                variant="outlined"
-                @click="$refs.filePickerField.click()"
+            <div>
+              <div
+                style="width: 170px; height: 120px; border-radius: 20px"
+                class="mt-5"
               >
-                Upload
-              </v-btn>
+                <v-img
+                  style="width: 100%; height: 100%; border-radius: 20px"
+                  cover
+                  :src="
+                    image_path
+                      ? image_path
+                      : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
+                  "
+                />
+              </div>
+              <div
+                class="mt-4 d-flex align-center"
+                :class="{
+                  'justify-space-between': image_path,
+                  'justify-center': !image_path,
+                }"
+              >
+                <v-btn
+                  size="small"
+                  color="blue"
+                  variant="outlined"
+                  @click="$refs.filePickerField.click()"
+                >
+                  Upload Picture
+                </v-btn>
+                <v-icon
+                  v-if="image_path"
+                  @click="deleteImage()"
+                  color="red"
+                  icon="mdi-trash-can-outline"
+                >
+                </v-icon>
+              </div>
+              <image-cropper-dialog
+                ref="cropperDialog"
+                :chosen-image="image"
+                @onReset="$refs.filePickerField.value = null"
+                @onCrop="
+                  (croppedImage) => {
+                    image_path = croppedImage;
+                  }
+                "
+              />
             </div>
-            <image-cropper-dialog
-              ref="cropperDialog"
-              :chosen-image="image"
-              @onReset="$refs.filePickerField.value = null"
-              @onCrop="
-                (croppedImage) => {
-                  image_path = croppedImage;
-                }
-              "
-            />
           </div>
           <v-row>
             <v-col>
@@ -621,19 +666,40 @@
                   >{{ isEmailVerified ? "(Verified)" : "(Not Verified)" }}</span
                 ></label
               >
-              <div class="d-flex align-center">
+              <div
+                class="d-flex align-center mt-2 py-0 back-grey"
+                style="border: 1px solid #ced4da; border-radius: 0.25rem"
+              >
                 <input
                   v-model="input.email"
                   type="email"
                   disabled
-                  class="form-control mt-2"
+                  class="form-control"
+                  style="border: none"
                   placeholder="Enter Email"
-                /><v-btn
-                  class="text-none text-subtitle-1 mt-2"
-                  color="blue"
-                  variant="flat"
+                />
+                <span
+                  class="text-blue-darken-4 mx-2"
+                  style="cursor: pointer"
+                  @click="isChangeEmail = !isChangeEmail"
                 >
                   Change
+                </span>
+              </div>
+              <div v-if="isChangeEmail">
+                <input
+                  v-model="input.emailNew"
+                  type="email"
+                  class="form-control mt-4"
+                  placeholder="Enter Email"
+                />
+                <v-btn
+                  class="text-none text-subtitle-1 mt-4"
+                  color="success"
+                  variant="flat"
+                  @click="saveEmail()"
+                >
+                  Save Changes
                 </v-btn>
               </div>
             </v-col>
@@ -650,34 +716,26 @@
                   >{{ isPhoneVerified ? "(Verified)" : "(Not Verified)" }}</span
                 ></label
               >
-              <div class="d-flex">
+              <div
+                class="d-flex align-center mt-2 py-0 back-grey"
+                style="border: 1px solid #ced4da; border-radius: 0.25rem"
+              >
                 <input
                   v-model="input.phone"
                   type="text"
                   required
                   disabled
-                  class="form-control mt-2"
+                  class="form-control"
+                  style="border: none"
                   placeholder="Phone Number"
                 />
-                <!-- <v-text-field
-                  v-model="input.phone"
-                  :counter="phoneNumberCounter"
-                  required
-                  disabled
-                  class="mt-2"
-                  type="number"
-                  density="compact"
-                  placeholder="Phone Number"
-                  variant="outlined"
-                /> -->
-                <v-btn
-                  class="text-none text-subtitle-1 mt-2"
-                  color="blue"
-                  variant="flat"
+                <span
+                  class="text-blue-darken-4 mx-2"
+                  style="cursor: pointer"
                   @click="isChangePhone = !isChangePhone"
                 >
                   Change
-                </v-btn>
+                </span>
               </div>
               <div v-if="isChangePhone" class="mt-2">
                 <MazPhoneNumberInput
@@ -689,14 +747,20 @@
                   @update="phoneEvent = $event"
                 />
                 <v-btn
-                  class="text-none text-white w-100 mt-3"
+                  class="text-none text-subtitle-1 text-white w-100 mt-3"
                   color="#F0882D"
-                  size="large"
                   variant="flat"
+                  @click="saveMobile()"
                 >
-                  Send OTP
+                  Save
                 </v-btn>
               </div>
+              <v-alert
+                class="my-2"
+                v-model="isMobileChanged"
+                type="success"
+                :text="successMessage"
+              ></v-alert>
             </v-col>
           </v-row>
           <v-row>
@@ -894,6 +958,7 @@ export default {
       isEmailVerified: false,
       isPhoneVerified: false,
       isChangePassword: false,
+      isMobileChanged: false,
       isPasswordChanged: false,
       isPassword: true,
       isChangePhone: false,
@@ -917,10 +982,12 @@ export default {
         nationality: null,
         name: "",
         email: "",
+        emailNew: "",
         countryCode: null,
         phone: "",
         phoneNew: "",
         password: "",
+        passwordNew: "",
         date: null,
         age: "",
 
@@ -1127,6 +1194,18 @@ export default {
             city: null,
             country: null,
           };
+          this.isEmailVerified =
+            data.email_verified == "N"
+              ? false
+              : data.email_verified == "Y"
+              ? true
+              : null;
+          this.isPhoneVerified =
+            data.mobile_verified == "N"
+              ? false
+              : data.mobile_verified == "Y"
+              ? true
+              : null;
           this.input.nationality = this.resource.nationality.filter(
             (i) => i.id == data.country_current
           );
@@ -1148,8 +1227,8 @@ export default {
 
         gypsy_id: this.input.id,
         name: this.input.name,
-        mobile_number: this.input.phoneNew || this.input.phone,
-        email_id: this.input.email,
+        // mobile_number: this.input.phoneNew || this.input.phone,
+        // email_id: this.input.email,
         gender: this.input.gender.value,
         app_id: this.$appId,
         // password: this.input.password,
@@ -1201,7 +1280,7 @@ export default {
           this.isSending = false;
         });
     },
-    saveData1() {
+    saveDataDesktop1() {
       this.isSending = true;
       const payload = {
         // "marital_status":"M",
@@ -1263,6 +1342,191 @@ export default {
           this.isSending = false;
         });
     },
+    saveDataDesktop2() {
+      this.isSending = true;
+      const payload = {
+        gypsy_id: this.input.id,
+        name: this.input.name,
+        // mobile_number: this.input.phoneNew || this.input.phone,
+        // email_id: this.input.email,
+        date_of_birth: this.input.date,
+      };
+      console.log(payload);
+      const token = localStorage.getItem("token");
+      axios
+        .post(`/save-gypsy-user`, payload, {
+          headers: {
+            Authorization: `Bearer ${
+              this.tokenProvider ? this.tokenProvider : token
+            }`,
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          const data = response.data;
+          console.log(data);
+          this.isSuccess = true;
+          this.successMessage = data.message;
+          // localStorage.setItem("name", data.data.name);
+          // localStorage.setItem("user_image", data.data.image);
+          // localStorage.setItem("last_login", data.data.last_login);
+          // localStorage.setItem("token", data.data.token);
+          this.getUserData();
+          // localStorage.setItem("name", data.data.name);
+          // localStorage.setItem("email", data.data.email_id);
+          // localStorage.setItem("g_id", data.data.gypsy_ref_no);
+          // localStorage.setItem("user_image", data.data.image);
+          // localStorage.setItem("last_login", data.data.last_login);
+          // localStorage.setItem("token", data.data.token);
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+          const message = error.response.data.mobile_number
+            ? error.response.data.mobile_number[0]
+            : error.response.data.message === ""
+            ? "Something Wrong!!!"
+            : error.response.data.message;
+          this.errorMessage = message;
+          this.isError = true;
+        })
+        .finally(() => {
+          this.isSending = false;
+        });
+    },
+    saveEmail() {
+      this.isSending = true;
+      const payload = {
+        gypsy_id: this.input.id,
+        email_id: this.input.emailNew,
+      };
+      console.log(payload);
+      const token = localStorage.getItem("token");
+      axios
+        .post(`/save-gypsy-user`, payload, {
+          headers: {
+            Authorization: `Bearer ${
+              this.tokenProvider ? this.tokenProvider : token
+            }`,
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          const data = response.data;
+          console.log(data);
+          this.isSuccess = true;
+          this.successMessage = data.message;
+          // localStorage.setItem("name", data.data.name);
+          // localStorage.setItem("user_image", data.data.image);
+          // localStorage.setItem("last_login", data.data.last_login);
+          // localStorage.setItem("token", data.data.token);
+          this.getUserData();
+          // localStorage.setItem("name", data.data.name);
+          // localStorage.setItem("email", data.data.email_id);
+          // localStorage.setItem("g_id", data.data.gypsy_ref_no);
+          // localStorage.setItem("user_image", data.data.image);
+          // localStorage.setItem("last_login", data.data.last_login);
+          // localStorage.setItem("token", data.data.token);
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+          const message = error.response.data.email_id
+            ? error.response.data.email_id[0]
+            : error.response.data.message === ""
+            ? "Something Wrong!!!"
+            : error.response.data.message;
+          this.errorMessage = message;
+          this.isError = true;
+        })
+        .finally(() => {
+          this.isSending = false;
+        });
+    },
+    saveMobile() {
+      this.isSending = true;
+      const payload = {
+        gypsy_id: this.input.id,
+        mobile_number: this.input.phoneNew || this.input.phone,
+      };
+      console.log(payload);
+      const token = localStorage.getItem("token");
+
+      this.successMessage = "New Number Updated";
+      this.isMobileChanged = true;
+      this.input.phone = this.input.phoneNew;
+      setTimeout(() => {
+        this.isMobileChanged = false;
+        this.isSending = false;
+      }, 5000);
+
+      // axios
+      //   .post(`/save-gypsy-user`, payload, {
+      //     headers: {
+      //       Authorization: `Bearer ${
+      //         this.tokenProvider ? this.tokenProvider : token
+      //       }`,
+      //       "Content-Type": "multipart/form-data",
+      //     },
+      //   })
+      //   .then((response) => {
+      //     const data = response.data;
+      //     console.log(data);
+      //     this.isSuccess = true;
+      //     this.successMessage = data.message;
+      //       this.isMobileChanged = true;
+      //       this.input.phone = this.input.phoneNew
+      //       setTimeout(() => {
+      //         this.isMobileChanged = false;
+      //       }, 5000);
+      //   })
+      //   .catch((error) => {
+      //     // eslint-disable-next-line
+      //     console.log(error);
+      //     const message = error.response.data.mobile_number
+      //       ? error.response.data.mobile_number[0]
+      //       : error.response.data.message === ""
+      //       ? "Something Wrong!!!"
+      //       : error.response.data.message;
+      //     this.errorMessage = message;
+      //     this.isError = true;
+      //   })
+      //   .finally(() => {
+      //     this.isSending = false;
+      //   });
+    },
+    deleteImage() {
+      this.isSending = true;
+      const token = localStorage.getItem("token");
+      axios
+        .delete(`/gypsy/image`, {
+          headers: {
+            Authorization: `Bearer ${
+              this.tokenProvider ? this.tokenProvider : token
+            }`,
+          },
+        })
+        .then((response) => {
+          const data = response.data;
+          console.log(data);
+          this.isSuccess = true;
+          this.successMessage = data.message;
+          this.getUserData();
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+          const message =
+            error.response.data.message === ""
+              ? "Something Wrong!!!"
+              : error.response.data.message;
+          this.errorMessage = message;
+          this.isError = true;
+        })
+        .finally(() => {
+          this.isSending = false;
+        });
+    },
     saveImage() {
       this.isSending = true;
       const payload = {
@@ -1309,11 +1573,10 @@ export default {
         .catch((error) => {
           // eslint-disable-next-line
           console.log(error);
-          const message = error.response.data.mobile_number
-            ? error.response.data.mobile_number[0]
-            : error.response.data.message === ""
-            ? "Something Wrong!!!"
-            : error.response.data.message;
+          const message =
+            error.response.data.message === ""
+              ? "Something Wrong!!!"
+              : error.response.data.message;
           this.errorMessage = message;
           this.isError = true;
         })
@@ -1345,7 +1608,6 @@ export default {
           .then((response) => {
             const data = response.data;
             console.log(data);
-            this.successMessage = data.message;
             // localStorage.setItem("name", data.data.name);
             // localStorage.setItem("email", data.data.email_id);
             // localStorage.setItem("g_id", data.data.gypsy_ref_no);
@@ -1353,6 +1615,7 @@ export default {
             // localStorage.setItem("last_login", data.data.last_login);
             // localStorage.setItem("token", data.data.token);
             // this.isSuccess = true;
+            this.successMessage = data.message;
             this.isChangePassword = false;
             this.isPasswordChanged = true;
             setTimeout(() => {
@@ -1440,23 +1703,25 @@ export default {
         return;
       }
 
-      const formattedDate = date.split("/");
-      if (formattedDate.length !== 3) {
-        this.age = null;
+      const dateParts = date.split("/");
+
+      if (dateParts.length !== 3) {
+        this.age = null; // Tidak valid, set umur menjadi null
         return;
       }
 
-      const day = parseInt(formattedDate[0]);
-      const month = parseInt(formattedDate[1]) - 1; // Subtract 1 to adjust for JavaScript's 0-based month indexing
-      const year = parseInt(formattedDate[2]);
+      const day = parseInt(dateParts[0]);
+      const month = parseInt(dateParts[1]) - 1; // Januari dimulai dari indeks 0
+      const year = parseInt(dateParts[2]);
 
+      // Validasi tanggal, bulan, dan tahun
       if (isNaN(day) || isNaN(month) || isNaN(year)) {
-        this.age = null;
+        this.age = null; // Tidak valid, set umur menjadi null
         return;
       }
 
       const today = new Date();
-      const birthDate = new Date(year, month, day); // Corrected month here
+      const birthDate = new Date(year, month, day);
       let age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
 
