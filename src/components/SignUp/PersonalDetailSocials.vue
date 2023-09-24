@@ -104,6 +104,7 @@
                     >
                     <input
                       v-model="email"
+                      :disabled="email"
                       type="email"
                       class="form-control pl-2 mt-2 mb-4"
                       placeholder="Enter Your Email Address"

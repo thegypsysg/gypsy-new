@@ -433,61 +433,67 @@
 
                 <v-row>
                   <v-col cols="6">
-                    <VueMultiselect
+                    <!-- <VueMultiselect
                       v-model="input.country"
                       class="mt-2"
                       :options="resource.country"
                       placeholder="Current Country"
-                    />
-                    <!-- <v-autocomplete
-                      v-model="input.country"
-                      :items="resource.country"
-                      variant="outlined"
-                      placeholder="Select Country"
-                      clearable
-                      class="mt-2"
-                      density="compact"
-                      :rules="rules.countryRules"
                     /> -->
+                    <div class="location-input">
+                      <v-autocomplete
+                        v-model="input.country"
+                        :items="resource.country"
+                        variant="outlined"
+                        label="Current Country"
+                        clearable
+                        class="mt-n1"
+                        density="compact"
+                        :rules="rules.countryRules"
+                      />
+                    </div>
                   </v-col>
                 </v-row>
                 <v-row>
                   <v-col cols="6">
-                    <VueMultiselect
+                    <!-- <VueMultiselect
                       v-model="input.city"
                       :options="resource.city"
                       placeholder="Current City"
-                    />
-                    <!-- <v-autocomplete
-                      v-model="input.city"
-                      :items="resource.city"
-                      variant="outlined"
-                      placeholder="Select City"
-                      clearable
-                      class="mt-2"
-                      density="compact"
-                      :rules="rules.cityRules"
                     /> -->
+                    <div class="location-input">
+                      <v-combobox
+                        v-model="input.city"
+                        :items="resource.city"
+                        variant="outlined"
+                        label="Current City"
+                        clearable
+                        class="mt-n1"
+                        density="compact"
+                        :rules="rules.cityRules"
+                      />
+                    </div>
                   </v-col>
                 </v-row>
                 <v-row class="mb-n8 pb-2">
                   <v-col cols="6">
-                    <VueMultiselect
+                    <!-- <VueMultiselect
                       v-model="input.town"
                       class="mt-2"
                       :options="resource.town"
                       placeholder="Current Town"
-                    />
-                    <!-- <v-autocomplete
-                      v-model="input.location"
-                      :items="resource.location"
-                      variant="outlined"
-                      placeholder="Select Location"
-                      clearable
-                      class="mt-2"
-                      density="compact"
-                      :rules="rules.locationRules"
                     /> -->
+                    <div class="location-input">
+                      <v-combobox
+                        v-model="input.town"
+                        :items="resource.town"
+                        variant="outlined"
+                        label="Current Town"
+                        clearable
+                        class="mt-n1"
+                        density="compact"
+                        :rules="rules.townRules"
+                      />
+                    </div>
                   </v-col>
                 </v-row>
                 <hr class="mt-8" />
@@ -1001,7 +1007,7 @@ export default {
         date: null,
         age: "",
 
-        location: null,
+        town: null,
         city: null,
         country: null,
       },
@@ -1037,7 +1043,7 @@ export default {
         maritalRules: [(v) => !!v || "Marital Status is required"],
         nationalityRules: [(v) => !!v || "Nationality is required"],
         nearestRules: [(v) => !!v || "Nearest Mall is required"],
-        locationRules: [(v) => !!v || "Location is required"],
+        townRules: [(v) => !!v || "Town is required"],
         cityRules: [(v) => !!v || "City is required"],
         countryRules: [(v) => !!v || "Country is required"],
       },
@@ -1110,6 +1116,7 @@ export default {
       "changeHeaderWelcome",
       "My Profile"
     );
+    this.getCity();
     this.getNationality();
   },
   unmounted() {
@@ -1118,6 +1125,25 @@ export default {
   methods: {
     onInputNationality() {
       console.log("ok", this.input.nationality);
+    },
+    getCity() {
+      axios
+        .get(`/city`)
+        .then((response) => {
+          const data = response.data.data;
+          // console.log(data);
+          this.resource.city = data.map((city) => {
+            return {
+              id: city.city_id,
+              title: city.city_name,
+              path: "#",
+            };
+          });
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+        });
     },
     getNationality() {
       this.isLoading = true;
@@ -1129,6 +1155,13 @@ export default {
             return {
               id: country.country_id,
               title: country.nationality,
+            };
+          });
+
+          this.resource.country = data.map((country) => {
+            return {
+              id: country.country_id,
+              title: country.country_name,
             };
           });
           this.getUserData();
@@ -1815,6 +1848,17 @@ export default {
 
 .back-grey {
   background: #e9ecef;
+}
+
+.location-input {
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  height: 38px;
+  position: relative;
+  border: 1px solid rgb(160, 160, 160);
+  border-radius: 5px;
 }
 
 @media (max-width: 599px) {
