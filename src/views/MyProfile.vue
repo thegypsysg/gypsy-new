@@ -340,9 +340,6 @@
                       >
                         Change
                       </span>
-                      <h6 v-if="isPassword == false" class="w-100 text-red">
-                        Password must be 8 characters
-                      </h6>
                     </div>
                     <div v-if="isChangePassword">
                       <div
@@ -372,6 +369,12 @@
                         >
                         </span>
                       </div>
+                      <h6
+                        v-if="isPassword == false"
+                        class="w-100 text-red mb-2"
+                      >
+                        Password must be 8 characters
+                      </h6>
                       <v-btn
                         class="text-none text-subtitle-1"
                         :class="{ 'mt-4': isPassword, 'mt-n2': !isPassword }"
@@ -777,9 +780,6 @@
                 >
                   Change
                 </span>
-                <h6 v-if="isPassword == false" class="w-100 text-red">
-                  Password must be 8 characters
-                </h6>
               </div>
               <div v-if="isChangePassword">
                 <div
@@ -806,6 +806,9 @@
                   >
                   </span>
                 </div>
+                <h6 v-if="isPassword == false" class="w-100 mb-2 text-red">
+                  Password must be 8 characters
+                </h6>
                 <v-btn
                   class="text-none text-subtitle-1"
                   :class="{ 'mt-4': isPassword, 'mt-n2': !isPassword }"
@@ -1459,7 +1462,11 @@ export default {
           // localStorage.setItem("user_image", data.data.image);
           // localStorage.setItem("last_login", data.data.last_login);
           // localStorage.setItem("token", data.data.token);
-          this.getUserData();
+          // this.getUserData();
+          this.isChangeEmail = false;
+
+          this.input.email = this.input.emailNew;
+          this.input.emailNew = "";
           // localStorage.setItem("name", data.data.name);
           // localStorage.setItem("email", data.data.email_id);
           // localStorage.setItem("g_id", data.data.gypsy_ref_no);
@@ -1491,48 +1498,42 @@ export default {
       console.log(payload);
       const token = localStorage.getItem("token");
 
-      this.successMessage = "New Number Updated";
-      this.isMobileChanged = true;
-      this.input.phone = this.input.phoneNew;
-      setTimeout(() => {
-        this.isMobileChanged = false;
-        this.isSending = false;
-      }, 5000);
-
-      // axios
-      //   .post(`/save-gypsy-user`, payload, {
-      //     headers: {
-      //       Authorization: `Bearer ${
-      //         this.tokenProvider ? this.tokenProvider : token
-      //       }`,
-      //       "Content-Type": "multipart/form-data",
-      //     },
-      //   })
-      //   .then((response) => {
-      //     const data = response.data;
-      //     console.log(data);
-      //     this.isSuccess = true;
-      //     this.successMessage = data.message;
-      //       this.isMobileChanged = true;
-      //       this.input.phone = this.input.phoneNew
-      //       setTimeout(() => {
-      //         this.isMobileChanged = false;
-      //       }, 5000);
-      //   })
-      //   .catch((error) => {
-      //     // eslint-disable-next-line
-      //     console.log(error);
-      //     const message = error.response.data.mobile_number
-      //       ? error.response.data.mobile_number[0]
-      //       : error.response.data.message === ""
-      //       ? "Something Wrong!!!"
-      //       : error.response.data.message;
-      //     this.errorMessage = message;
-      //     this.isError = true;
-      //   })
-      //   .finally(() => {
-      //     this.isSending = false;
-      //   });
+      axios
+        .post(`/save-gypsy-user`, payload, {
+          headers: {
+            Authorization: `Bearer ${
+              this.tokenProvider ? this.tokenProvider : token
+            }`,
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          const data = response.data;
+          console.log(data);
+          this.isSuccess = true;
+          this.successMessage = "New Number Updated";
+          this.isMobileChanged = true;
+          this.input.phone = this.input.phoneNew;
+          setTimeout(() => {
+            this.isMobileChanged = false;
+            this.isSending = false;
+          }, 5000);
+          this.input.phoneNew = "";
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+          const message = error.response.data.mobile_number
+            ? error.response.data.mobile_number[0]
+            : error.response.data.message === ""
+            ? "Something Wrong!!!"
+            : error.response.data.message;
+          this.errorMessage = message;
+          this.isError = true;
+        })
+        .finally(() => {
+          this.isSending = false;
+        });
     },
     deleteImage() {
       this.isSending = true;
@@ -1624,7 +1625,7 @@ export default {
         });
     },
     changePassword() {
-      if (this.input.password.length != 8) {
+      if (this.input.passwordNew.length != 8) {
         this.isPassword = false;
       } else {
         this.isPassword = true;
@@ -1633,7 +1634,7 @@ export default {
       const payload = {
         gypsy_id: this.input.id,
         email_id: this.input.email,
-        password: this.input.password,
+        password: this.input.passwordNew,
       };
       const token = localStorage.getItem("token");
       if (this.isPassword == true) {
@@ -1660,7 +1661,7 @@ export default {
             setTimeout(() => {
               this.isPasswordChanged = false;
             }, 5000);
-            this.input.password = "";
+            this.input.passwordNew = "";
             // this.email = "";
             // this.name = "";
             // this.country = null;
