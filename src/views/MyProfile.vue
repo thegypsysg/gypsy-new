@@ -1291,7 +1291,7 @@ export default {
               (i) => i.value == data.marital_status
             )[0],
             nationality: this.resource.nationality.filter(
-              (i) => i.id == data.country_current
+              (i) => i.id == data.nationality
             )[0],
             name: data.name,
             email: data.email_id,
@@ -1325,7 +1325,7 @@ export default {
               ? true
               : null;
           this.input.nationality = this.resource.nationality.filter(
-            (i) => i.id == data.country_current
+            (i) => i.id == data.nationality
           );
         })
         .catch((error) => {
