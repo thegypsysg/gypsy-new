@@ -98,6 +98,7 @@ export default {
         "changeHeaderWelcome2",
         "Sign-Up / Sign-in"
       );
+      localStorage.setItem("social", "Mobile");
       this.$router.push("/");
     },
     nextStep() {

@@ -104,7 +104,7 @@
                     >
                     <input
                       v-model="email"
-                      :disabled="email"
+                      :disabled="emailProvider != ''"
                       type="email"
                       class="form-control pl-2 mt-2 mb-4"
                       placeholder="Enter Your Email Address"
@@ -590,17 +590,22 @@ export default {
         : this.capitalizeFirstLetter(this.$route.query.social);
     },
     socialType() {
-      return this.$route.query.social.toLowerCase() == "linkedin-openid"
+      return this.$route.query.social.toLowerCase() == "linkedin-openid" &&
+        this.$route.query.email
         ? "L"
-        : this.$route.query.social.toLowerCase() == "google"
+        : this.$route.query.social.toLowerCase() == "google" &&
+          this.$route.query.email
         ? "G"
-        : this.$route.query.social.toLowerCase() == "facebook"
+        : this.$route.query.social.toLowerCase() == "facebook" &&
+          this.$route.query.email
         ? "F"
-        : this.$route.query.social.toLowerCase() == "tiktok"
+        : this.$route.query.social.toLowerCase() == "tiktok" &&
+          this.$route.query.email
         ? "T"
-        : this.$route.query.social.toLowerCase() == "twitter"
+        : this.$route.query.social.toLowerCase() == "twitter" &&
+          this.$route.query.email
         ? "X"
-        : "";
+        : "E";
     },
   },
 
@@ -714,6 +719,24 @@ export default {
             localStorage.setItem("user_image", data.data.image);
             localStorage.setItem("last_login", data.data.last_login);
             localStorage.setItem("token", data.data.token);
+
+            let typeSocial =
+              this.socialType == "L"
+                ? "LinkedIn"
+                : this.socialType == "G"
+                ? "Google"
+                : this.socialType == "F"
+                ? "Facebook"
+                : this.socialType == "T"
+                ? "Tiktok"
+                : this.socialType == "X"
+                ? "Twitter"
+                : this.socialType == "E"
+                ? "Email"
+                : "";
+
+            localStorage.setItem("social", typeSocial);
+
             this.isSuccess = true;
             this.email = "";
             this.name = "";

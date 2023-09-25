@@ -429,6 +429,7 @@
                     color="success"
                     size="large"
                     variant="flat"
+                    @click="saveLocation()"
                   >
                     Save Changes
                   </v-btn>
@@ -921,6 +922,30 @@
           </v-container>
         </div>
       </template>
+      <div class="crop-image-dialog">
+        <v-dialog v-model="showCropper" max-width="500" persistent>
+          <v-card class="pt-6 pb-3">
+            <v-card-text class="pb-3">
+              <vue-cropper
+                ref="cropper"
+                class="image-container"
+                :aspect-ratio="1 / 1"
+                :guides="true"
+                :background="false"
+                :view-mode="3"
+                drag-mode="move"
+                :src="chosenImage"
+                alt="Image not available"
+              />
+            </v-card-text>
+            <v-card-actions class="py-0 mx-10">
+              <v-btn text color="red" @click="resetCropper"> Cancel </v-btn>
+              <v-spacer />
+              <v-btn text color="blue" @click="cropChosenImage"> Crop </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </div>
       <v-snackbar
         v-model="isSuccess"
         location="top"
@@ -962,6 +987,8 @@ import "vue-multiselect/dist/vue-multiselect.css";
 import app from "@/util/eventBus";
 import ImageCropperDialog from "../components/ImageCropperDialog.vue";
 import axios from "@/util/axios";
+import VueCropper from "vue-cropperjs";
+import "cropperjs/dist/cropper.css";
 
 import MazPhoneNumberInput from "maz-ui/components/MazPhoneNumberInput";
 export default {
@@ -969,9 +996,13 @@ export default {
     VueMultiselect,
     MazPhoneNumberInput,
     ImageCropperDialog,
+    VueCropper,
   },
   data() {
     return {
+      chosenImage: null,
+      showCropper: false,
+      imageFileType: null,
       isLoading: false,
       screenWidth: window.innerWidth,
       isEmailVerified: false,
@@ -1120,14 +1151,53 @@ export default {
       "My Profile"
     );
     this.getCity();
+    this.getTown();
     this.getNationality();
   },
   unmounted() {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    async initCropper(imageFileType) {
+      this.showCropper = true;
+      this.imageFileType = imageFileType;
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      this.$refs.cropper.replace(this.chosenImage);
+    },
+
+    async resetCropper() {
+      this.$emit("onReset");
+      this.showCropper = false;
+    },
+
+    async cropChosenImage() {
+      this.$emit(
+        "onCrop",
+        this.$refs.cropper.getCroppedCanvas().toDataURL(this.imageFileType)
+      );
+      this.resetCropper();
+    },
     onInputNationality() {
       console.log("ok", this.input.nationality);
+    },
+    getTown() {
+      axios
+        .get(`/town-list`)
+        .then((response) => {
+          const data = response.data.data;
+          console.log(data);
+          this.resource.town = data.map((town) => {
+            return {
+              id: town.town_id,
+              title: town.town_name,
+              path: "#",
+            };
+          });
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+        });
     },
     getCity() {
       axios
@@ -1232,9 +1302,15 @@ export default {
             date: data.date_of_birth,
             age: "",
 
-            location: null,
-            city: null,
-            country: null,
+            town: this.resource.town.filter(
+              (i) => i.id == data.town_current
+            )[0],
+            city: this.resource.city.filter(
+              (i) => i.id == data.city_current
+            )[0],
+            country: this.resource.country.filter(
+              (i) => i.id == data.country_current
+            )[0],
           };
           this.isEmailVerified =
             data.email_verified == "N"
@@ -1338,7 +1414,7 @@ export default {
         // password: this.input.password,
         marital_status: this.input.marital.value,
         // date_of_birth: this.input.date,
-        country_current: this.input.nationality.id,
+        nationality: this.input.nationality.id,
         // image: this.imageSend || null,
       };
       console.log(payload);
@@ -1429,6 +1505,58 @@ export default {
             : error.response.data.message === ""
             ? "Something Wrong!!!"
             : error.response.data.message;
+          this.errorMessage = message;
+          this.isError = true;
+        })
+        .finally(() => {
+          this.isSending = false;
+        });
+    },
+    saveLocation() {
+      this.isSending = true;
+      const payload = {
+        country_current: this.input.country.id,
+        city_current: this.input.city.title
+          ? this.input.city.title
+          : this.input.city,
+        town_current: this.input.town.title
+          ? this.input.town.title
+          : this.input.town,
+      };
+      console.log(payload);
+      const token = localStorage.getItem("token");
+      axios
+        .post(`/gypsy/save-current-location`, payload, {
+          headers: {
+            Authorization: `Bearer ${
+              this.tokenProvider ? this.tokenProvider : token
+            }`,
+          },
+        })
+        .then((response) => {
+          const data = response.data;
+          console.log(data);
+          this.isSuccess = true;
+          this.successMessage = data.message;
+          // localStorage.setItem("name", data.data.name);
+          // localStorage.setItem("user_image", data.data.image);
+          // localStorage.setItem("last_login", data.data.last_login);
+          // localStorage.setItem("token", data.data.token);
+          this.getUserData();
+          // localStorage.setItem("name", data.data.name);
+          // localStorage.setItem("email", data.data.email_id);
+          // localStorage.setItem("g_id", data.data.gypsy_ref_no);
+          // localStorage.setItem("user_image", data.data.image);
+          // localStorage.setItem("last_login", data.data.last_login);
+          // localStorage.setItem("token", data.data.token);
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+          const message =
+            error.response.data.message === ""
+              ? "Something Wrong!!!"
+              : error.response.data.message;
           this.errorMessage = message;
           this.isError = true;
         })
@@ -1741,6 +1869,14 @@ export default {
 </script>
 
 <style scoped>
+.image-container {
+  max-width: 450px;
+}
+
+.image-container img {
+  /* This is important */
+  width: 100%;
+}
 .card-container {
   margin-top: 100px;
   width: 100%;

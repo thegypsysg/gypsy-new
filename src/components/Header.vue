@@ -732,13 +732,13 @@ export default {
     //   ];
     // },
   },
-  watch: {
-    socialProvider(newVal) {
-      if (newVal != "") {
-        localStorage.setItem("social", newVal);
-      }
-    },
-  },
+  // watch: {
+  //   socialProvider(newVal) {
+  //     if (newVal != "") {
+  //       localStorage.setItem("social", newVal);
+  //     }
+  //   },
+  // },
   created() {
     window.addEventListener("resize", this.handleResize);
     setInterval(this.updateTime, 1000);
@@ -749,7 +749,10 @@ export default {
     this.getCountry();
     this.getFooterData();
     this.getGroups();
+    const token = localStorage.getItem("token");
     if (this.tokenProvider != null) {
+      this.getHeaderUserData();
+    } else if (token) {
       this.getHeaderUserData();
     }
     app.config.globalProperties.$eventBus.$on(

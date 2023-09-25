@@ -34,7 +34,7 @@
                 class="text-grey"
                 :class="{ 'mb-1': !isSmall, 'mb-12': isSmall }"
               >
-                Last Used: {{ socialProvider }}
+                Last Used: <span class="text-red">{{ socialProvider }}</span>
               </p>
               <v-form v-model="valid" @submit.prevent>
                 <!-- <div
@@ -684,6 +684,7 @@ export default {
           // localStorage.setItem("user_image", data.data.image);
           // localStorage.setItem("last_login", data.data.last_login);
           localStorage.setItem("token", data.token);
+          localStorage.setItem("social", "Email");
           // this.email = "";
           // this.name = "";
           // this.country = null;

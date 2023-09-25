@@ -32,7 +32,27 @@
                       }"
                       >Email</label
                     >
-                    <div class="d-flex">
+                    <div
+                      class="d-flex align-center mt-2 py-0 back-grey"
+                      style="border: 1px solid #ced4da; border-radius: 0.25rem"
+                    >
+                      <input
+                        v-model="email"
+                        type="email"
+                        disabled
+                        class="form-control"
+                        style="border: none"
+                        placeholder="Enter Email"
+                      />
+                      <span
+                        class="text-blue-darken-4 mx-2"
+                        style="cursor: pointer"
+                        @click="backStep"
+                      >
+                        Change
+                      </span>
+                    </div>
+                    <!-- <div class="d-flex">
                       <v-text-field
                         v-model="email"
                         readonly
@@ -43,8 +63,6 @@
                         placeholder="John@example.com"
                         :persistent-hint="true"
                       >
-                        <!-- <template #append> -->
-                        <!-- </template> -->
                       </v-text-field>
                       <span
                         class="text-blue-darken-4 mt-5 ml-2"
@@ -53,7 +71,7 @@
                       >
                         Change
                       </span>
-                    </div>
+                    </div> -->
                     <!-- <div class="d-flex mb-2 justify-start align-center">
                       <span
                         style="font-weight: 600"
@@ -112,7 +130,7 @@
                           'w-66 login-btn-mobile mt-10': isSmall,
                           'w-50': !isSmall,
                         }"
-                        @click="saveData()"
+                        @click="nextStep()"
                       >
                         Next
                       </v-btn>
@@ -396,6 +414,77 @@ export default {
 
 .section-mobile {
   font-size: 16px;
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  border: 1px solid #ced4da;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff;
+  background-clip: padding-box;
+  border-radius: 0.25rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .form-control {
+    transition: none;
+  }
+}
+
+.form-control::-ms-expand {
+  background-color: transparent;
+  border: 0;
+}
+
+.form-control:focus {
+  color: #495057;
+  background-color: #fff;
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+.form-control:-webkit-autofill {
+  background-color: #fff;
+}
+
+.form-control::-webkit-input-placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+.form-control::-moz-placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+.form-control:-ms-input-placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+.form-control::-ms-input-placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+.form-control::placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+.form-control:disabled,
+.form-control[readonly] {
+  background-color: #e9ecef;
+  opacity: 1;
+}
+
+.back-grey {
+  background: #e9ecef;
 }
 
 .gender-small {
