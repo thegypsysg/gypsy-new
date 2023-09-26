@@ -41,24 +41,42 @@
                       <v-icon>mdi-arrow-left</v-icon>
                     </div>
                     <div>
-                      <v-avatar size="100px" class="mt-5">
+                      <div
+                        style="width: 150px; height: 150px; border-radius: 50%"
+                        class="mt-5"
+                      >
                         <v-img
-                          height="100"
+                          style="width: 100%; height: 100%; border-radius: 50%"
+                          cover
                           :src="
-                            image_path != ''
+                            image_path
                               ? image_path
                               : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
                           "
                         />
-                      </v-avatar>
-                      <div class="mt-2 w-100 d-flex justify-center">
+                      </div>
+                      <div
+                        class="mt-4 w-100 d-flex align-center"
+                        :class="{
+                          'justify-space-between': image_path,
+                          'justify-center': !image_path,
+                        }"
+                      >
                         <v-btn
+                          size="small"
                           color="blue"
                           variant="outlined"
                           @click="$refs.filePickerField.click()"
                         >
-                          Upload
+                          Upload Picture
                         </v-btn>
+                        <v-icon
+                          v-if="image_path"
+                          @click="deleteImage()"
+                          color="red"
+                          icon="mdi-trash-can-outline"
+                        >
+                        </v-icon>
                       </div>
                       <image-cropper-dialog
                         ref="cropperDialog"
@@ -631,6 +649,11 @@ export default {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    deleteImage() {
+      this.image = null;
+      this.imageSend = null;
+      this.image_path = "";
+    },
     capitalizeFirstLetter(string) {
       return string.charAt(0).toUpperCase() + string.slice(1);
     },

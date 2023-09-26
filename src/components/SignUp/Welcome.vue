@@ -568,6 +568,21 @@ export default {
           window.location.href = "/sign-in";
         });
     },
+    hideEmail(email) {
+      const atIndex = email.indexOf("@");
+      if (atIndex >= 0) {
+        const username = email.substring(0, atIndex);
+        const hiddenPart = username
+          .substring(0, Math.max(0, username.length - 6))
+          .replace(/./g, "*");
+        const visiblePart = username.substring(
+          Math.max(0, username.length - 6)
+        );
+        return hiddenPart + visiblePart + email.substring(atIndex);
+      } else {
+        return email;
+      }
+    },
     sendDataMobile() {
       if (this.valid) {
         this.isSending = true;
@@ -590,7 +605,12 @@ export default {
             const message = error.response.data.mobile_number
               ? error.response.data.mobile_number[0]
               : error.response.data.message
-              ? error.response.data.message
+              ? //? error.response.data.message
+                `This Mobile Number ${
+                  this.mobile
+                } is already exist in our database using the email id ${this.hideEmail(
+                  error.response.data.email_id
+                )}`
               : "Something Wrong!!!";
             this.errorMessage = message;
             this.isError = true;
