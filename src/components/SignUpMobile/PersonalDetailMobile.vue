@@ -665,6 +665,10 @@ export default {
           country_name: countryName,
           image: this.imageSend || null,
           email_id: this.email || null,
+          country_code: this.phoneEvent.countryCallingCode
+            ? `+${this.phoneEvent.countryCallingCode}`
+            : "",
+          flag: `https://flagicons.lipis.dev/flags/4x3/${this.phoneEvent.countryCode.toLowerCase()}.svg`,
         };
         if (
           this.isMobile == true &&

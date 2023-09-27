@@ -717,7 +717,7 @@ export default {
           email_id: this.email,
           name: this.name,
           mobile_number: this.mobile,
-          country_current: this.country,
+          // country_current: this.country,
           country_prefix: this.country,
           gender: this.gender,
           app_id: this.$appId,
@@ -726,6 +726,10 @@ export default {
           token: this.tokenProvider,
           country_name: countryName,
           image: this.imageSend != null ? this.imageSend : this.avatarProvider,
+          country_code: this.phoneEvent.countryCallingCode
+            ? `+${this.phoneEvent.countryCallingCode}`
+            : "",
+          flag: `https://flagicons.lipis.dev/flags/4x3/${this.phoneEvent.countryCode.toLowerCase()}.svg`,
         };
         axios
           .post(`/gypsy/save-social-user`, payload, {

@@ -716,7 +716,12 @@ export default {
           registered_type: this.isSmall ? "M" : "W",
           country_name: countryName,
           image: this.imageSend || null,
+          country_code: this.phoneEvent.countryCallingCode
+            ? `+${this.phoneEvent.countryCallingCode}`
+            : "",
+          flag: `https://flagicons.lipis.dev/flags/4x3/${this.phoneEvent.countryCode.toLowerCase()}.svg`,
         };
+        console.log(payload);
 
         // localStorage.setItem("p_email", this.email);
         // localStorage.setItem("p_name", this.name);

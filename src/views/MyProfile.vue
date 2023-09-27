@@ -290,7 +290,9 @@
                         v-model="input.phoneNew"
                         show-code-on-list
                         color="info"
-                        :default-country-code="country ? country : 'SG'"
+                        :default-country-code="
+                          input.country ? input.country : 'SG'
+                        "
                         :preferred-countries="[
                           'SG',
                           'BD',
@@ -821,9 +823,9 @@
                   v-model="input.phoneNew"
                   show-code-on-list
                   color="info"
-                  :default-country-code="country ? country : 'SG'"
+                  :default-country-code="input.country ? input.country : 'SG'"
                   :preferred-countries="['SG', 'BD', 'IN', 'MY', 'GB', 'PH']"
-                  @update="phoneEvent = $event"
+                  @update="phoneEvent2 = $event"
                 />
                 <v-btn
                   class="text-none text-subtitle-1 text-white w-100 mt-3"
@@ -1378,6 +1380,8 @@ export default {
       isPassword1: true,
       isPassword2: true,
       password2Mes: "",
+      phoneEvent: null,
+      phoneEvent2: null,
       isSaveImage: false,
       isChangePhone: false,
       isChangeEmail: false,
@@ -1414,6 +1418,7 @@ export default {
         town: null,
         city: null,
         country: null,
+        countryName: null,
       },
       rules: {
         nameRules: [
@@ -1472,15 +1477,7 @@ export default {
         nationality: [],
         countryCodes: [],
         favorite: [],
-        town: [
-          "Parkway Parade",
-          "Waterway Point",
-          "Causeway Point",
-          "Great World",
-          "Tampines Mall",
-          "Jewel",
-          "Our Tampines Hub",
-        ],
+        town: [],
         city: ["Alexandra", "Ang Mo Kio", "Bedok", "Bukit Panjang"],
         country: ["Singapore"],
       },
@@ -1513,11 +1510,15 @@ export default {
     },
   },
   watch: {
-    "input.country": {
-      handler(newVal, oldVal) {
-        console.log("Nilai myValue berubah:", newVal, oldVal);
-      },
-      immediate: true,
+    "input.country": function (newVal, oldVal) {
+      const country = this.options.filter((o) => o.value === newVal)[0];
+      console.log(country?.label);
+      this.input.countryName = country?.label;
+      this.getCity(country?.label);
+    },
+    "input.city": function (newVal, oldVal) {
+      // console.log(newVal.id);
+      this.getTown(newVal?.id);
     },
     "input.passwordNew": function (newVal) {
       if (newVal) {
@@ -1571,38 +1572,66 @@ export default {
     onInputNationality() {
       console.log("ok", this.input.nationality);
     },
-    getTown() {
+    getTown(id) {
       axios
         .get(`/town-list`)
         .then((response) => {
           const data = response.data.data;
-          console.log(data);
-          this.resource.town = data.map((town) => {
-            return {
-              id: town.town_id,
-              title: town.town_name,
-              path: "#",
-            };
-          });
+          console.log(id);
+          if (id) {
+            this.resource.town = data
+              .filter((i) => i.city_id == id)
+              .map((town) => {
+                return {
+                  id: town.town_id,
+                  title: town.town_name,
+                  city_id: town.city_id,
+                  path: "#",
+                };
+              });
+          } else {
+            this.resource.town = data.map((town) => {
+              return {
+                id: town.town_id,
+                title: town.town_name,
+                city_id: town.city_id,
+                path: "#",
+              };
+            });
+          }
+          // console.log(this.resource.town);
         })
         .catch((error) => {
           // eslint-disable-next-line
           console.log(error);
         });
     },
-    getCity() {
+    getCity(country_name) {
       axios
         .get(`/city`)
         .then((response) => {
           const data = response.data.data;
           // console.log(data);
-          this.resource.city = data.map((city) => {
-            return {
-              id: city.city_id,
-              title: city.city_name,
-              path: "#",
-            };
-          });
+          if (country_name) {
+            this.resource.city = data
+              .filter((i) => i.country_name == country_name)
+              .map((city) => {
+                return {
+                  id: city.city_id,
+                  title: city.city_name,
+                  path: "#",
+                };
+              });
+          } else {
+            this.resource.city = data.map((city) => {
+              return {
+                id: city.city_id,
+                title: city.city_name,
+                prefix: city.prefix,
+                path: "#",
+              };
+            });
+          }
         })
         .catch((error) => {
           // eslint-disable-next-line
@@ -1700,8 +1729,8 @@ export default {
               (i) => i.id == data.city_current
             )[0],
             country: this.options.filter(
-              (i) => i.value == data.country_current
-            )[0],
+              (i) => i.label == data.current_country_name
+            )[0].value,
           };
           this.isEmailVerified =
             data.email_verified == "N"
@@ -1907,11 +1936,14 @@ export default {
       this.isSending = true;
       const payload = {
         // country_current: this.input.country.id,
-        country_name: this.input.country.label,
-        country_code: this.input.country.value,
+        country_current: this.input.countryName,
+        country_prefix: this.input.country,
+        country_code: this.phoneEvent?.countryCallingCode
+          ? `+${this.phoneEvent.countryCallingCode}`
+          : "+65",
         flag:
           "https://flagicons.lipis.dev/flags/4x3/" +
-          this.input.country.value.toLowerCase() +
+          this.input.country.toLowerCase() +
           ".svg",
         city_current: this.input.city.title
           ? this.input.city.title
@@ -1921,6 +1953,7 @@ export default {
           : this.input.town,
       };
       console.log(payload);
+      console.log(this.phoneEvent);
       const token = localStorage.getItem("token");
       axios
         .post(`/gypsy/save-current-location`, payload, {
