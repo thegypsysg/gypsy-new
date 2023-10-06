@@ -269,6 +269,19 @@
             </v-card>
           </v-col>
         </v-row>
+        <v-dialog v-model="isErrorPhone" max-width="500" persistent>
+          <v-card class="pt-6 pb-3">
+            <v-card-text class="pb-3">
+              <span>{{ errorMessagePhone }}</span
+              ><span class="text-blue-darken-4">{{ emailErrorPhone }}</span>
+            </v-card-text>
+            <v-card-actions class="py-0">
+              <v-btn text color="blue" @click="isErrorPhone = false">
+                OK
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
         <v-snackbar
           v-model="isSuccess"
           location="top"
@@ -279,6 +292,20 @@
 
           <template #actions>
             <v-btn color="white" variant="text" @click="isSuccess = false">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
+        </v-snackbar>
+        <v-snackbar
+          v-model="isError"
+          location="top"
+          color="red"
+          :timeout="3000"
+        >
+          {{ errorMessage }}
+
+          <template #actions>
+            <v-btn color="white" variant="text" @click="isError = false">
               <v-icon>mdi-close</v-icon>
             </v-btn>
           </template>
@@ -319,8 +346,13 @@ export default {
       mobile: null,
       phoneEvent: null,
       screenWidth: window.innerWidth,
+      isError: false,
+      isErrorPhone: false,
       isSuccess: false,
+      errorMessage: "",
+      errorMessagePhone: "",
       successMessage: "",
+      emailErrorPhone: "",
       resource: {
         code: [],
       },
@@ -781,12 +813,31 @@ export default {
           .catch((error) => {
             // eslint-disable-next-line
             console.log(error);
-            const message =
-              error.response.data.message === ""
+            if (error.response.status == 422) {
+              const message =
+                error.response.status == 422 &&
+                error.response.data.email_id &&
+                error.response.data.message
+                  ? `This Mobile Number ${this.mobile} already exist in our database using the email id `
+                  : error.response.status == 422 &&
+                    error.response.data.email_id == null &&
+                    error.response.data.message
+                  ? `This Mobile Number ${this.mobile} already exists in our database`
+                  : "";
+              this.emailErrorPhone = error.response.data.email_id
+                ? error.response.data.email_id
+                : "";
+              this.errorMessagePhone = message;
+              this.isErrorPhone = true;
+            } else {
+              const message = error.response.data.email_id
+                ? error.response.data.email_id[0]
+                : error.response.data.message === ""
                 ? "Something Wrong!!!"
                 : error.response.data.message;
-            this.errorMessage = message;
-            this.isError = true;
+              this.errorMessage = message;
+              this.isError = true;
+            }
           })
           .finally(() => {
             this.isSending = false;
