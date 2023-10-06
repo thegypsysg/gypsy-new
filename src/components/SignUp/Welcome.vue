@@ -553,7 +553,9 @@ export default {
     },
     loginSocial(social_name) {
       axios
-        .get(`/gypsy-login/${social_name}`)
+        .post(`/gypsy-login/${social_name}`, {
+          app_id: this.$appId,
+        })
         .then((response) => {
           console.log(response);
           if (response) {
