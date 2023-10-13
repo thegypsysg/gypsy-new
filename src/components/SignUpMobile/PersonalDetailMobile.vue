@@ -671,12 +671,13 @@ export default {
         const countryName = this.options
           .filter((o) => o.value == this.country)
           .map((op) => op.label)[0];
+        const appId = localStorage.getItem("app_id");
         const payload = {
           name: this.name,
           mobile_number: this.mobile,
           country_prefix: this.country,
           gender: this.gender,
-          app_id: this.$appId,
+          app_id: appId == "" ? this.$appId : appId,
           registered_type: this.isSmall ? "M" : "W",
           country_name: countryName,
           image: this.imageSend || null,

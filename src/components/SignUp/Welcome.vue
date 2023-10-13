@@ -477,6 +477,9 @@ export default {
         ? "LinkedIn Login"
         : this.capitalizeFirstLetter(localStorage.getItem("social")) + " Login";
     },
+    appId() {
+      return this.$route.query.app_id || "";
+    },
   },
   watch: {
     isMobile(newVal) {
@@ -503,6 +506,10 @@ export default {
   },
   created() {
     window.addEventListener("resize", this.handleResize);
+  },
+  mounted() {
+    console.log(this.appId);
+    localStorage.setItem("app_id", this.appId);
   },
   unmounted() {
     window.removeEventListener("resize", this.handleResize);
@@ -554,7 +561,7 @@ export default {
     loginSocial(social_name) {
       axios
         .post(`/gypsy-login/${social_name}`, {
-          app_id: this.$appId,
+          app_id: this.appId == "" ? this.$appId : this.appId,
         })
         .then((response) => {
           console.log(response);

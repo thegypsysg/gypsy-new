@@ -722,13 +722,14 @@ export default {
           .filter((o) => o.value == this.country)
           .map((op) => op.label)[0];
         this.isSending = true;
+        const appId = localStorage.getItem("app_id");
         const payload = {
           email_id: this.email,
           name: this.name,
           country_prefix: this.country,
           mobile_number: this.mobile,
           gender: this.gender,
-          app_id: this.$appId,
+          app_id: appId == "" ? this.$appId : appId,
           registered_type: this.isSmall ? "M" : "W",
           country_name: countryName,
           image: this.imageSend || null,
