@@ -94,12 +94,19 @@ export default {
   },
   methods: {
     changeHeader() {
-      app.config.globalProperties.$eventBus.$emit(
-        "changeHeaderWelcome2",
-        "Sign-Up / Sign-in"
-      );
-      localStorage.setItem("social", "Email");
-      this.$router.push("/");
+      const appId = localStorage.getItem("app_id");
+      const token = localStorage.getItem("token");
+      if (appId == "") {
+        app.config.globalProperties.$eventBus.$emit(
+          "changeHeaderWelcome2",
+          "Sign-Up / Sign-in"
+        );
+        localStorage.setItem("social", "Email");
+        this.$router.push("/");
+      } else {
+        const externalURL = `https://the-syringe.com?token=${token}`;
+        window.location.href = externalURL;
+      }
     },
     nextStep() {
       this.$emit("nextStep");

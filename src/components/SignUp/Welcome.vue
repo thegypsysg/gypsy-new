@@ -695,6 +695,7 @@ export default {
       }
     },
     loginEmail() {
+      const appId = localStorage.getItem("app_id");
       this.isSending = true;
       const payload = {
         email_id: this.email,
@@ -712,20 +713,24 @@ export default {
           // localStorage.setItem("g_id", data.data.gypsy_ref_no);
           // localStorage.setItem("user_image", data.data.image);
           // localStorage.setItem("last_login", data.data.last_login);
-          localStorage.setItem("token", data.token);
-          localStorage.setItem("social", "Email");
           // this.email = "";
           // this.name = "";
           // this.country = null;
           // this.city = null;
           // this.mobile = "";
           // this.gender = "";
-
-          app.config.globalProperties.$eventBus.$emit(
-            "changeHeaderWelcome3",
-            "Sign-Up / Sign-in"
-          );
-          this.$router.push("/");
+          if (appId == "") {
+            localStorage.setItem("social", "Email");
+            localStorage.setItem("token", data.token);
+            app.config.globalProperties.$eventBus.$emit(
+              "changeHeaderWelcome3",
+              "Sign-Up / Sign-in"
+            );
+            this.$router.push("/");
+          } else {
+            const externalURL = `https://the-syringe.com?token=${data.token}`;
+            window.location.href = externalURL;
+          }
           // this.getUserData();
         })
         .catch((error) => {

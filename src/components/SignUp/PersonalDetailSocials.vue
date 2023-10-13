@@ -618,6 +618,9 @@ export default {
     tokenProvider() {
       return this.$route.query.token || "";
     },
+    appId() {
+      return this.$route.query.app_id || "";
+    },
     avatarProvider() {
       const { social, avatar } = this.$route.query;
 
@@ -676,6 +679,7 @@ export default {
     console.log(this.emailProvider);
     console.log(this.nameProvider);
     console.log(this.avatarProvider);
+    console.log(this.appId);
   },
   unmounted() {
     window.removeEventListener("resize", this.handleResize);
@@ -745,7 +749,6 @@ export default {
         const countryName = this.options
           .filter((o) => o.value == this.country)
           .map((op) => op.label)[0];
-          const appId = localStorage.getItem("app_id");
         const payload = {
           email_id: this.email,
           name: this.name,
@@ -753,7 +756,7 @@ export default {
           // country_current: this.country,
           country_prefix: this.country,
           gender: this.gender,
-          app_id: appId == '' ? this.$appId : appId,
+          app_id: this.appId,
           registered_type: this.isSmall ? "M" : "W",
           social_type: this.socialType,
           token: this.tokenProvider,
