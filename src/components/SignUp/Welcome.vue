@@ -478,6 +478,7 @@ export default {
         : this.capitalizeFirstLetter(localStorage.getItem("social")) + " Login";
     },
     appId() {
+      localStorage.setItem("app_id", this.$route.query.app_id || "");
       return this.$route.query.app_id || "";
     },
   },
@@ -509,7 +510,6 @@ export default {
   },
   mounted() {
     console.log(this.appId);
-    localStorage.setItem("app_id", this.appId);
   },
   unmounted() {
     window.removeEventListener("resize", this.handleResize);
