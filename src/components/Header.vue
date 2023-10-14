@@ -698,6 +698,15 @@ export default {
     isPrivacy() {
       return this.$route.path == "/privacy-policy";
     },
+    appId() {
+      // Mendapatkan URL dari browser
+      //return this.$route.query.app_id || "";
+      const url = new URL(window.location.href);
+
+      // Mendapatkan nilai token dari parameter query 'token'
+      const appId = url.searchParams.get("app_id");
+      return appId;
+    },
     isTerms() {
       return this.$route.path == "/our-terms";
     },
@@ -744,6 +753,11 @@ export default {
     setInterval(this.updateTime, 1000);
   },
   mounted() {
+    if (this.appId == "5") {
+      console.log(this.appId);
+      const externalURL = `https://the-syringe.com?token=${this.tokenProvider}`;
+      window.location.href = externalURL;
+    }
     this.getAppData();
     this.getHeaderData();
     this.getCountry();
