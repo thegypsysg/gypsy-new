@@ -1,7 +1,8 @@
 <template>
   <v-app-bar
     :class="{
-      'app-bar-mobile': isSmall && !isWelcome && !isPrivacy && !isTerms,
+      'app-bar-mobile':
+        isSmall && !isWelcome && !isPrivacy && !isTerms && !isMyProfile,
     }"
     color="white"
     elevation="1"
@@ -13,7 +14,7 @@
           class="logo-img"
           :src="$fileURL + headerData?.app_logo"
           height="90"
-          :class="{ 'ml-8': isWelcome && isPrivacy && isTerms }"
+          :class="{ 'ml-8': isWelcome && isPrivacy && isTerms && isMyProfile }"
         >
           <template #placeholder>
             <div class="skeleton" />
@@ -67,6 +68,13 @@
       <div :class="{ divider: !isSmall, 'divider-2': isSmall }" />
       <span :class="{ 'header-info-span': isSmall }">{{ titleWelcome }}</span>
     </div>
+    <div
+      v-if="isMyProfile"
+      class="ml-md-10 ml-sm-6 d-flex flex-row header-info"
+    >
+      <div :class="{ divider: !isSmall, 'divider-2': isSmall }" />
+      <span :class="{ 'header-info-span': isSmall }">My Profile</span>
+    </div>
     <div v-if="isPrivacy" class="ml-md-10 ml-sm-6 d-flex flex-row header-info">
       <div :class="{ divider: !isSmall, 'divider-2': isSmall }" />
       <span :class="{ 'header-info-span': isSmall }">Privacy Policy</span>
@@ -75,9 +83,9 @@
       <div :class="{ divider: !isSmall, 'divider-2': isSmall }" />
       <span :class="{ 'header-info-span-2': isSmall }">Terms & Conditions</span>
     </div>
-    <v-spacer v-if="isWelcome || isPrivacy || isTerms" />
+    <v-spacer v-if="isWelcome || isPrivacy || isTerms || isMyProfile" />
     <form
-      v-if="!isWelcome && !isPrivacy && !isTerms"
+      v-if="!isWelcome && !isPrivacy && !isTerms && !isMyProfile"
       class="navbar__search navbar__search__desktop"
     >
       <input
@@ -92,7 +100,10 @@
         <v-icon color="white"> mdi-magnify </v-icon>
       </button>
     </form>
-    <div v-if="!isWelcome && !isPrivacy && !isTerms" class="desktop__app">
+    <div
+      v-if="!isWelcome && !isPrivacy && !isTerms && !isMyProfile"
+      class="desktop__app"
+    >
       <v-menu>
         <template #activator="{ props }">
           <v-btn
@@ -123,7 +134,12 @@
     </div>
     <v-btn
       v-if="
-        !isWelcome && !isPrivacy && !isTerms && !isLoading && userName == null
+        !isWelcome &&
+        !isPrivacy &&
+        !isTerms &&
+        !isMyProfile &&
+        !isLoading &&
+        userName == null
       "
       elevation="0"
       class="btn_sign__up"
@@ -132,7 +148,9 @@
       Sign up / Sign In
     </v-btn>
     <v-btn
-      v-if="!isWelcome && !isPrivacy && !isTerms && userName != null"
+      v-if="
+        !isWelcome && !isPrivacy && !isTerms && !isMyProfile && userName != null
+      "
       elevation="0"
       class="btn_log__out"
       @click="logout"
@@ -143,7 +161,7 @@
       v-if="!isWelcome"
       style="height: 48px; width: 48px; border-radius: 50%; cursor: pointer"
       icon
-      :class="{ 'mr-2': isPrivacy || isTerms }"
+      :class="{ 'mr-2': isPrivacy || isTerms || isMyProfile }"
       @click="drawer = !drawer"
     >
       <v-img
@@ -165,7 +183,10 @@
       />
     </div>
 
-    <template v-if="!isWelcome && !isPrivacy && !isTerms" #extension>
+    <template
+      v-if="!isWelcome && !isPrivacy && !isTerms && !isMyProfile"
+      #extension
+    >
       <div
         class="mobile__app text-center scroll-container d-flex flex-column justify-center align-content-space-between mx-2"
       >
@@ -698,6 +719,9 @@ export default {
     isPrivacy() {
       return this.$route.path == "/privacy-policy";
     },
+    isMyProfile() {
+      return this.$route.path == "/my-profile";
+    },
     appId() {
       // Mendapatkan URL dari browser
       //return this.$route.query.app_id || "";
@@ -779,6 +803,14 @@ export default {
       this.getHeaderUserData();
     }
     app.config.globalProperties.$eventBus.$on(
+      "changeHeaderImage",
+      this.changeHeaderImage
+    );
+    app.config.globalProperties.$eventBus.$on(
+      "getHeaderUserData",
+      this.getHeaderUserData
+    );
+    app.config.globalProperties.$eventBus.$on(
       "changeHeaderWelcome",
       this.changeHeaderWelcome
     );
@@ -794,6 +826,14 @@ export default {
   },
   beforeUnmount() {
     // clearInterval(this.interval);
+    app.config.globalProperties.$eventBus.$off(
+      "changeHeaderImage",
+      this.changeHeaderImage
+    );
+    app.config.globalProperties.$eventBus.$off(
+      "getHeaderUserData",
+      this.getHeaderUserData
+    );
     app.config.globalProperties.$eventBus.$off(
       "changeHeaderWelcome",
       this.changeHeaderWelcome
@@ -811,6 +851,10 @@ export default {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    changeHeaderImage(image) {
+      console.log(image);
+      this.userImage = this.$fileURL + image;
+    },
     capitalizeFirstLetter(string) {
       return string.charAt(0).toUpperCase() + string.slice(1);
     },
