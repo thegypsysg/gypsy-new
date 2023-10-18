@@ -104,6 +104,7 @@ export default {
         localStorage.setItem("social", "Email");
         this.$router.push("/");
       } else {
+        localStorage.setItem("social", "Email");
         const externalURL = `https://the-syringe.com?token=${token}`;
         window.location.href = externalURL;
       }

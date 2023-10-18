@@ -728,6 +728,7 @@ export default {
             );
             this.$router.push("/");
           } else {
+            localStorage.setItem("social", "Email");
             const externalURL = `https://the-syringe.com?token=${data.token}`;
             window.location.href = externalURL;
           }
