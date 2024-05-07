@@ -536,7 +536,10 @@ export default {
               title: item.app_name || "",
               desc: item.app_description || "",
               tag: item.app_group_name || "",
-              link: item.app_link || "",
+              link:
+                item.app_name == "4 Walls"
+                  ? "https://4walls.the-gypsy.sg/"
+                  : item.app_link,
               views: item.app_views || "0",
 
               id: item.app_id || 1,

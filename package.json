@@ -12,7 +12,7 @@
     "@healerlab/vue3-simple-otp-input": "^0.0.8",
     "@mdi/font": "7.0.96",
     "animejs": "^3.2.1",
-    "aos": "^3.0.0-beta.6",
+    "aos": "^2.3.4",
     "axios": "^1.4.0",
     "flag-icon-css": "^4.1.7",
     "flag-icons": "^6.11.0",
@@ -35,7 +35,7 @@
     "vue3-country-intl": "^2.0.0",
     "vue3-country-region-select": "^1.0.0",
     "vue3-otp-input": "^0.4.1",
-    "vuetify": "^3.0.0",
+    "vuetify": "^3.5.8",
     "vuex": "^4.1.0",
     "webfontloader": "^1.0.0"
   },
