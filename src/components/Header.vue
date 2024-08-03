@@ -790,6 +790,10 @@ export default {
       console.log(this.appId);
       const externalURL = `https://the-syringe.com?token=${this.tokenProvider}`;
       window.location.href = externalURL;
+    } else if (this.appId == "2" && this.tokenProvider && !this.name) {
+      console.log(this.appId);
+      const externalURL = `https://mall-e.in?token=${this.tokenProvider}`;
+      window.location.href = externalURL;
     }
     this.getAppData();
     this.getHeaderData();

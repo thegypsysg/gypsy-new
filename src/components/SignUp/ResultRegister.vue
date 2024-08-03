@@ -102,8 +102,11 @@ export default {
           "Sign-Up / Sign-in"
         );
         this.$router.push("/");
-      } else {
+      } else if (appId == "5") {
         const externalURL = `https://the-syringe.com?token=${token}`;
+        window.location.href = externalURL;
+      } else if (appId == "2") {
+        const externalURL = `https://mall-e.in?token=${token}`;
         window.location.href = externalURL;
       }
     },

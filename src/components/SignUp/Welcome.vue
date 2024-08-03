@@ -553,7 +553,7 @@ export default {
       }, 3000);
     },
     capitalizeFirstLetter(string) {
-      return string.charAt(0).toUpperCase() + string.slice(1);
+      return string ? string.charAt(0).toUpperCase() + string.slice(1) : "";
     },
     nextStep() {
       this.$emit("nextStep");
@@ -727,9 +727,13 @@ export default {
               "Sign-Up / Sign-in"
             );
             this.$router.push("/");
-          } else {
+          } else if (appId == "5") {
             localStorage.setItem("social", "Email");
             const externalURL = `https://the-syringe.com?token=${data.token}`;
+            window.location.href = externalURL;
+          } else if (appId == "2") {
+            localStorage.setItem("social", "Email");
+            const externalURL = `https://mall-e.in?token=${data.token}`;
             window.location.href = externalURL;
           }
           // this.getUserData();

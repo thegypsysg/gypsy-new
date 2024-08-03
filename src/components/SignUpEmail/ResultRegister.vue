@@ -103,9 +103,13 @@ export default {
         );
         localStorage.setItem("social", "Email");
         this.$router.push("/");
-      } else {
+      } else if (appId == "5") {
         localStorage.setItem("social", "Email");
         const externalURL = `https://the-syringe.com?token=${token}`;
+        window.location.href = externalURL;
+      } else if (appId == "2") {
+        localStorage.setItem("social", "Email");
+        const externalURL = `https://mall-e.in?token=${token}`;
         window.location.href = externalURL;
       }
     },
