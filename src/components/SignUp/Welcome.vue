@@ -209,7 +209,7 @@
                         :maxLength="8"
                         @click:append-inner="showPassword = !showPassword"
                       ></v-text-field>
-                      <div class="d-flex align-center">
+                      <div class="d-flex align-center" style="gap: 10px">
                         <v-checkbox v-model="rememberMe" class="black--text">
                           <template v-slot:label>
                             <span
@@ -222,16 +222,17 @@
                             >
                           </template>
                         </v-checkbox>
-                        <a
-                          href="#"
+                        <span
+                          @click="forgotPassword()"
                           class="text-body-2 font-weight-regular mt-n4"
                           style="
                             text-decoration: none;
                             color: #4b80b1;
                             font-weight: 400;
                             font-size: 12px;
+                            cursor: pointer;
                           "
-                          >Forgot Password?</a
+                          >Forgot Password?</span
                         >
                       </div>
                     </div>
@@ -577,6 +578,31 @@ export default {
           window.location.href = "/sign-in";
         });
     },
+    forgotPassword() {
+      axios
+        .post(`/gypsy/send-forget-password-email`, {
+          email_id: this.email,
+        })
+        .then((response) => {
+          console.log(response);
+          if (response) {
+            this.successMessage = response.data.message;
+            this.isSuccess = true;
+          }
+          //  else {
+          //   window.location.href = "/sign-in";
+          // }
+        })
+        .catch((error) => {
+          const message = error.response.data.email_id
+            ? error.response.data.email_id[0]
+            : error.response.data.message
+            ? error.response.data.message
+            : "Something Wrong!!!";
+          this.errorMessage = message;
+          this.isError = true;
+        });
+    },
     hideEmail(email) {
       const atIndex = email.indexOf("@");
       if (atIndex >= 0) {
@@ -653,23 +679,28 @@ export default {
               this.$router.push("/signup-email");
             } else if (data.social_type == "G") {
               this.successMessage =
-                "You last used Google to Sign up . Please use Google only to Login again.  Thank you";
+                "You Last used Google to Sign-Up please use it again for faster login your account or please Enter your Password to proceed .";
+              this.isLogin = true;
               this.isSuccess = true;
             } else if (data.social_type == "F") {
               this.successMessage =
-                "You last used Facebook to Sign up . Please use Facebook only to Login again.  Thank you";
+                "You Last used Facebook to Sign-Up please use it again for faster login your account or please Enter your Password to proceed .";
+              this.isLogin = true;
               this.isSuccess = true;
             } else if (data.social_type == "L") {
               this.successMessage =
-                "You last used Linked In to Sign up . Please use Linked In only to Login again.  Thank you";
+                "You Last used Linkedin to Sign-Up please use it again for faster login your account or please Enter your Password to proceed .";
+              this.isLogin = true;
               this.isSuccess = true;
             } else if (data.social_type == "T") {
               this.successMessage =
-                "You last used Tik Tok to Sign up . Please use Tik Tok only to Login again.  Thank you";
+                "You Last used Tiktok to Sign-Up please use it again for faster login your account or please Enter your Password to proceed .";
+              this.isLogin = true;
               this.isSuccess = true;
             } else if (data.social_type == "X") {
               this.successMessage =
-                "You last used Twitter to Sign up . Please use Twitter only to Login again.  Thank you";
+                "You Last used Twitter to Sign-Up please use it again for faster login your account or please Enter your Password to proceed .";
+              this.isLogin = true;
               this.isSuccess = true;
             }
             // this.successMessage = data.message;
