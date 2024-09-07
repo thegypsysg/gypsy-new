@@ -89,7 +89,7 @@
                     </v-icon>
                   </v-btn>
 
-                  <v-btn
+                  <!-- <v-btn
                     :size="!isSmall ? '40' : '50'"
                     variant="text"
                     style="background: #0072b1"
@@ -100,8 +100,8 @@
                     <v-icon :size="!isSmall ? '18' : '24'">
                       <i class="fa-brands fa-linkedin-in" />
                     </v-icon>
-                  </v-btn>
-                  <v-btn
+                  </v-btn> -->
+                  <!-- <v-btn
                     :size="!isSmall ? '40' : '50'"
                     variant="text"
                     style="background: black"
@@ -112,15 +112,15 @@
                     <v-icon :size="!isSmall ? '18' : '24'">
                       <i class="fa-brands fa-tiktok" />
                     </v-icon>
-                  </v-btn>
-                  <v-btn
+                  </v-btn> -->
+                  <!-- <v-btn
                     :size="!isSmall ? '40' : '50'"
                     variant="text"
                     style="background: #1c96e8"
                     color="white"
                     icon="mdi-twitter"
                     @click="loginSocial('twitter')"
-                  />
+                  /> -->
                 </div>
                 <div class="login-footer mt-8">
                   <div class="d-flex justify-center" style="gap: 25px">
@@ -222,8 +222,10 @@
                             >
                           </template>
                         </v-checkbox>
-                        <span
+                        <v-btn
                           @click="forgotPassword()"
+                          variant="text"
+                          :disabled="isLoadingForgot"
                           class="text-body-2 font-weight-regular mt-n4"
                           style="
                             text-decoration: none;
@@ -232,7 +234,7 @@
                             font-size: 12px;
                             cursor: pointer;
                           "
-                          >Forgot Password?</span
+                          >Forgot Password?</v-btn
                         >
                       </div>
                     </div>
@@ -344,7 +346,7 @@
                   variant="outlined"
                   block
                   class="login-btn"
-                  :disabled="!isNext || isSending || !password"
+                  :disabled="isSending || !isNext || !password"
                   :class="{ 'login-btn-mobile': isSmall, 'mt-6': isMobile }"
                   @click="loginEmail()"
                 >
@@ -414,6 +416,51 @@
             </v-btn>
           </template>
         </v-snackbar>
+        <v-dialog v-model="isSuccessForgot" persistent width="auto">
+          <v-card width="350">
+            <v-card-text>
+              <h3 class="">Forgot Password</h3>
+              <h5 class="my-4">
+                Please check your email as you will receive an OTP
+              </h5>
+              <v-btn
+                class="mb-4 w-100 bg-primary"
+                @click="isSuccessForgot = false"
+              >
+                OK
+              </v-btn>
+            </v-card-text>
+          </v-card>
+        </v-dialog>
+        <v-dialog v-model="isChangePassword" persistent width="auto">
+          <v-card width="350">
+            <v-card-text>
+              <h5 class="">
+                New Password successfully updated . Please change your password
+                under "My Profile"
+              </h5>
+              <v-btn
+                class="my-4 w-100 bg-primary"
+                @click="closeChangePassword()"
+              >
+                OK
+              </v-btn>
+            </v-card-text>
+          </v-card>
+        </v-dialog>
+        <v-dialog v-model="isFacebook" persistent width="auto">
+          <v-card width="350">
+            <v-card-text class="">
+              <p class="my-4">
+                Facebook Sign up is not available now please use your email or
+                Google
+              </p>
+              <v-btn class="mb-4 w-100 bg-primary" @click="isFacebook = false">
+                OK
+              </v-btn>
+            </v-card-text>
+          </v-card>
+        </v-dialog>
       </v-container>
     </div>
   </div>
@@ -430,6 +477,14 @@ export default {
   name: "Welcome",
   data() {
     return {
+      appIdLogin: "",
+      tokenLogin: null,
+      isSending: false,
+      isSuccessForgot: false,
+      isForgotPassword: false,
+      isChangePassword: false,
+      isFacebook: false,
+      isLoadingForgot: false,
       isSendOtp: false,
       isChangeMobile: false,
       isResendOTP: false,
@@ -560,25 +615,30 @@ export default {
       this.$emit("nextStep");
     },
     loginSocial(social_name) {
-      axios
-        .post(`/gypsy-login/${social_name}`, {
-          app_id: this.appId == "" ? this.$appId : this.appId,
-        })
-        .then((response) => {
-          console.log(response);
-          if (response) {
-            window.location.assign(response.data.target_url);
-          } else {
+      if (social_name == "facebook") {
+        this.isFacebook = true;
+      } else {
+        axios
+          .post(`/gypsy-login/${social_name}`, {
+            app_id: this.appId == "" ? this.$appId : this.appId,
+          })
+          .then((response) => {
+            console.log(response);
+            if (response) {
+              window.location.assign(response.data.target_url);
+            } else {
+              window.location.href = "/sign-in";
+            }
+            console.log(response.data.target_url);
+          })
+          .catch((error) => {
+            console.log(error);
             window.location.href = "/sign-in";
-          }
-          console.log(response.data.target_url);
-        })
-        .catch((error) => {
-          console.log(error);
-          window.location.href = "/sign-in";
-        });
+          });
+      }
     },
     forgotPassword() {
+      this.isLoadingForgot = true;
       axios
         .post(`/gypsy/send-forget-password-email`, {
           email_id: this.email,
@@ -586,8 +646,8 @@ export default {
         .then((response) => {
           console.log(response);
           if (response) {
-            this.successMessage = response.data.message;
-            this.isSuccess = true;
+            this.isSuccessForgot = true;
+            this.isForgotPassword = true;
           }
           //  else {
           //   window.location.href = "/sign-in";
@@ -601,6 +661,9 @@ export default {
             : "Something Wrong!!!";
           this.errorMessage = message;
           this.isError = true;
+        })
+        .finally(() => {
+          this.isLoadingForgot = false;
         });
     },
     hideEmail(email) {
@@ -649,7 +712,6 @@ export default {
               : "Something Wrong!!!";
             this.errorMessage = message;
             this.isError = true;
-            this.isSending = false;
           })
           .finally(() => {
             this.isSending = false;
@@ -726,7 +788,7 @@ export default {
       }
     },
     loginEmail() {
-      const appId = localStorage.getItem("app_id");
+      this.appIdLogin = localStorage.getItem("app_id");
       this.isSending = true;
       const payload = {
         email_id: this.email,
@@ -737,36 +799,32 @@ export default {
         .then((response) => {
           const data = response.data;
           console.log(data);
-          this.successMessage = data.message;
-          this.isSuccess = true;
-          // localStorage.setItem("name", data.data.name);
-          // localStorage.setItem("email", data.data.email_id);
-          // localStorage.setItem("g_id", data.data.gypsy_ref_no);
-          // localStorage.setItem("user_image", data.data.image);
-          // localStorage.setItem("last_login", data.data.last_login);
-          // this.email = "";
-          // this.name = "";
-          // this.country = null;
-          // this.city = null;
-          // this.mobile = "";
-          // this.gender = "";
-          if (appId == "") {
-            localStorage.setItem("social", "Email");
-            localStorage.setItem("token", data.token);
-            app.config.globalProperties.$eventBus.$emit(
-              "changeHeaderWelcome3",
-              "Sign-Up / Sign-in"
-            );
-            this.$router.push("/");
-          } else if (appId == "5") {
-            localStorage.setItem("social", "Email");
-            const externalURL = `https://the-syringe.com?token=${data.token}`;
-            window.location.href = externalURL;
-          } else if (appId == "2") {
-            localStorage.setItem("social", "Email");
-            const externalURL = `https://mall-e.in?token=${data.token}`;
-            window.location.href = externalURL;
+          if (this.isForgotPassword) {
+            this.isChangePassword = true;
+            this.tokenLogin = data.token;
+          } else {
+            this.successMessage = data.message;
+            this.isSuccess = true;
+
+            if (this.appIdLogin == "") {
+              localStorage.setItem("social", "Email");
+              localStorage.setItem("token", data.token);
+              app.config.globalProperties.$eventBus.$emit(
+                "changeHeaderWelcome3",
+                "Sign-Up / Sign-in"
+              );
+              this.$router.push(`/?token=${data.token}`);
+            } else if (this.appIdLogin == "5") {
+              localStorage.setItem("social", "Email");
+              const externalURL = `https://the-syringe.com?token=${data.token}`;
+              window.location.href = externalURL;
+            } else if (this.appIdLogin == "2") {
+              localStorage.setItem("social", "Email");
+              const externalURL = `https://mall-e.in?token=${data.token}`;
+              window.location.href = externalURL;
+            }
           }
+
           // this.getUserData();
         })
         .catch((error) => {
@@ -777,6 +835,27 @@ export default {
         .finally(() => {
           this.isSending = false;
         });
+    },
+    closeChangePassword() {
+      this.isChangePassword = false;
+      if (this.appIdLogin == "") {
+        console.log("app id, ", this.appIdLogin);
+        localStorage.setItem("social", "Email");
+        localStorage.setItem("token", this.tokenLogin);
+        app.config.globalProperties.$eventBus.$emit(
+          "changeHeaderWelcome3",
+          "Sign-Up / Sign-in"
+        );
+        this.$router.push(`/?token=${this.tokenLogin}`);
+      } else if (this.appIdLogin == "5") {
+        localStorage.setItem("social", "Email");
+        const externalURL = `https://the-syringe.com?token=${this.tokenLogin}`;
+        window.location.href = externalURL;
+      } else if (this.appIdLogin == "2") {
+        localStorage.setItem("social", "Email");
+        const externalURL = `https://mall-e.in?token=${this.tokenLogin}`;
+        window.location.href = externalURL;
+      }
     },
     handleResize() {
       this.screenWidth = window.innerWidth;

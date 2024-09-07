@@ -201,18 +201,64 @@
                     /> -->
                   </v-col>
                   <v-col cols="6">
-                    <label
-                      >Email
-                      <span
-                        :class="{
-                          'text-red': !isEmailVerified,
-                          'text-green': isEmailVerified,
-                        }"
-                        >{{
-                          isEmailVerified ? "(Verified)" : "(Not Verified)"
-                        }}</span
-                      ></label
+                    <label>
+                      <div class="d-flex" style="gap: 5px">
+                        <span>Email</span>
+                        <span
+                          :class="{
+                            'text-red': !isEmailVerified,
+                            'text-green': isEmailVerified,
+                          }"
+                          >{{
+                            isEmailVerified ? "(Verified)" : "(Not Verified)"
+                          }}</span
+                        >
+                        <div
+                          v-if="!isEmailVerified"
+                          class="d-flex"
+                          style="gap: 5px"
+                        >
+                          <span
+                            v-if="!isVerifying"
+                            @click="verifyEmail()"
+                            class="text-green cursor-pointer"
+                            >(Verify Now)</span
+                          >
+                          <span v-if="isVerifying" class="text-green"
+                            >(Verify Now)</span
+                          >
+                          <span
+                            @click="isWhy = true"
+                            class="text-blue-accent-4 cursor-pointer"
+                            >Why ?</span
+                          >
+                        </div>
+                      </div></label
                     >
+                    <div
+                      class="w-100 d-flex"
+                      style="gap: 10px"
+                      v-if="isEmailOTP"
+                    >
+                      <input
+                        v-model="input.emailOTP"
+                        maxlength="4"
+                        @input="handleInputOTP"
+                        type="number"
+                        class="form-control mt-4 w-50"
+                        placeholder="Enter OTP"
+                      />
+                      <v-btn
+                        :disabled="!input.emailOTP || isSending"
+                        :loading="isSending"
+                        class="text-none text-subtitle-1 mt-4 w-50"
+                        color="primary"
+                        variant="flat"
+                        @click="saveEmailOTP()"
+                      >
+                        Update
+                      </v-btn>
+                    </div>
                     <div
                       class="d-flex align-center mt-2 py-0 back-grey"
                       style="border: 1px solid #ced4da; border-radius: 0.25rem"
@@ -737,16 +783,56 @@
           </v-row>
           <v-row>
             <v-col>
-              <label
-                >Email
-                <span
-                  :class="{
-                    'text-red': !isEmailVerified,
-                    'text-green': isEmailVerified,
-                  }"
-                  >{{ isEmailVerified ? "(Verified)" : "(Not Verified)" }}</span
-                ></label
-              >
+              <label>
+                <div class="d-flex" style="gap: 5px">
+                  <span>Email</span>
+                  <span
+                    :class="{
+                      'text-red': !isEmailVerified,
+                      'text-green': isEmailVerified,
+                    }"
+                    >{{
+                      isEmailVerified ? "(Verified)" : "(Not Verified)"
+                    }}</span
+                  >
+                  <div v-if="!isEmailVerified" class="d-flex" style="gap: 5px">
+                    <span
+                      v-if="!isVerifying"
+                      @click="verifyEmail()"
+                      class="text-green cursor-pointer"
+                      >(Verify Now)</span
+                    >
+                    <span v-if="isVerifying" class="text-green"
+                      >(Verify Now)</span
+                    >
+                    <span
+                      @click="isWhy = true"
+                      class="text-blue-accent-4 cursor-pointer"
+                      >Why ?</span
+                    >
+                  </div>
+                </div>
+              </label>
+              <div class="w-100 d-flex" style="gap: 10px" v-if="isEmailOTP">
+                <input
+                  v-model="input.emailOTP"
+                  maxlength="4"
+                  @input="handleInputOTP"
+                  type="number"
+                  class="form-control mt-4 w-50"
+                  placeholder="Enter OTP"
+                />
+                <v-btn
+                  :disabled="!input.emailOTP || isSending"
+                  :loading="isSending"
+                  class="text-none text-subtitle-1 mt-4 w-50"
+                  color="primary"
+                  variant="flat"
+                  @click="saveEmailOTP()"
+                >
+                  Update
+                </v-btn>
+              </div>
               <div
                 class="d-flex align-center mt-2 py-0 back-grey"
                 style="border: 1px solid #ced4da; border-radius: 0.25rem"
@@ -1087,6 +1173,40 @@
           </v-btn>
         </template>
       </v-snackbar>
+      <v-dialog v-model="isWhy" persistent width="auto">
+        <v-card width="350">
+          <v-card-text class="">
+            <p class="my-4">
+              We need to verify your email so we can make sure it is you and
+              avoid scammers
+            </p>
+            <v-btn class="mb-4 w-100 bg-primary" @click="isWhy = false">
+              OK
+            </v-btn>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="isVerifySent" persistent width="auto">
+        <v-card width="350">
+          <v-card-text class="">
+            <h4>Verify Email</h4>
+            <p class="my-4">Enter the 4 digit OTP sent to your email</p>
+            <v-btn class="mb-4 w-100 bg-primary" @click="isVerifySent = false">
+              OK
+            </v-btn>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="isVerifySuccess" persistent width="auto">
+        <v-card width="350">
+          <v-card-text class="">
+            <h4 class="mt-4 mb-8">Email Verified Successfully</h4>
+            <v-btn class="mb-4 w-100 bg-primary" @click="verifySuccess()">
+              OK
+            </v-btn>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
     </v-container>
     <input
       ref="fileuploadinput"
@@ -1367,12 +1487,18 @@ export default {
         { value: "ZM", label: "Zambia" },
         { value: "ZW", label: "Zimbabwe" },
       ],
+      isWhy: false,
+      isVerifySent: false,
+      isVerifySuccess: false,
       chosenImage: null,
       showCropper: false,
       imageFileType: null,
+      isSending: false,
+      isVerifying: false,
       isLoading: false,
       screenWidth: window.innerWidth,
       isEmailVerified: false,
+      isEmailOTP: false,
       isPhoneVerified: false,
       isChangePassword: false,
       isMobileChanged: false,
@@ -1405,6 +1531,7 @@ export default {
         nationality: null,
         name: "",
         email: "",
+        emailOTP: null,
         emailNew: "",
         countryCode: null,
         phone: "",
@@ -1547,6 +1674,93 @@ export default {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    handleInputOTP(event) {
+      // Allow only the first 4 digits
+      if (event.target.value.length > 4) {
+        event.target.value = event.target.value.slice(0, 4);
+      }
+      this.input.emailOTP = event.target.value;
+    },
+    verifyEmail() {
+      // console.log(this.tokenProvider);
+      // return;
+      this.isVerifying = true;
+      const token = localStorage.getItem("token");
+      axios
+        .post(
+          `/gypsy/send-verification-email`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${
+                this.tokenProvider ? this.tokenProvider : token
+              }`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        )
+        .then((response) => {
+          const data = response.data;
+          console.log(data);
+          this.isEmailOTP = true;
+          this.isVerifySent = true;
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+          const message = error.response.data.email_id
+            ? error.response.data.email_id[0]
+            : error.response.data.message === ""
+            ? "Something Wrong!!!"
+            : error.response.data.message;
+          this.errorMessage = message;
+          this.isError = true;
+        })
+        .finally(() => {
+          this.isVerifying = false;
+        });
+    },
+    verifySuccess() {
+      this.input.emailOTP = null;
+      this.isVerifySuccess = false;
+      this.isEmailOTP = false;
+      this.isEmailVerified = true;
+    },
+    saveEmailOTP() {
+      this.isSending = true;
+      const payload = {
+        verify_email_otp: this.input.emailOTP,
+      };
+      const token = localStorage.getItem("token");
+      axios
+        .post(`/gypsy/validate-verify-email-otp`, payload, {
+          headers: {
+            Authorization: `Bearer ${
+              this.tokenProvider ? this.tokenProvider : token
+            }`,
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          const data = response.data;
+          console.log(data);
+          this.isVerifySuccess = true;
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+          const message = error.response.data.verify_email_otp
+            ? "Wrong OTP"
+            : error.response.data.message === ""
+            ? "Something Wrong!!!"
+            : error.response.data.message;
+          this.errorMessage = message;
+          this.isError = true;
+        })
+        .finally(() => {
+          this.isSending = false;
+        });
+    },
     async initCropper(imageFileType) {
       this.showCropper = true;
       this.imageFileType = imageFileType;
@@ -1994,6 +2208,7 @@ export default {
           this.isSending = false;
         });
     },
+
     saveEmail() {
       this.isSending = true;
       const payload = {
@@ -2025,6 +2240,7 @@ export default {
 
           this.input.email = this.input.emailNew;
           this.input.emailNew = "";
+          this.isEmailVerified = false;
           // localStorage.setItem("name", data.data.name);
           // localStorage.setItem("email", data.data.email_id);
           // localStorage.setItem("g_id", data.data.gypsy_ref_no);

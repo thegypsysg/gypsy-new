@@ -101,7 +101,7 @@ export default {
           "changeHeaderWelcome2",
           "Sign-Up / Sign-in"
         );
-        this.$router.push("/");
+        this.$router.push(`/?token=${token}`);
       } else if (appId == "5") {
         const externalURL = `https://the-syringe.com?token=${token}`;
         window.location.href = externalURL;

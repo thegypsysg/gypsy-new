@@ -476,32 +476,54 @@
           :class="{ 'mb-2': userName == null }"
         >
           <v-col cols="3" class="d-flex justify-end">
-            <v-img
-              src="@/assets/images/icons/facebook.png"
-              height="40"
-              width="32"
-            />
+            <a :href="contactData?.facebook">
+              <v-img
+                src="@/assets/images/icons/facebook.png"
+                height="40"
+                width="32"
+              />
+            </a>
           </v-col>
           <v-col class="d-flex justify-center" cols="3">
-            <v-img
-              src="@/assets/images/icons/insta.png"
-              height="40"
-              width="32"
-            />
+            <a :href="contactData?.instagram">
+              <v-img
+                src="@/assets/images/icons/insta.png"
+                height="40"
+                width="32"
+              />
+            </a>
           </v-col>
           <v-col class="d-flex justify-start" cols="3">
-            <v-img
-              src="@/assets/images/icons/tiktok.png"
-              class="mt-1"
-              height="35"
-              width="35"
-            />
+            <a :href="contactData?.tiktok">
+              <v-img
+                src="@/assets/images/icons/tiktok.png"
+                class="mt-1"
+                height="35"
+                width="35"
+              />
+            </a>
+          </v-col>
+          <v-col
+            class="d-flex justify-center flex-column align-center"
+            cols="12"
+          >
+            <p class="text-caption">Wha'ts App Support (24 hrs)</p>
+            <a
+              :href="`https://api.whatsapp.com/send?phone=${footerData?.whats_app}&text=The Gypsy Support here - How may I help you. ?`"
+            >
+              <v-img
+                src="@/assets/whatsapp.svg"
+                class="mt-1"
+                height="35"
+                width="35"
+              />
+            </a>
           </v-col>
         </v-row>
         <div
           v-if="userName != null"
           style="font-size: 12px"
-          class="text-grey my-1"
+          class="text-grey my-4"
         >
           <router-link
             class="text-decoration-none text-grey"
@@ -514,25 +536,25 @@
             Terms
           </router-link>
         </div>
-        <div class="drawer-social d-flex" style="width: 100%">
+        <!-- <div class="drawer-social d-flex" style="width: 100%">
           <div>
             <h5>WhatsApp</h5>
             <a
               style="text-decoration: none; font-size: 10px"
               :href="`https://api.whatsapp.com/send?phone=${footerData?.whats_app}&text=Hello!`"
             >
-              {{ footerData?.whats_app }}
+              {{ contactData?.whats_app }}
             </a>
           </div>
           <div>
             <h5>Contact us</h5>
             <a
               style="text-decoration: none; font-size: 10px"
-              :href="`mailto:${footerData?.email_id}`"
-              >{{ footerData?.email_id }}</a
+              :href="`mailto:${contactData?.email_id}`"
+              >{{ contactData?.email_id }}</a
             >
           </div>
-        </div>
+        </div> -->
         <v-divider class="mt-2 mb-n2" />
         <v-container class="footer-bottom pb-2 d-flex justify-center">
           <div class="d-flag d-flex justify-space-between w-100 align-center">
@@ -600,6 +622,8 @@ export default {
       ],
 
       trendingCard: [],
+      appData: null,
+      contactData: null,
       //   {
       //     img: "assets/gypsy-1.png",
       //     title: "Mall-e",
@@ -795,7 +819,9 @@ export default {
       const externalURL = `https://mall-e.in?token=${this.tokenProvider}`;
       window.location.href = externalURL;
     }
+    this.getApplicantsData();
     this.getAppData();
+    this.getAppContactData();
     this.getHeaderData();
     this.getCountry();
     this.getFooterData();
@@ -1025,6 +1051,66 @@ export default {
               shares: item.app_shares || "",
             };
           });
+          // console.log(this.trendingCard);
+
+          // app.config.globalProperties.$eventBus.$emit(
+          //   'update-image',
+          //   this.items
+          // );
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+        });
+      // .finally(() => {
+      //   this.isLoading = false;
+      // });
+    },
+    getApplicantsData() {
+      // this.isLoading = true;
+      const token = localStorage.getItem("token");
+      axios
+        .get(`/applicants`, {
+          headers: {
+            Authorization: `Bearer ${
+              this.tokenProvider ? this.tokenProvider : token
+            }`,
+          },
+        })
+        .then((response) => {
+          const data = response.data.data;
+          // console.log(data);
+          this.appData = data;
+          // console.log(this.trendingCard);
+
+          // app.config.globalProperties.$eventBus.$emit(
+          //   'update-image',
+          //   this.items
+          // );
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.log(error);
+        });
+      // .finally(() => {
+      //   this.isLoading = false;
+      // });
+    },
+    getAppContactData() {
+      // this.isLoading = true;
+      const token = localStorage.getItem("token");
+      axios
+        .get(`/app/contact/${this.$appId}`, {
+          headers: {
+            Authorization: `Bearer ${
+              this.tokenProvider ? this.tokenProvider : token
+            }`,
+          },
+        })
+        .then((response) => {
+          const data = response.data.data;
+          // console.log(data);
+          this.contactData = data;
           // console.log(this.trendingCard);
 
           // app.config.globalProperties.$eventBus.$emit(

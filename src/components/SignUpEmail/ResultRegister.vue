@@ -102,7 +102,7 @@ export default {
           "Sign-Up / Sign-in"
         );
         localStorage.setItem("social", "Email");
-        this.$router.push("/");
+        this.$router.push(`/?token=${token}`);
       } else if (appId == "5") {
         localStorage.setItem("social", "Email");
         const externalURL = `https://the-syringe.com?token=${token}`;
