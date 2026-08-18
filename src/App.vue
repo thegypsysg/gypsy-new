@@ -6,7 +6,8 @@
           currentRoute === '/sign-in' ||
           currentRoute === '/social-sign-up' ||
           currentRoute === '/signup-email' ||
-          currentRoute === '/sign-up-email'
+          currentRoute === '/sign-up-email' ||
+          currentRoute === '/partners'
             ? true
             : false
         "

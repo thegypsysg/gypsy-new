@@ -7,8 +7,14 @@ import SocialLogin from "../views/SocialLoginForm.vue";
 import OTPEmailForm from "../views/OTPEmailForm.vue";
 import CreatePasswordForm from "../views/CreatePasswordForm.vue";
 import EmailTemplate from "../components/SignUp/EmailTemplate.vue";
+import PartnersOnBoarding from "../views/PartnersOnBoarding.vue";
 
 const routes = [
+  {
+    path: "/partners",
+    name: "PartnersOnBoarding",
+    component: PartnersOnBoarding,
+  },
   {
     path: "/",
     component: Home,

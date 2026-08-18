@@ -122,7 +122,7 @@
     </v-row>
   </v-container>
 
-  <v-footer class="bg-black text-center footer__content">
+  <v-footer class="bg-black text-center footer__content pb-16 pb-md-0">
     <div class="footer_text">
       {{ footerData?.copyright }}
     </div>

@@ -22,6 +22,16 @@
         </v-img>
       </div>
     </router-link>
+
+    <template v-if="$route.path === '/partners' && !isSmall">
+      <div style="width: 3px; height: 40px; background-color: #000; margin-left: 16px; margin-right: 16px;"></div>
+      <h1 style="font-size: 28px; font-weight: 900; color: #000; margin: 0;">Partners On-Boarding</h1>
+    </template>
+    
+    <template v-if="$route.path === '/partners' && isSmall">
+      <div style="width: 2px; height: 30px; background-color: #000; margin-left: 12px; margin-right: 12px;"></div>
+      <h1 style="font-size: 18px; font-weight: 900; color: #000; margin: 0;">Partners On-Boarding</h1>
+    </template>
     <template v-if="activeLocationButton && !isSmall">
       <v-menu v-if="locationPlaceholder" v-model="userLocation">
         <template v-slot:activator="{ props }">
@@ -140,7 +150,7 @@
         </v-list>
       </v-menu>
     </v-btn> -->
-    <div v-if="isWelcome" class="ml-10 d-flex flex-row header-info">
+    <div v-if="isWelcome && $route.path !== '/partners'" class="ml-10 d-flex flex-row header-info">
       <div :class="{ divider: !isSmall, 'divider-2': isSmall }" />
       <span :class="{ 'header-info-span': isSmall }">{{ titleWelcome }}</span>
     </div>
@@ -204,10 +214,10 @@
       Logout
     </v-btn>
     <div
-      v-if="!isWelcome"
+      v-if="!isWelcome || $route.path === '/partners'"
       style="height: 48px; width: 48px; border-radius: 50%; cursor: pointer"
       icon
-      :class="{ 'mr-2': isPrivacy || isTerms || isMyProfile }"
+      :class="{ 'mr-2': isPrivacy || isTerms || isMyProfile || $route.path === '/partners' }"
       @click="drawer = !drawer"
     >
       <v-img

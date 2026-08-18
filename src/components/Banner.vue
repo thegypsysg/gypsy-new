@@ -1,57 +1,150 @@
 <template>
-  <div
-    class="bg-image"
-    :style="{ backgroundImage: `url(${$fileURL + headerData.app_main_image})` }"
-    :class="{ 'bg-image-mobile': isSmall }"
-  >
-    <v-container
-      class="d-flex align-center"
-      :class="{ 'banner-desktop': !isSmall, 'banner-mobile': isSmall }"
+  <div class="banner-wrapper">
+    <div
+      class="bg-image"
+      :style="{
+        backgroundImage: `url(${$fileURL + headerData.app_main_image})`,
+      }"
+      :class="{ 'bg-image-mobile': isSmall }"
     >
-      <v-row :class="{ 'd-flex justify-end': !isSmall }">
-        <v-col :cols="!isSmall ? 5 : 12">
-          <div
-            class="hero_title"
-            :data-aos="!isSmall ? 'fade-left' : 'fade-right'"
-            data-aos-offset="200"
-            data-aos-duration="2000"
-            data-aos-easing="ease-in-sine"
-          >
-            <h1 :style="{ 'font-size': !isSmall ? '96px' : '66px' }">
-              Welcome !!!
-            </h1>
-            <h2
-              class="mt-2"
-              style="color: #fff; font-family: 'Oswald', sans-serif !important"
-              :style="{ 'font-size': !isSmall ? '56px' : '46px' }"
+      <v-container
+        class="d-flex align-center"
+        :class="{ 'banner-desktop': !isSmall, 'banner-mobile': isSmall }"
+      >
+        <v-row :class="{ 'd-flex justify-end': !isSmall }">
+          <v-col :cols="!isSmall ? 5 : 12">
+            <div
+              class="hero_title text-center"
+              :data-aos="!isSmall ? 'fade-left' : 'fade-right'"
+              data-aos-offset="200"
+              data-aos-duration="2000"
+              data-aos-easing="ease-in-sine"
             >
-              What are you
-            </h2>
-            <h2
-              class="mt-2"
-              style="color: #fff; font-family: 'Oswald', sans-serif !important"
-              :style="{ 'font-size': !isSmall ? '56px' : '46px' }"
-            >
-              Looking for. ?
-            </h2>
-            <v-btn
-              :height="isSmall ? 40 : 60"
-              class="text-white elevation-0 mt-6"
-              style="
-                background-color: #ffa42e;
-                border-color: #ffa42e;
-                font-size: 20px;
-                font-weight: 700;
-              "
-              @click="scrollToTrending"
-            >
-              <span class="mr-4">TRENDING APPS</span>
-            </v-btn>
-          </div>
-        </v-col>
-      </v-row>
+              <h1
+                style="
+                  color: #032170;
+                  font-family: 'Oswald', sans-serif !important;
+                  font-weight: 700;
+                  text-shadow: 0px 0px 8px rgba(255, 255, 255, 1),
+                    0px 0px 16px rgba(255, 255, 255, 0.8),
+                    0px 0px 24px rgba(255, 255, 255, 0.6), -1px -1px 0 #fff,
+                    1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+                "
+                :style="{ 'font-size': !isSmall ? '96px' : '66px' }"
+              >
+                All in One
+              </h1>
+              <h2
+                class="mt-2"
+                style="
+                  color: #e3f2fd;
+                  font-family: 'Oswald', sans-serif !important;
+                  font-weight: 700;
+                  text-shadow: 4px 6px 10px rgba(0, 0, 0, 0.6);
+                "
+                :style="{ 'font-size': !isSmall ? '96px' : '66px' }"
+              >
+                App
+              </h2>
+              <v-btn
+                :height="isSmall ? 40 : 60"
+                class="text-white elevation-4 mt-6 px-6"
+                style="
+                  background: linear-gradient(180deg, #103c7a 0%, #031433 100%);
+                  border: 2px solid #ffffff;
+                  border-radius: 8px;
+                  font-size: 18px;
+                  font-weight: 700;
+                  letter-spacing: 1px;
+                "
+                @click="scrollToTrending"
+              >
+                <span>TRENDING APPS</span>
+              </v-btn>
+            </div>
+          </v-col>
+        </v-row>
+      </v-container>
+      <!--    <v-img class="bg-image" width="100%" src="@/assets/header.png" />-->
+    </div>
+
+    <!-- Partner and Rider Buttons -->
+    <v-container class="pt-4 pb-0">
+      <div
+        class="d-md-flex d-none align-center"
+        :class="{ 'justify-center': isSmall, 'ml-6': !isSmall }"
+        style="gap: 20px"
+      >
+        <v-btn
+          class="text-white elevation-3 px-6 rounded-pill text-none font-weight-bold"
+          style="
+            background-color: #5d9ba6;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+          "
+          height="48"
+          @click="$router.push('/partners')"
+        >
+          <v-icon left size="22" class="mr-2">mdi-handshake-outline</v-icon>
+          For Partners
+        </v-btn>
+
+        <v-btn
+          class="text-white elevation-3 px-6 rounded-pill text-none font-weight-bold"
+          style="
+            background-color: #a06e48;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+          "
+          height="48"
+        >
+          <v-icon left size="22" class="mr-2">mdi-moped</v-icon>
+          Riders
+        </v-btn>
+      </div>
     </v-container>
-    <!--    <v-img class="bg-image" width="100%" src="@/assets/header.png" />-->
+
+    <!-- Fixed Footer for Mobile -->
+    <div
+      class="d-md-none d-flex align-center justify-center py-3 px-4"
+      style="
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #e8e8e8;
+        z-index: 999;
+        gap: 12px;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
+      "
+    >
+      <v-btn
+        class="text-white elevation-3 rounded-pill text-none font-weight-bold flex-grow-1"
+        style="
+          background-color: #5d9ba6;
+          font-size: 14px;
+          letter-spacing: 0.5px;
+        "
+        height="44"
+        @click="$router.push('/partners')"
+      >
+        <v-icon left size="20" class="mr-1">mdi-handshake-outline</v-icon>
+        For Partners
+      </v-btn>
+
+      <v-btn
+        class="text-white elevation-3 rounded-pill text-none font-weight-bold flex-grow-1"
+        style="
+          background-color: #a06e48;
+          font-size: 14px;
+          letter-spacing: 0.5px;
+        "
+        height="44"
+      >
+        <v-icon left size="20" class="mr-1">mdi-moped</v-icon>
+        Riders
+      </v-btn>
+    </div>
   </div>
 </template>
 
