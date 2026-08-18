@@ -12,6 +12,9 @@ const routes = [
   {
     path: "/",
     component: Home,
+    meta: {
+      locationSelection: true,
+    },
   },
   {
     path: "/my-profile",

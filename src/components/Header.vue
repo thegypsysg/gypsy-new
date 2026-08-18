@@ -22,7 +22,83 @@
         </v-img>
       </div>
     </router-link>
-    <v-btn
+    <template v-if="activeLocationButton && !isSmall">
+      <v-menu v-if="locationPlaceholder" v-model="userLocation">
+        <template v-slot:activator="{ props }">
+          <v-btn
+            variant="text"
+            v-bind="props"
+            color="#494949"
+            append-icon="mdi-chevron-down"
+            class="ml-6 mr-4"
+          >
+            <template v-slot:prepend>
+              <v-avatar
+                :image="$fileURL + itemSelectedComplete?.flag"
+                size="x-small"
+              ></v-avatar>
+            </template>
+
+            {{ locationPlaceholder }}
+          </v-btn>
+        </template>
+
+        <v-card min-width="300">
+          <v-card-title>
+            <div class="d-flex align-center ga-2">
+              <v-icon size="small">mdi-map-marker</v-icon>
+              <p class="text-subtitle-2">Choose Your Location</p>
+            </div>
+          </v-card-title>
+
+          <v-list v-for="(data, index) in country" :key="index">
+            <v-list-subheader>
+              <div class="d-flex align-center ga-2">
+                <v-avatar
+                  :image="$fileURL + data?.flag"
+                  size="x-small"
+                ></v-avatar>
+                <p class="text-subtitle-1 font-weight-medium">
+                  {{ data.country_name }} (<span class="text-blue-lighten-1">{{
+                    data.count
+                  }}</span>
+                  Properties)
+                </p>
+              </div>
+            </v-list-subheader>
+
+            <v-list-item
+              :active="activeCity?.city_id === dataCity.city_id"
+              v-for="(dataCity, indexCities) in data.cities"
+              :key="indexCities"
+              :value="dataCity.city_id"
+              variant="text"
+              active-color="primary"
+              @click="changeItemSelected(dataCity, data)"
+            >
+              <v-list-item-title>
+                <div class="d-flex ml-7 align-center ga-2">
+                  <v-avatar
+                    :image="$fileURL + dataCity?.city_image"
+                    size="x-small"
+                  ></v-avatar>
+                  <p class="">
+                    {{ dataCity.city_name }} ({{ dataCity.property_count }})
+                  </p>
+                </div>
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-card>
+      </v-menu>
+
+      <v-skeleton-loader
+        width="200"
+        v-else
+        type="list-item-two-line"
+      ></v-skeleton-loader>
+    </template>
+    <!-- <v-btn
       v-if="isHome"
       style="background: #f4f5f7; color: black"
       variant="text"
@@ -63,7 +139,7 @@
           </v-list-item>
         </v-list>
       </v-menu>
-    </v-btn>
+    </v-btn> -->
     <div v-if="isWelcome" class="ml-10 d-flex flex-row header-info">
       <div :class="{ divider: !isSmall, 'divider-2': isSmall }" />
       <span :class="{ 'header-info-span': isSmall }">{{ titleWelcome }}</span>
@@ -92,7 +168,7 @@
         id="product_name"
         class="form-control mr-sm-2"
         type="text"
-        placeholder="Type anything that you are looking for "
+        placeholder="What are you looking for . ?"
         aria-label="Search"
         data-autocompleturl="https://boozards.com/merchant-product/search"
       />
@@ -100,38 +176,7 @@
         <v-icon color="white"> mdi-magnify </v-icon>
       </button>
     </form>
-    <div
-      v-if="!isWelcome && !isPrivacy && !isTerms && !isMyProfile"
-      class="desktop__app"
-    >
-      <v-menu>
-        <template #activator="{ props }">
-          <v-btn
-            style="
-              margin-left: 30px;
-              margin-right: 30px;
-              font-size: 16px;
-              color: #494949;
-            "
-            v-bind="props"
-            variant="text"
-          >
-            {{ itemSelected }}
-            <v-icon right dark> mdi-menu-down </v-icon>
-          </v-btn>
-        </template>
-        <v-list>
-          <v-list-item
-            v-for="(item, index) in items"
-            :key="index"
-            :value="index"
-            @click="itemSelected = item.title"
-          >
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-    </div>
+
     <v-btn
       v-if="
         !isWelcome &&
@@ -142,9 +187,10 @@
         userName == null
       "
       elevation="0"
-      class="btn_sign__up"
+      class="btn_sign__up rounded-xl text-white"
       to="/sign-in"
     >
+      <v-icon color="white" class="text-white mr-2">mdi-account-outline</v-icon>
       Sign up / Sign In
     </v-btn>
     <v-btn
@@ -190,35 +236,82 @@
       <div
         class="mobile__app text-center scroll-container d-flex flex-column justify-center align-content-space-between mx-2"
       >
-        <div>
-          <v-menu>
-            <template #activator="{ props }">
+        <template v-if="activeLocationButton && isSmall">
+          <v-menu v-if="locationPlaceholder" v-model="userLocation">
+            <template v-slot:activator="{ props }">
               <v-btn
-                style="
-                  margin-left: 30px;
-                  margin-right: 30px;
-                  font-size: 16px;
-                  color: #494949;
-                "
-                v-bind="props"
                 variant="text"
+                v-bind="props"
+                color="#494949"
+                append-icon="mdi-chevron-down"
               >
-                {{ itemSelected }}
-                <v-icon right dark> mdi-menu-down </v-icon>
+                <template v-slot:prepend>
+                  <v-avatar
+                    :image="$fileURL + itemSelectedComplete?.flag"
+                    size="x-small"
+                  ></v-avatar>
+                </template>
+
+                {{ locationPlaceholder }}
               </v-btn>
             </template>
-            <v-list>
-              <v-list-item
-                v-for="(item, index) in items"
-                :key="index"
-                :value="index"
-                @click="itemSelected = item.title"
-              >
-                <v-list-item-title>{{ item.title }}</v-list-item-title>
-              </v-list-item>
-            </v-list>
+
+            <v-card min-width="300">
+              <v-card-title>
+                <div class="d-flex align-center ga-2">
+                  <v-icon size="small">mdi-map-marker</v-icon>
+                  <p class="text-subtitle-2">Choose Your Location</p>
+                </div>
+              </v-card-title>
+
+              <v-list v-for="(data, index) in country" :key="index">
+                <v-list-subheader>
+                  <div class="d-flex align-center ga-2">
+                    <v-avatar
+                      :image="$fileURL + data?.flag"
+                      size="x-small"
+                    ></v-avatar>
+                    <p class="text-subtitle-1 font-weight-medium">
+                      {{ data.country_name }} (<span
+                        class="text-blue-lighten-1"
+                        >{{ data.count }}</span
+                      >
+                      Properties)
+                    </p>
+                  </div>
+                </v-list-subheader>
+
+                <v-list-item
+                  :active="activeCity.city_id === dataCity.city_id"
+                  v-for="(dataCity, indexCities) in data.cities"
+                  :key="indexCities"
+                  :value="dataCity.city_id"
+                  variant="text"
+                  active-color="primary"
+                  @click="changeItemSelected(dataCity, data)"
+                >
+                  <v-list-item-title>
+                    <div class="d-flex ml-7 align-center ga-2">
+                      <v-avatar
+                        :image="$fileURL + dataCity?.city_image"
+                        size="x-small"
+                      ></v-avatar>
+                      <p class="">
+                        {{ dataCity.city_name }} ({{ dataCity.property_count }})
+                      </p>
+                    </div>
+                  </v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-card>
           </v-menu>
-        </div>
+
+          <v-skeleton-loader
+            width="200"
+            v-else
+            type="list-item-two-line"
+          ></v-skeleton-loader>
+        </template>
         <form
           class="navbar__search navbar__search__mobile mx-auto"
           @submit="preventSubmit"
@@ -227,7 +320,7 @@
             id="product_name"
             class="form-control mr-sm-2"
             type="text"
-            placeholder="Type anything that you are looking for "
+            placeholder="What are you looking for . ?"
             aria-label="Search"
             data-autocompleturl="https://boozards.com/merchant-product/search"
           />
@@ -570,6 +663,19 @@
         </v-container>
       </div>
     </div>
+    <v-dialog v-model="isZero" persistent width="auto">
+      <v-card width="350">
+        <v-card-text>
+          <p class="my-4">
+            We don't have any property for {{ cityName }} on
+            {{ categoryName || "Rent" }} as of now.
+          </p>
+          <v-btn class="mb-4 w-100 bg-primary" @click="isZero = false">
+            OK
+          </v-btn>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-navigation-drawer>
 </template>
 
@@ -613,6 +719,10 @@ export default {
       //   { title: "Overseas Study App", tag: "Overseas Study App" },
       // ],
       drawer: false,
+      userLocation: false,
+      isZero: false,
+      cityName: null,
+      categoryName: null,
       itemSelected: "Singapore",
       items: [
         { title: "Singapore", path: "#" },
@@ -775,7 +885,24 @@ export default {
         ? this.capitalizeFirstLetter(this.$route.query.social)
         : "";
     },
-    ...mapState(["activeTag"]),
+    ...mapState([
+      "activeTag",
+      "itemSelected",
+      "itemSelectedComplete",
+      "country",
+      "selectedPlace",
+      "activeCity",
+      "selectedTrending",
+    ]),
+    activeLocationButton() {
+      return (
+        this.$route.hasOwnProperty("meta") &&
+        this.$route.meta.locationSelection === true
+      );
+    },
+    locationPlaceholder() {
+      return this.activeCity ? this.activeCity?.city_name : this.selectedPlace;
+    },
     token() {
       return localStorage.getItem("token");
     },
@@ -798,13 +925,13 @@ export default {
     //   ];
     // },
   },
-  // watch: {
-  //   socialProvider(newVal) {
-  //     if (newVal != "") {
-  //       localStorage.setItem("social", newVal);
-  //     }
-  //   },
-  // },
+  watch: {
+    selectedTrending(newVal) {
+      setTimeout(() => {
+        this.$store.dispatch("getCountryMall");
+      }, 400);
+    },
+  },
   created() {
     window.addEventListener("resize", this.handleResize);
     setInterval(this.updateTime, 1000);
@@ -826,6 +953,9 @@ export default {
     this.getCountry();
     this.getFooterData();
     this.getGroups();
+    setTimeout(() => {
+      this.$store.dispatch("getCountryMall");
+    }, 800);
     const token = localStorage.getItem("token");
     if (this.tokenProvider != null) {
       this.getHeaderUserData();
@@ -905,7 +1035,26 @@ export default {
           this.isLoading = false;
         });
     },
-    ...mapMutations(["setActiveTag"]),
+    ...mapMutations([
+      "setActiveTag",
+      "setItemSelected",
+      "setItemSelectedComplete",
+      "setSelectedTrending",
+      "setActiveCity",
+      "setSelectedPlace",
+    ]),
+    changeItemSelected(city, country) {
+      if (city.property_count == 0) {
+        this.isZero = true;
+        this.cityName = city.city_name;
+        this.categoryName = this.selectedTrending?.title;
+        return false;
+      }
+      this.setActiveCity(city);
+
+      this.setItemSelectedComplete(country);
+      this.setSelectedPlace(city.country_name);
+    },
     updateTime() {
       // Ambil zona waktu Singapore
       const singaporeTime = moment().tz("Asia/Singapore");
