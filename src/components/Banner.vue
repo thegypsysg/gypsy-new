@@ -61,47 +61,42 @@
               >
                 <span>TRENDING APPS</span>
               </v-btn>
+
+              <div class="d-md-flex d-none justify-center mt-10 ga-16">
+                <v-btn
+                  class="text-white elevation-3 px-6 rounded-pill text-none font-weight-bold"
+                  style="
+                    background-color: #5d9ba6;
+                    font-size: 16px;
+                    letter-spacing: 0.5px;
+                  "
+                  height="48"
+                  @click="$router.push('/partners')"
+                >
+                  <v-icon left size="22" class="mr-2"
+                    >mdi-handshake-outline</v-icon
+                  >
+                  For Partners
+                </v-btn>
+
+                <v-btn
+                  class="text-white elevation-3 px-6 rounded-pill text-none font-weight-bold"
+                  style="
+                    background-color: #a06e48;
+                    font-size: 16px;
+                    letter-spacing: 0.5px;
+                  "
+                  height="48"
+                >
+                  <v-icon left size="22" class="mr-2">mdi-moped</v-icon>
+                  Riders
+                </v-btn>
+              </div>
             </div>
           </v-col>
         </v-row>
       </v-container>
     </div>
-
-    <!-- Partner and Rider Buttons -->
-    <v-container class="pt-4 pb-0">
-      <div
-        class="d-md-flex d-none align-center"
-        :class="{ 'justify-center': isSmall, 'ml-6': !isSmall }"
-        style="gap: 20px"
-      >
-        <v-btn
-          class="text-white elevation-3 px-6 rounded-pill text-none font-weight-bold"
-          style="
-            background-color: #5d9ba6;
-            font-size: 16px;
-            letter-spacing: 0.5px;
-          "
-          height="48"
-          @click="$router.push('/partners')"
-        >
-          <v-icon left size="22" class="mr-2">mdi-handshake-outline</v-icon>
-          For Partners
-        </v-btn>
-
-        <v-btn
-          class="text-white elevation-3 px-6 rounded-pill text-none font-weight-bold"
-          style="
-            background-color: #a06e48;
-            font-size: 16px;
-            letter-spacing: 0.5px;
-          "
-          height="48"
-        >
-          <v-icon left size="22" class="mr-2">mdi-moped</v-icon>
-          Riders
-        </v-btn>
-      </div>
-    </v-container>
 
     <!-- Fixed Footer for Mobile -->
     <div

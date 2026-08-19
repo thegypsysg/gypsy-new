@@ -1,5 +1,5 @@
 <template>
-  <div class="d-inline-flex align-center">
+  <div class="d-inline-flex align-center justify-center">
     <v-menu
       v-if="locationPlaceholder"
       :model-value="modelValue"

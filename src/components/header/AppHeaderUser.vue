@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex align-center">
+  <div class="d-flex align-center ga-10">
     <v-btn
       v-if="
         !isWelcome &&
@@ -32,7 +32,10 @@
       v-if="!isWelcome || $route.path === '/partners'"
       style="height: 48px; width: 48px; border-radius: 50%; cursor: pointer"
       icon
-      :class="{ 'mr-2': isPrivacy || isTerms || isMyProfile || $route.path === '/partners' }"
+      :class="{
+        'mr-2':
+          isPrivacy || isTerms || isMyProfile || $route.path === '/partners',
+      }"
       @click="$emit('toggle-drawer')"
     >
       <v-img
