@@ -198,7 +198,7 @@
       "
       elevation="0"
       class="btn_sign__up rounded-xl text-white"
-      to="/sign-in"
+      @click="goToSignIn"
     >
       <v-icon color="white" class="text-white mr-2">mdi-account-outline</v-icon>
       Sign up / Sign In
@@ -691,6 +691,7 @@
 
 <script>
 import { useLocationStore } from "@/stores/location.store";
+import { useAuthStore } from "@/stores/auth.store";
 import app from "@/util/eventBus";
 import axios from "@/util/axios";
 import moment from "moment-timezone";
@@ -701,7 +702,8 @@ export default {
   props: ["isWelcome"],
   setup() {
     const locationStore = useLocationStore();
-    return { locationStore };
+    const authStore = useAuthStore();
+    return { locationStore, authStore };
   },
   data() {
     return {
@@ -974,6 +976,10 @@ export default {
       // Format waktu dalam hh:mm:ss
       this.currentTime = singaporeTime.format("HH:mm:ss");
     },
+    goToSignIn() {
+      this.authStore.clearAuth();
+      this.$router.push("/sign-in");
+    },
     logout() {
       const token = localStorage.getItem("token");
       axios
@@ -985,15 +991,13 @@ export default {
         .then((response) => {
           const data = response.data.data;
           console.log(data);
-          localStorage.setItem("name", null);
-          localStorage.setItem("g_id", null);
-          localStorage.setItem("user_image", null);
-          localStorage.setItem("token", null);
+          this.authStore.clearAuth();
           window.location.href = "/";
         })
         .catch((error) => {
-          // eslint-disable-next-line
           console.log(error);
+          this.authStore.clearAuth();
+          window.location.href = "/";
         });
     },
     changeHeaderWelcome(title) {
