@@ -65,7 +65,6 @@
           </v-col>
         </v-row>
       </v-container>
-      <!--    <v-img class="bg-image" width="100%" src="@/assets/header.png" />-->
     </div>
 
     <!-- Partner and Rider Buttons -->
@@ -151,17 +150,12 @@
 <script>
 import AOS from "aos";
 
-// onMounted(() => {
-//   AOS.init();
-// });
-
 export default {
   // eslint-disable-next-line vue/multi-word-component-names, vue/no-reserved-component-names
   name: "Banner",
   props: ["headerData"],
   data() {
     return {
-      // fileURL: "https://admin1.the-gypsy.sg",
       drawer: false,
       items: [
         { title: "Home", path: "/home", icon: "home" },

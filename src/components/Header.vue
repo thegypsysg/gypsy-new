@@ -704,30 +704,13 @@ export default {
   props: ["isWelcome"],
   data() {
     return {
+      _timeInterval: null,
       isLoading: false,
-      // fileURL: "https://admin1.the-gypsy.sg",
       headerData: {},
       userImage: null,
       userName: null,
       userDated: null,
-      // selectedTag: null,
-      trendingBtn: [],
       titleWelcome: "Sign-Up / Sign-in",
-      //   {
-      //     title: "View All",
-      //   },
-      //   { title: "Promo App", tag: "Promo App" },
-      //   { title: "Alcohol App", tag: "Alcohol App" },
-      //   { title: "Jobs App", tag: "Job App" },
-      //   { title: "On The Run Apps", tag: "On the Run App" },
-      //   { title: "Housing App", tag: "Housing App" },
-      //   { title: "Travel App", tag: "Travel App" },
-      //   { title: "Staycation App", tag: "Staycation App" },
-      //   { title: "Listings App", tag: "Listing App" },
-      //   { title: "Tournaments App", tag: "Tournament App" },
-      //   { title: "Cafe App", tag: "Cafe App" },
-      //   { title: "Overseas Study App", tag: "Overseas Study App" },
-      // ],
       drawer: false,
       userLocation: false,
       isZero: false,
@@ -741,101 +724,8 @@ export default {
         { title: "Kuala Lumpur", path: "#" },
       ],
 
-      trendingCard: [],
       appData: null,
       contactData: null,
-      //   {
-      //     img: "assets/gypsy-1.png",
-      //     title: "Mall-e",
-      //     desc: "Promotions Happening in Malls",
-      //     tag: "Promo App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-2.png",
-      //     title: "Boozards",
-      //     desc: "Marketplace for Alcohol, Clubs, Happy Hours",
-      //     tag: "Alcohol App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-3.png",
-      //     title: "Flea",
-      //     desc: "Promotions Happening in Streets , Office Buildings Gas Stations etc",
-      //     tag: "Promo App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-4.png",
-      //     title: "Mendesliga",
-      //     desc: "Marketplace for Sports Tournaments.",
-      //     tag: "Tournament App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-5.png",
-      //     title: "Cake Run",
-      //     desc: "Marketplace for all Types of Cakes.",
-      //     tag: "On the Run App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-6.png",
-      //     title: "Cafino",
-      //     desc: "Maketplace for Cafes around you.",
-      //     tag: "Cafe App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-7.jpg",
-      //     title: "4 Walls",
-      //     desc: "Marketplace for Housing",
-      //     tag: "Housing App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-8.jpg",
-      //     title: "Staycasey",
-      //     desc: "Marketplace for Staycation",
-      //     tag: "Staycation App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-9.jpg",
-      //     title: "Astalavista",
-      //     desc: "Marketplace for Overseas Travel",
-      //     tag: "Travel App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-10.jpg",
-      //     title: "i-Study",
-      //     desc: "Marketplace for Study Overseas",
-      //     tag: "Overseas Study App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-11.jpg",
-      //     title: "Mart-In",
-      //     desc: "Marketplace for Mini Mart",
-      //     tag: "Mini Mart App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-12.jpg",
-      //     title: "Biryani-Run",
-      //     desc: "Marketplace for Biryani",
-      //     tag: "On the Run App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-13.jpg",
-      //     title: "i-Hired",
-      //     desc: "Marketplace for Jobs",
-      //     tag: "Job App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-14.jpg",
-      //     title: "Pizza Run",
-      //     desc: "Marketplace for Pizza",
-      //     tag: "On the Run App",
-      //   },
-      //   {
-      //     img: "assets/gypsy-15.jpg",
-      //     title: "Listings",
-      //     desc: "Marketplace for Listings",
-      //     tag: "Listing App",
-      //   },
-      // ],
-
       selectedType: 0,
       activeIndex: 1,
       screenWidth: window.innerWidth,
@@ -944,16 +834,22 @@ export default {
   },
   created() {
     window.addEventListener("resize", this.handleResize);
-    setInterval(this.updateTime, 1000);
+    this._timeInterval = setInterval(this.updateTime, 1000);
+  },
+  beforeUnmount() {
+    if (this._timeInterval) {
+      clearInterval(this._timeInterval);
+    }
+    window.removeEventListener("resize", this.handleResize);
   },
   mounted() {
     if (this.appId == "5" && this.tokenProvider && !this.name) {
       console.log(this.appId);
-      const externalURL = `https://the-syringe.com?token=${this.tokenProvider}`;
+      const externalURL = `${import.meta.env.VITE_SYRINGE_URL}?token=${this.tokenProvider}`;
       window.location.href = externalURL;
     } else if (this.appId == "2" && this.tokenProvider && !this.name) {
       console.log(this.appId);
-      const externalURL = `https://mall-e.in?token=${this.tokenProvider}`;
+      const externalURL = `${import.meta.env.VITE_MALLE_URL}?token=${this.tokenProvider}`;
       window.location.href = externalURL;
     }
     this.getApplicantsData();

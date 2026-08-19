@@ -25,8 +25,8 @@ import { autoAnimatePlugin } from "@formkit/auto-animate/vue";
 import "aos/dist/aos.css";
 
 const app = createApp(App);
-app.config.globalProperties.$fileURL = "https://admin1.the-gypsy.sg/img/app/";
-app.config.globalProperties.$appId = 1;
+app.config.globalProperties.$fileURL = import.meta.env.VITE_FILE_URL;
+app.config.globalProperties.$appId = Number(import.meta.env.VITE_APP_ID) || 1;
 
 app.use(router);
 app.use(store);

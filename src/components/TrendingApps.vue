@@ -12,9 +12,6 @@
       >
         The Gypsy Trending Web Apps
       </h1>
-      <!-- <p class="header-title-sub" style="margin-top: 32px">
-        The gypsy Trending Web Apps
-      </p> -->
     </div>
   </v-container>
 

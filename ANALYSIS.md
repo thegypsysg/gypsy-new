@@ -1,698 +1,606 @@
-# Analisis Codebase — The Gypsy SG
+﻿# Analisis Codebase — The Gypsy SG
+# Edisi Template & Boilerplate
 
-> **Tujuan**: Dokumen ini berisi hasil analisis mendalam terhadap struktur, kualitas kode, performa, dan keamanan project Gypsy, beserta rekomendasi refactoring menuju arsitektur yang modern, clean, dan scalable.
+> **Tujuan Revisi**: Dokumen ini diperbarui dengan fokus utama untuk menjadikan project ini sebagai **template/boilerplate** yang bersih, maintainable, mudah dipahami, dan mudah dimodifikasi untuk project-project mendatang. Analisis mencakup pertimbangan mendalam tentang **Vue vs Nuxt** dalam konteks **deployment cPanel**.
+
+> **Tanggal Analisis**: 19 Agustus 2026
 
 ---
 
-## 📐 Gambaran Umum Project
+## Gambaran Umum Project
 
 | Item | Detail |
 |---|---|
-| **Framework** | Vue 3 (Options API) |
-| **UI Library** | Vuetify 3.x |
-| **State Management** | Vuex 4 |
-| **Build Tool** | Vite 3 |
-| **HTTP Client** | Axios |
-| **Routing** | Vue Router 4 |
-| **Deployment** | cPanel (Static SPA) |
-| **Backend** | Laravel REST API (`https://admin1.the-gypsy.sg/api`) |
+| **Framework** | Vue 3 (Options API dominan, 1 file pakai script setup) |
+| **UI Library** | Vuetify 3.5.8 |
+| **State Management** | Vuex 4.1.0 (flat, 1 file) |
+| **Build Tool** | Vite 3.1.9 (sangat outdated, versi terbaru: 6.x) |
+| **HTTP Client** | Axios 1.4.0 |
+| **Routing** | Vue Router 4.2.0 |
+| **Deployment** | cPanel (Static SPA via dist/ folder) |
+| **Backend** | Laravel REST API (https://admin1.the-gypsy.sg/api) |
+| **CSS** | SCSS (global App.scss, responsive.scss, fonts.scss) |
+| **Event Bus** | Custom implementation (anti-pattern) + mitt terinstal tapi tidak dipakai |
 
 ---
 
-## 📁 Struktur Direktori Saat Ini
+## Keputusan Strategis: Vue SPA vs Nuxt — Analisis untuk cPanel
 
-```
-src/
-├── App.vue                  # Root component
-├── main.js                  # App entry point
-├── store.js                 # Vuex store (flat, satu file)
-├── router/
-│   └── index.js             # Router definition (satu file)
-├── plugins/
-│   ├── vuetify.js           # Vuetify setup
-│   └── webfontloader.js     # Font loader
-├── util/
-│   ├── axios.js             # Axios instance
-│   └── eventBus.js          # Custom event bus
-├── assets/
-│   ├── style/
-│   │   ├── App.scss         # Global SCSS (535 baris)
-│   │   ├── fonts.scss
-│   │   └── responsive.scss
-│   └── [34+ image files]    # Asset tanpa kompresi/optimasi
-├── views/
-│   ├── HomeView.vue         # Landing page orchestrator
-│   ├── MyProfile.vue        # ⚠️ 2677 baris — God Component
-│   ├── SignUpForm.vue        # Multi-step sign-up (mobile)
-│   ├── OTPEmailForm.vue
-│   ├── CreatePasswordForm.vue
-│   ├── SocialLoginForm.vue
-│   └── PrivacyTerms.vue
-└── components/
-    ├── Header.vue           # ⚠️ 1297 baris — God Component
-    ├── Footer.vue           # 9069 bytes
-    ├── TrendingApps.vue     # 728 baris
-    ├── Banner.vue
-    ├── Landing.vue
-    ├── Partners.vue
-    ├── ImageCropperDialog.vue
-    ├── SignUp/              # Social sign-up flow
-    │   ├── Welcome.vue      # 33752 bytes
-    │   ├── PersonalDetails.vue
-    │   ├── PersonalDetailSocials.vue  # ⚠️ 1073 baris
-    │   ├── AdditionalData.vue
-    │   ├── SelectSkills.vue
-    │   ├── ResultRegister.vue
-    │   └── EmailTemplate.vue
-    ├── SignUpEmail/         # Email sign-up flow
-    │   ├── PersonalDetailEmail.vue    # ⚠️ 1047 baris
-    │   ├── OTPEmail.vue
-    │   ├── AdditionalSecurity.vue
-    │   └── ResultRegister.vue
-    ├── SignUpMobile/        # Mobile sign-up flow
-    │   ├── PersonalDetailMobile.vue   # ⚠️ ~1000 baris
-    │   ├── AdditionalSecurity.vue
-    │   └── ResultRegister.vue
-    └── CreatePassword/      # Create password flow
-        ├── AdditionalSecurity.vue
-        └── ResultRegister.vue
+> Ini adalah keputusan paling krusial sebelum mulai refactoring sebagai template.
+
+cPanel adalah shared hosting tradisional. Project ini saat ini di-build dengan `vite build` menghasilkan folder `dist/` yang di-upload ke `public_html/` — ini adalah **mode SPA murni**.
+
+### Pilihan A: Tetap Vue SPA (Rekomendasi)
+
+| Aspek | Detail |
+|---|---|
+| Kompatibilitas cPanel | 100% — hanya file statis HTML/CSS/JS |
+| Kompleksitas deploy | Sangat sederhana: FTP/FileManager upload |
+| Server requirement | Tidak perlu Node.js di server |
+| SEO | Buruk secara native — butuh workaround (prerender) |
+| Cocok untuk | Web app yang tidak butuh SEO kuat (dashboard, portal member, app) |
+
+### Pilihan B: Nuxt 3 (Tidak Direkomendasikan untuk cPanel saat ini)
+
+| Aspek | Detail |
+|---|---|
+| Mode SSR | Butuh Node.js berjalan di server — cPanel shared hosting tidak support |
+| Mode SSG | Bisa di cPanel — tapi hanya cocok untuk konten statis |
+| Mode SPA | Bisa di cPanel — tapi tidak ada bedanya dengan Vue biasa |
+| Complexity | Jauh lebih kompleks dari Vue SPA |
+
+**Kesimpulan**: Nuxt SSR butuh VPS atau server Node.js. Project ini adalah web app dinamis (auth, real-time data) — bukan blog statis. SSG tidak cocok.
+
+### Rekomendasi Final: Tetap Vue 3 SPA
+
+**Alasan**:
+1. cPanel compatibility — tidak perlu Node.js server
+2. Project ini adalah web app, bukan website konten — SEO bukan prioritas utama
+3. Tim sudah familiar dengan Vue, lebih mudah onboarding
+4. Nuxt dapat ditambahkan nanti jika butuh SEO kuat, tanpa harus ubah backend
+
+**Jika di masa depan butuh SEO** (untuk halaman landing/home), pertimbangkan `vite-plugin-prerender` atau `vite-plugin-ssg` sebagai solusi ringan tanpa migrasi ke Nuxt.
+
+**Catatan penting — .htaccess untuk cPanel**:
+Karena Vue Router menggunakan `createWebHistory`, semua route harus dikonfigurasi di `.htaccess` agar tidak 404 saat di-refresh:
+
+```apache
+# public_html/.htaccess — WAJIB ADA untuk Vue Router History Mode
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
 ```
 
 ---
 
-## 🔴 Masalah Kritis
+## Struktur Direktori Saat Ini (Aktual)
 
-### 1. God Components — Violasi Single Responsibility Principle (SRP)
+```
+gypsy-new/
+├── index.html                   # Entry HTML — SEO minimal, duplikat CSS import
+├── vite.config.js               # Vite 3 config
+├── package.json                 # 40 dependencies (banyak redundan)
+├── .eslintrc.js                 # ESLint dikonfigurasi tapi banyak di-disable
+├── .editorconfig                # Editor standard config
+├── public/
+│   ├── favicon.ico
+│   └── header.png               # MASALAH: Duplikat dengan src/assets/header.png
+└── src/
+    ├── App.vue                  # Root — Options API, route-string check manual
+    ├── main.js                  # Entry — globalProperties hardcoded URL
+    ├── store.js                 # Vuex flat — 11 state props, semua logic tercampur
+    ├── router/
+    │   └── index.js             # 9 routes, eager loading semua, no auth guard
+    ├── plugins/
+    │   ├── vuetify.js           # Minimal setup (theme tidak dikonfigurasi)
+    │   └── webfontloader.js     # Roboto loader (tidak dipakai di main.js)
+    ├── util/
+    │   ├── axios.js             # baseURL hardcoded, no request interceptor auth
+    │   └── eventBus.js          # ANTI-PATTERN: createApp({}) hanya untuk event bus
+    ├── assets/
+    │   ├── style/
+    │   │   ├── App.scss         # 533 baris — global styles tercampur, banyak !important
+    │   │   ├── fonts.scss       # Font face declaration
+    │   │   └── responsive.scss  # 150 baris responsive breakpoints
+    │   └── [34+ file gambar]    # Tidak terkompresi, total ~9MB raw
+    ├── views/
+    │   ├── HomeView.vue         # Thin wrapper 14 baris — layer redundant
+    │   ├── MyProfile.vue        # GOD COMPONENT: 2677 baris / 95 KB
+    │   ├── SignUpForm.vue
+    │   ├── OTPEmailForm.vue
+    │   ├── CreatePasswordForm.vue
+    │   ├── SocialLoginForm.vue
+    │   └── PrivacyTerms.vue
+    └── components/
+        ├── Header.vue           # GOD COMPONENT: 1456 baris / 48 KB
+        ├── Footer.vue           # 9083 bytes
+        ├── TrendingApps.vue     # 728 baris — bisa dipecah
+        ├── Banner.vue           # 237 baris — mixed inline styles
+        ├── Landing.vue          # ANTI-PATTERN: Dual script (setup + Options API)
+        ├── Partners.vue         # 4731 bytes
+        ├── SignUp/              # Social sign-up flow (8 files)
+        │   ├── Welcome.vue      # 1019 baris
+        │   ├── PersonalDetailSocials.vue  # ~37 KB (duplikat logika)
+        │   ├── AdditionalData.vue
+        │   ├── SelectSkills.vue
+        │   ├── ResultRegister.vue
+        │   └── ...
+        ├── SignUpEmail/         # Email sign-up flow (4 files)
+        │   ├── PersonalDetailEmail.vue  # 37190 bytes — DUPLIKAT
+        │   ├── OTPEmail.vue
+        │   ├── AdditionalSecurity.vue   # 12484 bytes — hampir identik dg yg lain
+        │   └── ResultRegister.vue
+        ├── SignUpMobile/        # Mobile sign-up flow (3 files)
+        │   ├── PersonalDetailMobile.vue # 35368 bytes — DUPLIKAT
+        │   ├── AdditionalSecurity.vue   # 12488 bytes — hampir identik
+        │   └── ResultRegister.vue
+        └── CreatePassword/      # Create password flow (2 files)
+            ├── AdditionalSecurity.vue   # 12484 bytes — hampir identik
+            └── ResultRegister.vue
+```
 
-| File | Baris | Masalah |
+---
+
+## Masalah Kritis yang Harus Diperbaiki
+
+### 1. God Components — Violasi Single Responsibility Principle
+
+| File | Ukuran | Masalah |
 |---|---|---|
-| `views/MyProfile.vue` | **2677 baris** | Menangani UI, state, validasi, semua API calls, dan logika bisnis sekaligus |
-| `components/Header.vue` | **1297 baris** | Mengurus navbar, data fetching, auth redirect, event listeners, dan logika routing |
-| `SignUp/PersonalDetailSocials.vue` | **1073 baris** | Form logic, image cropper, API call, dan state — semua dalam satu file |
-| `SignUpEmail/PersonalDetailEmail.vue` | **1047 baris** | Identik dengan PersonalDetailSocials tapi untuk alur email |
+| `views/MyProfile.vue` | **2677 baris / 95 KB** | UI, validasi, semua API calls, state lokal, bisnis logika sekaligus |
+| `components/Header.vue` | **1456 baris / 48 KB** | Navbar, auth, data fetching, location logic, event listeners |
+| `components/SignUp/Welcome.vue` | **1019 baris / 33 KB** | Multi-step form, social auth, OTP, dan UI dalam 1 file |
+| `SignUpEmail/PersonalDetailEmail.vue` | **37 KB** | Duplikat dari PersonalDetailSocials |
+| `SignUpMobile/PersonalDetailMobile.vue` | **35 KB** | Duplikat dari PersonalDetailSocials |
 
-**Dampak**: Sulit di-test, sulit dipahami, coupling tinggi, sangat rentan bug saat dimodifikasi.
+**Aturan untuk template**: Tidak ada file Vue yang boleh melebihi **300 baris** untuk komponen, dan **500 baris** untuk halaman.
 
 ---
 
 ### 2. Duplikasi Kode Massif — Violasi DRY Principle
 
-Terdapat **4 folder** untuk alur sign-up yang berbeda (`SignUp/`, `SignUpEmail/`, `SignUpMobile/`, `CreatePassword/`) yang masing-masing berisi komponen hampir identik:
-
-- `AdditionalSecurity.vue` ada di 3 folder (SignUpEmail, SignUpMobile, CreatePassword) dengan ukuran nyaris sama (~12.4 KB)
-- `ResultRegister.vue` ada di 4 folder yang berbeda
-- `PersonalDetail*.vue` di 3 folder berbeda dengan 70-80% kode yang identik (image upload, form validation, API calls)
-
 ```
-# Perbandingan ukuran file duplikat:
-SignUpEmail/AdditionalSecurity.vue    -> 12,484 bytes
-SignUpMobile/AdditionalSecurity.vue   -> 12,488 bytes  (HAMPIR IDENTIK)
-CreatePassword/AdditionalSecurity.vue -> 12,484 bytes  (HAMPIR IDENTIK)
+# File yang hampir identik (byte-per-byte):
+SignUpEmail/AdditionalSecurity.vue    -> 12,484 bytes  ---|
+SignUpMobile/AdditionalSecurity.vue   -> 12,488 bytes     |-- HAMPIR IDENTIK
+CreatePassword/AdditionalSecurity.vue -> 12,484 bytes  ---|
+
+SignUp/ResultRegister.vue             -> 5,102 bytes   ---|
+SignUpEmail/ResultRegister.vue        -> 5,252 bytes      |-- SANGAT MIRIP
+SignUpMobile/ResultRegister.vue       -> 5,253 bytes      |
+CreatePassword/ResultRegister.vue     -> 4,643 bytes   ---|
 ```
 
-**Dampak**: Bug yang diperbaiki di satu komponen harus diperbaiki manual di semua duplikat. Maintenance nightmare.
+**Dampak**: Bug di satu file harus diperbaiki manual di semua salinannya.
 
 ---
 
-### 3. Tidak Ada Service Layer — Violasi Separation of Concerns
+### 3. Tidak Ada Service Layer
 
-Semua API calls langsung dilakukan di dalam komponen Vue, tersebar di **17+ file** berbeda:
-
-```javascript
-// Contoh di Header.vue (baris 917-935):
-logout() {
-  const token = localStorage.getItem("token");
-  axios.get(`/gypsy-logout`, {
-    headers: { Authorization: `Bearer ${token}` }
-  })...
-}
-
-// Contoh di MyProfile.vue (baris 1686-1721):
-verifyEmail() {
-  const token = localStorage.getItem("token");
-  axios.post(`/gypsy/send-verification-email`, {}, {
-    headers: { Authorization: `Bearer ${token}` }
-  })...
-}
-```
-
-**Tidak ada**: Service class, repository pattern, atau abstraksi API. Perubahan endpoint atau auth strategy membutuhkan edit di puluhan tempat.
+Semua HTTP calls langsung di dalam komponen Vue, tersebar di **17+ file**. Tidak ada abstraksi API sama sekali. Ganti 1 endpoint = edit puluhan file.
 
 ---
 
-### 4. State Management Tidak Memadai
-
-`store.js` hanya berisi **1 state property** (`activeTag`) dan **1 mutation**:
+### 4. Axios Interceptor Tidak Lengkap
 
 ```javascript
-// store.js — hampir tidak ada manfaatnya
-export default createStore({
-  state: { activeTag: null },
-  mutations: {
-    setActiveTag(state, tag) { state.activeTag = tag; }
-  }
-});
+// src/util/axios.js — MASALAH:
+// 1. Token TIDAK otomatis di-attach (setiap komponen harus manual!)
+// 2. 401 response TIDAK di-handle untuk auto-logout
+// 3. baseURL hardcoded, tidak dari .env
+axios.defaults.baseURL = "https://admin1.the-gypsy.sg/api"; // Hardcoded!
 ```
-
-Padahal state krusial seperti **user data**, **token auth**, **app data**, dsb. tersimpan langsung di `localStorage` dan diakses secara raw dari banyak komponen tanpa enkapsulasi.
 
 ---
 
-### 5. Keamanan (Security) — Beberapa Titik Rawan
+### 5. State Management Tidak Memadai
 
-#### a. Token Authentication yang Tidak Terenkapsulasi
-```javascript
-// Pola ini diulang di 15+ tempat tanpa abstraksi:
-const token = localStorage.getItem("token");
-axios.get(`/endpoint`, {
-  headers: { Authorization: `Bearer ${token}` }
-});
-```
-Token diambil secara langsung dari localStorage tanpa validasi, pengecekan expiry, atau abstraksi. Jika pola ini berubah, semua file harus diperbarui.
-
-#### b. Token dari URL Query Parameter Disimpan ke localStorage
-```javascript
-// Header.vue — tokenProvider computed property (baris 728-738)
-const tokenParam = url.searchParams.get("token");
-if (tokenParam) {
-  localStorage.setItem("token", tokenParam); // Langsung disimpan!
-}
-```
-Token dari URL dapat terekam di browser history, server logs, dan referrer headers — ini adalah vulnerability yang dikenal (CWE-598).
-
-#### c. Hardcoded URL dan Config di Multiple Places
-```javascript
-// main.js
-app.config.globalProperties.$fileURL = "https://admin1.the-gypsy.sg/img/app/";
-app.config.globalProperties.$appId = 1;
-
-// axios.js
-axios.defaults.baseURL = "https://admin1.the-gypsy.sg/api";
-
-// Header.vue
-const externalURL = `https://the-syringe.com?token=${this.tokenProvider}`;
-const externalURL = `https://mall-e.in?token=${this.tokenProvider}`;
-```
-Tidak ada environment variable (`.env`) yang digunakan dengan benar.
-
-#### d. Error Handling Hanya console.log
-```javascript
-// Pattern ini ada di 17+ file:
-.catch((error) => {
-  console.log(error); // Info error terekspos di console browser
-});
-```
-Console.log aktif di production mengekspos detail error dan stack trace ke end user.
-
-#### e. Route Guard Tidak Berfungsi
-Router memiliki `beforeRouteEnter` yang salah implementasi:
-```javascript
-// router/index.js — ini tidak akan berfungsi:
-beforeRouteEnter(to, from, next) { ... } // Seharusnya beforeEnter sebagai property route
-```
-Tidak ada route guard untuk `/my-profile` yang seharusnya memerlukan autentikasi.
+`store.js` adalah flat file tanpa module. Tidak ada state auth (user, token). Token diakses raw dari localStorage di 15+ komponen berbeda.
 
 ---
 
-### 6. Performa — Beberapa Bottleneck Kritis
+### 6. Anti-Patterns Serius
 
-#### a. No Lazy Loading Routes
+**a. Dual Script Tag di Landing.vue**
+
+```vue
+<!-- ANTI-PATTERN: mencampur dua API style dalam 1 file -->
+<script setup>
+import Banner from "@/components/Banner.vue";
+</script>
+
+<script>
+export default {
+  data() { ... },
+  methods: { ... }
+};
+</script>
+```
+
+**b. Event Bus Anti-Pattern**
+
 ```javascript
-// router/index.js — semua komponen di-import langsung (eager loading):
-import Home from "../views/HomeView.vue";
-import MyProfile from "../views/MyProfile.vue";
-import PrivacyTerms from "../views/PrivacyTerms.vue";
-// ...dst
+// src/util/eventBus.js — membuat Vue app KEDUA hanya untuk event bus
+const app = createApp({});
+const eventBus = (app.config.globalProperties.$eventBus = {});
+// mitt sudah terinstal tapi tidak digunakan!
 ```
-Semua views di-bundle menjadi satu chunk. Initial load time sangat lambat.
 
-#### b. Asset Images Tidak Dioptimasi
-Folder `assets/` mengandung gambar besar:
-```
-gypsy-11.jpg  -> 926,602 bytes  (906 KB!)
-gypsy-7.jpg   -> 1,049,713 bytes (1 MB!)
-gypsy-10.jpg  -> 586,757 bytes
-header.png    -> 868,911 bytes
-partner-2.png -> 579,389 bytes
-partner-3.png -> 502,004 bytes
-```
-Total aset gambar raw: **~9 MB**. Tidak ada WebP conversion, srcset, atau lazy loading.
+**c. process.env.BASE_URL di Vite**
 
-#### c. Duplikasi Import Dependencies
 ```javascript
-// index.html: flag-icons dari CDN
-<link href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.11.0/css/flag-icons.min.css" />
-
-// main.js: flag-icons juga dari node_modules
-import "/node_modules/flag-icons/css/flag-icons.min.css";
+// router/index.js — SALAH untuk Vite:
+history: createWebHistory(process.env.BASE_URL)
+// Seharusnya:
+history: createWebHistory(import.meta.env.BASE_URL)
 ```
-Flag icons CSS dimuat **dua kali** — dari CDN dan dari bundle Vite.
 
-#### d. Dependency Bloat
-Package.json memiliki banyak package redundan atau tidak digunakan:
-- `flag-icon-css` AND `flag-icons` (keduanya ada, versi berbeda)
-- `vue-country-code-select`, `vue3-country-intl`, `vue3-country-region-select`, `vue-phone-number-input`, `maz-ui` — banyak library phone/country yang kemungkinan tidak semuanya digunakan aktif
-- `moment` AND `moment-timezone` (bisa diganti dengan `date-fns` yang lebih ringan, atau native Intl API)
-- `animejs` dan `aos` — keduanya ada, tidak jelas mana yang aktif dipakai
-- `vue-loader` — tidak perlu untuk Vite (hanya untuk webpack)
+**d. setInterval Tanpa Cleanup (Memory Leak)**
 
-#### e. setInterval Tanpa Cleanup
 ```javascript
-// Header.vue — created() lifecycle:
+// Header.vue — created():
 setInterval(this.updateTime, 1000); // Tidak ada clearInterval!
 ```
-Interval timer tidak pernah dibersihkan, menyebabkan memory leak saat component di-unmount.
 
 ---
 
-### 7. Kualitas Kode — Code Smell dan Bad Practices
+### 7. Keamanan
 
-#### a. Seluruh Kode Menggunakan Options API
-Tidak ada satu pun komponen yang menggunakan **Composition API** (`<script setup>`), padahal Vue 3 sangat menganjurkan pola ini untuk reusability dan type-safety yang lebih baik.
-
-#### b. Anti-pattern: Membuat App Instance di eventBus
-```javascript
-// util/eventBus.js
-const app = createApp({}); // Membuat Vue app instance KEDUA hanya untuk event bus!
-const eventBus = (app.config.globalProperties.$eventBus = {});
-```
-Ini adalah anti-pattern serius. Package `mitt` sudah diinstal tapi tidak digunakan. Solusi yang benar adalah menggunakan `mitt` langsung.
-
-#### c. Ratusan Inline Style
-Hampir semua komponen menggunakan inline style secara masif:
-```html
-<!-- Contoh dari MyProfile.vue -->
-<div style="width: 170px; height: 120px; border-radius: 20px">
-<div style="border: 1px solid #ced4da; border-radius: 0.25rem">
-<div style="gap: 5px">
-<!-- ...ratusan contoh serupa di seluruh codebase -->
-```
-Ini membuat theming, dark mode, dan maintainability sangat sulit.
-
-#### d. Banyak Kode yang Dikomen Tapi Tidak Dihapus
-Puluhan blok kode yang dikomen ada di hampir semua file besar, menambah noise yang tidak perlu.
-
-#### e. ESLint Dikonfigurasi Tapi Banyak eslint-disable
-```javascript
-// Pola ini muncul di 15+ file:
-.catch((error) => {
-  // eslint-disable-next-line
-  console.log(error);
-});
-```
-ESLint ada tapi efektivitasnya dinetralisir dengan banyak disable comment.
-
-#### f. process.env.BASE_URL di Vite
-```javascript
-// router/index.js
-history: createWebHistory(process.env.BASE_URL)
-```
-`BASE_URL` tidak didefinisikan sehingga bernilai `undefined`. Seharusnya menggunakan `import.meta.env.BASE_URL`.
-
-#### g. Versi Dependencies Sangat Lama
-
-| Package | Versi Saat Ini | Versi Terbaru |
-|---|---|---|
-| Vite | 3.1.9 | 6.x |
-| `@vitejs/plugin-vue` | 3.0.3 | 5.x |
-| Vue | 3.2.38 | 3.5.x |
-| Vuetify | 3.5.8 | 3.8.x |
-| Vuex | 4.1.0 | (pertimbangkan Pinia) |
-| ESLint | 8.x | 9.x (flat config) |
+- **Token dari URL ke localStorage**: Token yang ada di URL query param langsung disimpan — terekam di browser history (CWE-598)
+- **Konfigurasi hardcoded**: URL API, file URL, app ID tersebar di 5+ file berbeda
+- **Route guard tidak berfungsi**: `beforeRouteEnter` ditulis salah — tidak ada guard aktif untuk halaman yang butuh auth
+- **Console.log di production**: 20+ console.log dengan data sensitif yang terekspos ke browser user
 
 ---
 
-## 🟡 Masalah Sedang
+### 8. Performa
 
-### 8. Tidak Ada Testing
-Tidak ada satu pun file test di seluruh project. Tidak ada Jest, Vitest, Cypress, atau Playwright.
-
-### 9. TypeScript Tidak Digunakan
-Semua kode dalam JavaScript murni tanpa type checking. Potensi bug runtime yang bisa dicegah dengan TypeScript sangat tinggi.
-
-### 10. Tidak Ada Error Boundary
-Tidak ada global error handling (`app.config.errorHandler`) atau error boundary component. Jika satu API gagal, tidak ada graceful fallback.
-
-### 11. Aksesibilitas (a11y) Tidak Diperhatikan
-- Tidak ada `aria-label` pada tombol icon-only
-- `<h1>` di TrendingApps.vue digunakan dengan `align="center"` (atribut HTML deprecated)
-- Banyak elemen klik yang bukan `<button>` (menggunakan `<span @click>`)
-
-### 12. SEO Sangat Minimal
-- `index.html` hanya punya `<title>Gypsy</title>` tanpa meta description
-- Tidak ada Open Graph tags
-- Tidak ada structured data
+- **Zero lazy loading**: Semua 9 routes eager-loaded — 1 bundle besar
+- **Gambar ~9MB tidak teroptimasi**: Beberapa file > 1MB, tidak ada WebP/srcset
+- **Duplikat CSS import**: flag-icons dimuat dari CDN (index.html) DAN dari npm (main.js)
+- **40 dependencies**: Banyak redundan (2 package flag-icons, 2 date libraries, dll)
+- **Versi sangat outdated**: Vite 3 (seharusnya 6), Vue 3.2 (seharusnya 3.5), Vuex (seharusnya Pinia)
 
 ---
 
-## ✅ Yang Sudah Baik
+### 9. Kualitas Kode Umum
 
-- **Vuetify 3**: Pilihan UI library yang tepat, konsisten digunakan
-- **Vite**: Build tool modern yang sudah tepat
-- **Vue Router 4**: Versi yang benar untuk Vue 3
-- **Scroll behavior**: Router sudah memiliki `scrollBehavior` yang baik
-- **SCSS**: Penggunaan SCSS sudah terstruktur (App.scss, fonts.scss, responsive.scss)
-- **Auto-animate**: Penggunaan `@formkit/auto-animate` untuk list animation adalah pilihan yang baik
-- **Transitions**: Ada page transition dengan `<Transition name="page-opacity">`
-- **`.editorconfig`**: Sudah ada konfigurasi editor standar
+- Tidak konsisten: mayoritas Options API, 1 file script setup, 1 file campuran keduanya
+- Tidak ada TypeScript — bug tipe data baru ketahuan saat runtime
+- Tidak ada testing (0 file test)
+- Ratusan inline style hardcoded — susah di-theme
+- Puluhan blok kode dikomen tapi tidak dihapus
+- Banyak `!important` di SCSS — tanda CSS override yang tidak terstruktur
 
 ---
 
-## 🎯 Rekomendasi Refactoring
+## Yang Sudah Baik (Pertahankan)
 
-### Fase 1: Fondasi dan Tooling (Prioritas Tinggi)
-
-#### 1.1 Upgrade Dependencies
-```bash
-# Upgrade ke versi terbaru yang stabil
-npm install vite@latest @vitejs/plugin-vue@latest
-npm install vue@latest vue-router@latest
-npm install vuetify@latest vite-plugin-vuetify@latest
-# Ganti Vuex dengan Pinia (state management modern Vue 3)
-npm install pinia
-npm remove vuex
-# Ganti moment dengan date-fns (lebih ringan, tree-shakable)
-npm install date-fns
-npm remove moment moment-timezone
-# Bersihkan duplikat package
-npm remove flag-icon-css vue-loader vue-page-transition
-```
-
-#### 1.2 Setup Environment Variables
-Buat file `.env`:
-```env
-VITE_API_BASE_URL=https://admin1.the-gypsy.sg/api
-VITE_FILE_URL=https://admin1.the-gypsy.sg/img/app/
-VITE_APP_ID=1
-```
-
-#### 1.3 Pindah ke TypeScript
-```bash
-npm install -D typescript vue-tsc @types/node
-```
-Rename secara bertahap: `*.js` → `*.ts`, komponen Vue gunakan `<script setup lang="ts">`.
-
-#### 1.4 Setup Vitest untuk Testing
-```bash
-npm install -D vitest @vue/test-utils happy-dom @vitest/coverage-v8
-```
+| Item | Detail |
+|---|---|
+| **Vite** | Build tool modern yang tepat untuk SPA |
+| **Vuetify 3** | UI library konsisten dan kaya komponen |
+| **Vue Router 4** | Versi benar untuk Vue 3, scrollBehavior sudah dikonfigurasi |
+| **SCSS terpisah** | App.scss, fonts.scss, responsive.scss sudah dipisahkan |
+| **Auto-animate** | @formkit/auto-animate untuk list animation |
+| **Page Transition** | Transition page-opacity di App.vue |
+| **@ alias** | Path alias sudah dikonfigurasi di vite.config.js |
+| **AOS** | Animasi scroll di Banner.vue berfungsi |
+| **Geolocation** | Logika auto-detect negara pengguna di store |
 
 ---
 
-### Fase 2: Arsitektur — Service Layer dan Store
+## Visi Target: Template Architecture
 
-#### 2.1 Struktur Direktori Target
 ```
 src/
-├── api/                     # [NEW] Service layer
-│   ├── http.ts              # Axios instance + interceptors
-│   ├── auth.service.ts      # Auth API calls
-│   ├── user.service.ts      # User API calls
-│   ├── app.service.ts       # App/trending API calls
-│   └── location.service.ts  # Country/city/town API calls
-├── stores/                  # [REPLACE] Vuex -> Pinia
-│   ├── auth.store.ts        # Auth state (token, user)
-│   ├── app.store.ts         # App listings state
-│   └── ui.store.ts          # UI state (activeTag, etc.)
-├── composables/             # [NEW] Reusable logic
-│   ├── useAuth.ts           # Auth logic
-│   ├── useResponsive.ts     # Screen size detection
-│   ├── useImageCropper.ts   # Image crop/upload logic
-│   └── useForm.ts           # Form validation
+├── App.vue                      # Root — Composition API, tidak ada hardcoded route strings
+├── main.js                      # Entry — bersih, config dari .env
+│
+├── api/                         # [NEW] Centralized service layer
+│   ├── http.js                  # Axios + interceptors (auto token, auto 401 handler)
+│   ├── auth.service.js          # login, logout, register, verifyEmail
+│   ├── user.service.js          # getProfile, updateProfile, uploadAvatar
+│   ├── app.service.js           # getTrendingApps, getCategories
+│   ├── location.service.js      # getCountries, getCities
+│   └── header.service.js        # getHeaderData, getFooterData
+│
+├── stores/                      # [REPLACE] Vuex ke Pinia
+│   ├── auth.store.js            # token, user, isAuthenticated, login, logout
+│   ├── location.store.js        # country, city, geolocation logic
+│   ├── app.store.js             # trending apps, categories, activeTag
+│   └── ui.store.js              # loading states, snackbar, drawer
+│
+├── composables/                 # [NEW] Reusable logic
+│   ├── useResponsive.js         # isSmall, isMedium (gantikan duplikasi di 5+ komponen)
+│   ├── useAuth.js               # auth logic reusable
+│   ├── useImageUpload.js        # crop, upload logic (ada di 4+ komponen sekarang)
+│   ├── useForm.js               # validation helpers
+│   └── useApi.js                # loading/error state wrapper
+│
 ├── components/
-│   ├── common/              # [NEW] Shared/reusable components
-│   │   ├── AppButton.vue
-│   │   ├── AppInput.vue
-│   │   ├── PhoneInput.vue
-│   │   ├── CountrySelect.vue
-│   │   ├── ImageUploader.vue # Diekstrak dari 4+ komponen
-│   │   └── OtpInput.vue
-│   ├── layout/              # [NEW] Layout components
-│   │   ├── AppHeader.vue    # Dipecah dari Header.vue (1297 baris)
-│   │   ├── AppFooter.vue
-│   │   └── AppNavbar.vue
-│   ├── auth/                # [REFACTOR] Dari SignUp/Email/Mobile/CreatePassword
-│   │   └── steps/
-│   │       ├── WelcomeStep.vue
-│   │       ├── PersonalDetailStep.vue  # Unified dari 3 versi
-│   │       ├── OtpVerificationStep.vue
-│   │       ├── SecurityStep.vue        # Unified AdditionalSecurity
-│   │       └── SuccessStep.vue         # Unified ResultRegister
-│   ├── home/                # Home-related components
-│   │   ├── HeroBanner.vue
-│   │   ├── TrendingApps.vue
-│   │   └── PartnerSection.vue
-│   └── profile/             # [SPLIT dari MyProfile.vue 2677 baris]
-│       ├── ProfileAvatar.vue
-│       ├── BasicInfoForm.vue
-│       ├── LocationForm.vue
-│       ├── SecurityForm.vue
-│       └── SocialLinksForm.vue
+│   ├── base/                    # [NEW] Design system components
+│   │   ├── BaseButton.vue
+│   │   ├── BaseInput.vue
+│   │   ├── BaseDialog.vue
+│   │   ├── BaseCard.vue
+│   │   └── BaseLoader.vue
+│   │
+│   ├── layout/                  # [NEW] Layout components
+│   │   ├── AppHeader.vue        # Dipecah dari Header.vue 1456 baris
+│   │   ├── AppHeaderNav.vue     # Navigation desktop
+│   │   ├── AppHeaderMobile.vue  # Drawer mobile
+│   │   ├── AppHeaderLocation.vue # Location dropdown
+│   │   └── AppFooter.vue
+│   │
+│   ├── home/                    # Home page components
+│   │   ├── HeroBanner.vue       # Dari Banner.vue
+│   │   ├── TrendingApps.vue     # Dari TrendingApps.vue, dipecah
+│   │   ├── TrendingCard.vue     # [NEW] Single app card
+│   │   └── PartnersSection.vue  # Dari Partners.vue
+│   │
+│   ├── auth/                    # [REFACTOR] Semua flow auth disatukan
+│   │   ├── WelcomeStep.vue
+│   │   ├── PersonalDetailStep.vue  # [UNIFIED] Gantikan 3 PersonalDetail duplikat
+│   │   ├── OtpVerificationStep.vue
+│   │   ├── AdditionalSecurityStep.vue  # [UNIFIED] Gantikan 3 AdditionalSecurity
+│   │   ├── AdditionalDataStep.vue
+│   │   ├── SelectSkillsStep.vue
+│   │   └── RegisterSuccessStep.vue  # [UNIFIED] Gantikan 4 ResultRegister
+│   │
+│   ├── profile/                 # [SPLIT dari MyProfile.vue 2677 baris]
+│   │   ├── ProfileHeader.vue
+│   │   ├── BasicInfoForm.vue
+│   │   ├── ContactForm.vue
+│   │   ├── LocationForm.vue
+│   │   ├── SecurityForm.vue
+│   │   └── SocialLinksForm.vue
+│   │
+│   └── shared/                  # Cross-domain shared components
+│       ├── PhoneInput.vue
+│       ├── CountrySelect.vue
+│       ├── ImageUploader.vue    # Diekstrak dari 4+ komponen
+│       └── OtpInput.vue
+│
 ├── router/
-│   └── index.ts             # Dengan lazy loading dan auth guards
-├── types/                   # [NEW] TypeScript interfaces
-│   ├── user.types.ts
-│   ├── app.types.ts
-│   └── api.types.ts
-└── utils/                   # [RENAME dari util/]
-    ├── date.ts              # Date formatting helpers
-    ├── format.ts            # String/number formatting
-    └── validators.ts        # Form validation rules
-```
-
-#### 2.2 HTTP Client yang Benar
-```typescript
-// src/api/http.ts
-import axios from "axios";
-import router from "@/router";
-
-const http = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-  timeout: 10000,
-});
-
-// Request interceptor — auto-attach token
-http.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Response interceptor — handle 401 globally
-http.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      router.push("/sign-in");
-    }
-    return Promise.reject(error);
-  }
-);
-
-export default http;
-```
-
-#### 2.3 Auth Store dengan Pinia
-```typescript
-// src/stores/auth.store.ts
-import { defineStore } from "pinia";
-import { ref, computed } from "vue";
-
-export const useAuthStore = defineStore("auth", () => {
-  const token = ref<string | null>(localStorage.getItem("token"));
-  const user = ref<User | null>(null);
-
-  const isAuthenticated = computed(() => !!token.value);
-
-  const setToken = (newToken: string) => {
-    token.value = newToken;
-    localStorage.setItem("token", newToken);
-  };
-
-  const logout = () => {
-    token.value = null;
-    user.value = null;
-    localStorage.removeItem("token");
-  };
-
-  return { token, user, isAuthenticated, setToken, logout };
-});
+│   └── index.js                 # Lazy loading semua + auth guards
+│
+├── views/                       # Thin wrappers saja (orchestrators)
+│   ├── HomeView.vue
+│   ├── ProfileView.vue
+│   ├── AuthView.vue
+│   ├── PrivacyView.vue
+│   └── PartnersView.vue
+│
+├── utils/                       # [RENAME dari util/]
+│   ├── eventBus.js              # mitt instance yang benar
+│   ├── storage.js               # LocalStorage abstraction
+│   ├── date.js                  # Date formatting helpers
+│   └── validators.js            # Form validation rules
+│
+└── assets/
+    ├── style/
+    │   ├── _variables.scss      # [NEW] CSS design tokens
+    │   ├── _typography.scss     # [NEW] Font definitions terpusat
+    │   ├── _components.scss     # Component-level overrides
+    │   ├── _utilities.scss      # Helper classes
+    │   ├── responsive.scss      # Breakpoints
+    │   └── main.scss            # Root import
+    ├── fonts/
+    └── images/                  # Gambar teroptimasi WebP
 ```
 
 ---
 
-### Fase 3: Komponen — Migasi ke Composition API
+## Roadmap Refactoring
 
-#### 3.1 Contoh Composable useResponsive
-```typescript
-// src/composables/useResponsive.ts
-import { ref, onMounted, onUnmounted, computed } from "vue";
+### Sprint 0: Hygiene & Quick Wins (1-2 hari)
 
-export function useResponsive() {
-  const windowWidth = ref(window.innerWidth);
+Perbaikan tanpa breaking changes — lakukan duluan:
 
-  const onResize = () => { windowWidth.value = window.innerWidth; };
-  onMounted(() => window.addEventListener("resize", onResize));
-  onUnmounted(() => window.removeEventListener("resize", onResize));
+1. **Buat `.env` file** — pindahkan semua hardcoded config:
+   ```env
+   VITE_API_BASE_URL=https://admin1.the-gypsy.sg/api
+   VITE_FILE_URL=https://admin1.the-gypsy.sg/img/app/
+   VITE_APP_ID=1
+   VITE_SYRINGE_URL=https://the-syringe.com
+   VITE_MALLE_URL=https://mall-e.in
+   ```
 
-  const isSmall = computed(() => windowWidth.value < 640);
-  const isMedium = computed(() => windowWidth.value < 960);
+2. **Tambah `.htaccess`** di `public/` untuk Vue Router history mode di cPanel
 
-  return { windowWidth, isSmall, isMedium };
-}
-```
-Composable ini menggantikan logika `handleResize` dan `screenWidth` yang saat ini **diduplikasi di 5+ komponen**.
+3. **Fix router**: `process.env.BASE_URL` => `import.meta.env.BASE_URL`
 
-#### 3.2 Event Bus yang Benar dengan Mitt
-```typescript
-// src/utils/eventBus.ts
-import mitt from "mitt";
+4. **Fix memory leak**: tambahkan `clearInterval` di `Header.vue`
 
-type Events = {
-  changeHeaderImage: string;
-  getHeaderUserData: void;
-  changeHeaderWelcome: string;
-  scrollToCardSection: void;
-};
+5. **Hapus duplikat CSS import**: pilih satu (CDN atau npm) untuk flag-icons
 
-export const eventBus = mitt<Events>();
-```
-Menggantikan anti-pattern `createApp({})` di `eventBus.js` yang sekarang.
+6. **Hapus `public/header.png`**: duplikat dengan `src/assets/header.png`
+
+7. **Bersihkan commented code** di semua file
+
+8. **Fix `Landing.vue`**: gunakan satu pola API style (hapus script setup kosong)
+
+9. **Buat `.env.example`** sebagai referensi developer baru
 
 ---
 
-### Fase 4: Router — Lazy Loading dan Auth Guards
+### Sprint 1: Fondasi (3-5 hari)
 
-```typescript
-// src/router/index.ts
-import { createRouter, createWebHistory } from "vue-router";
-import { useAuthStore } from "@/stores/auth.store";
+1. **Upgrade dependencies utama**:
+   ```bash
+   npm install vite@latest @vitejs/plugin-vue@latest
+   npm install vue@latest vue-router@latest
+   npm install pinia
+   npm remove vuex
+   npm remove flag-icon-css vue-loader vue-page-transition
+   npm remove moment moment-timezone
+   npm install date-fns
+   ```
 
-const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL), // Fix: bukan process.env
-  routes: [
-    {
-      path: "/",
-      component: () => import("@/views/HomeView.vue"), // Lazy loaded
-    },
-    {
-      path: "/my-profile",
-      component: () => import("@/views/MyProfile.vue"), // Lazy loaded
-      meta: { requiresAuth: true }, // [NEW] Auth guard
-    },
-    {
-      path: "/sign-in",
-      component: () => import("@/views/SignInView.vue"), // Lazy loaded
-      meta: { guestOnly: true },
-    },
-  ],
-});
+2. **Buat HTTP client baru** (`src/api/http.js`) dengan:
+   - Auto-attach token via request interceptor
+   - Auto-handle 401 (redirect ke login)
+   - baseURL dari `.env`
+   - Timeout 10 detik
 
-// Global navigation guard
-router.beforeEach((to) => {
-  const authStore = useAuthStore();
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    return { path: "/sign-in" };
-  }
-  if (to.meta.guestOnly && authStore.isAuthenticated) {
-    return { path: "/" };
-  }
-});
+3. **Setup Pinia stores**:
+   - `auth.store.js` — token, user, isAuthenticated
+   - `location.store.js` — pindahkan logika dari store.js
+   - `ui.store.js` — loading, snackbar, drawer state
 
-export default router;
-```
+4. **Fix eventBus** menggunakan mitt:
+   ```javascript
+   // src/utils/eventBus.js
+   import mitt from "mitt";
+   export const emitter = mitt();
+   ```
+
+5. **Setup Vuetify theme** yang benar dengan design tokens
 
 ---
 
-### Fase 5: Performa
+### Sprint 2: Arsitektur (1-2 minggu)
 
-#### 5.1 Optimasi Gambar
-- Konversi semua `.png`/`.jpg` ke `.webp` (estimasi penghematan 60-80%)
-- Tambahkan lazy loading pada `v-img` yang tidak di-above-the-fold
-- Gunakan `srcset` untuk responsive images
+1. **Buat composables**: `useResponsive.js`, `useImageUpload.js`, `useApi.js`
 
-#### 5.2 Vite Build Optimization
-```javascript
-// vite.config.ts
-export default defineConfig({
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          "vuetify": ["vuetify"],
-          "vue-vendor": ["vue", "vue-router", "pinia"],
-        }
-      }
-    }
-  }
-});
-```
+2. **Buat Service Layer** — satu service per domain, tidak ada komponen yang langsung import axios
 
-#### 5.3 Fix Memory Leak setInterval
-```typescript
-// Header.vue — setelah direfactor ke Composition API:
-const intervalId = setInterval(updateTime, 1000);
-onUnmounted(() => clearInterval(intervalId)); // Wajib!
-```
+3. **Buat base components** — komponen UI standar reusable
+
+4. **Lazy loading** semua routes:
+   ```javascript
+   {
+     path: "/my-profile",
+     component: () => import("@/views/ProfileView.vue"),
+     meta: { requiresAuth: true }
+   }
+   ```
+
+5. **Auth guard** di router dengan Pinia
+
+6. **StorageService** — abstraksi localStorage
 
 ---
 
-### Fase 6: Keamanan — Perbaikan
+### Sprint 3: Komponen (2-3 minggu)
 
-| Issue | Solusi |
-|---|---|
-| Token dari URL disimpan ke localStorage | Proses token dari URL di server/backend, atau hapus dari URL setelah dipakai dengan `history.replaceState` |
-| `console.log` di production | Gunakan conditional logging: `if (import.meta.env.DEV) console.log(...)` |
-| Error detail terekspos | Implementasikan `app.config.errorHandler` global yang user-friendly |
-| Tidak ada route guard | Implementasikan `beforeEach` guard di router (lihat Fase 4) |
-| Hardcoded URLs | Pindah semua ke `.env` file |
-| `localStorage` tanpa enkapsulasi | Buat `StorageService` class sebagai abstraksi |
+1. **Pecah `Header.vue`** (1456 baris) => AppHeader, AppHeaderNav, AppHeaderMobile, AppHeaderLocation, AppHeaderUser
 
----
+2. **Pecah `MyProfile.vue`** (2677 baris) => ProfileView + BasicInfoForm + ContactForm + LocationForm + SecurityForm
 
-## 📊 Rangkuman Prioritas
+3. **Unifikasi sign-up** — 4 folder + 12 file menjadi 7 step components + 1 AuthFlow orchestrator
 
-| # | Item | Dampak | Effort | Prioritas |
-|---|---|---|---|---|
-| 1 | Perbaiki security token dari URL | Tinggi | Rendah | 🔴 Segera |
-| 2 | Setup `.env` file untuk config | Tinggi | Rendah | 🔴 Segera |
-| 3 | Fix memory leak `setInterval` | Medium | Rendah | 🔴 Segera |
-| 4 | Fix router `process.env` ke `import.meta.env` | Medium | Rendah | 🔴 Segera |
-| 5 | Hapus duplikat CSS import flag-icons | Rendah | Rendah | 🔴 Segera |
-| 6 | Buat Service Layer (`src/api/`) | Sangat Tinggi | Sedang | 🟠 Sprint 1 |
-| 7 | Migrasi Vuex ke Pinia | Tinggi | Sedang | 🟠 Sprint 1 |
-| 8 | Lazy loading semua routes | Tinggi | Rendah | 🟠 Sprint 1 |
-| 9 | Extract composables (useResponsive, useImageCropper) | Tinggi | Sedang | 🟠 Sprint 1 |
-| 10 | Pecah `MyProfile.vue` (2677 baris) | Tinggi | Tinggi | 🟡 Sprint 2 |
-| 11 | Pecah `Header.vue` (1297 baris) | Tinggi | Tinggi | 🟡 Sprint 2 |
-| 12 | Unifikasi komponen SignUp yang duplikat | Sangat Tinggi | Tinggi | 🟡 Sprint 2 |
-| 13 | Implementasikan Auth guard di router | Tinggi | Rendah | 🟡 Sprint 2 |
-| 14 | Migrasi ke Composition API (`<script setup>`) | Sangat Tinggi | Sangat Tinggi | 🟢 Sprint 3 |
-| 15 | Upgrade ke TypeScript | Tinggi | Sangat Tinggi | 🟢 Sprint 3 |
-| 16 | Optimasi gambar (WebP conversion) | Tinggi | Sedang | 🟢 Sprint 3 |
-| 17 | Setup Vitest untuk unit testing | Tinggi | Tinggi | 🟢 Sprint 3 |
-| 18 | Perbaikan aksesibilitas dan SEO | Medium | Sedang | 🔵 Sprint 4 |
+4. **Migrasi ke Composition API** (`<script setup>`) di semua komponen
 
 ---
 
-## 📏 Metrik Kode Saat Ini vs Target
+### Sprint 4: Performa & Polish (1 minggu)
 
-| Metrik | Saat Ini | Target |
+1. **Optimasi gambar** ke WebP — estimasi 9MB => <2MB
+
+2. **Vite build chunks**:
+   ```javascript
+   manualChunks: {
+     "vuetify": ["vuetify"],
+     "vendor": ["vue", "vue-router", "pinia"]
+   }
+   ```
+
+3. **Setup Vitest** untuk unit testing
+
+4. **SEO dasar**: meta description, Open Graph tags
+
+5. **Aksesibilitas**: aria-label untuk icon-only buttons
+
+---
+
+## Metrik: Saat Ini vs Target
+
+| Metrik | Saat Ini | Target Template |
 |---|---|---|
-| File terpanjang | 2677 baris (`MyProfile.vue`) | < 300 baris per file |
-| Duplikasi service code | 15+ komponen memanggil axios langsung | 1 centralized service layer |
-| Lazy loaded routes | 0 dari 9 routes | 100% lazy loaded |
-| Test coverage | 0% | >= 60% |
-| TypeScript | 0% | 100% |
-| Bundle size (estimasi) | ~5-8MB unoptimized | < 2MB |
-| Gambar tidak dioptimasi | ~9MB total | < 2MB (WebP) |
-| Reusable composables | 0 | >= 10 |
-| Komponen > 500 baris | 7 komponen | 0 |
-| Komponen duplikat | 3-4 set duplikat | 0 (unified) |
+| **File terpanjang** | 2677 baris (MyProfile.vue) | < 300 baris per komponen |
+| **API calls tersentralisasi** | 0% (17+ file) | 100% via service layer |
+| **Lazy loaded routes** | 0 dari 9 | 100% |
+| **Reusable composables** | 0 | >= 5 |
+| **Komponen > 500 baris** | 7 komponen | 0 |
+| **Duplikasi komponen** | 3-4 set duplikat | 0 (unified) |
+| **Environment variables** | 0 (.env tidak ada) | 100% via .env |
+| **Test coverage** | 0% | >= 40% |
+| **Bundle size** | ~5-8 MB unoptimized | < 2 MB |
+| **Ukuran gambar** | ~9 MB raw | < 2 MB (WebP) |
+| **Dependencies aktif** | ~40 (banyak redundan) | < 25 |
+| **State management** | Vuex flat 1 file | Pinia modular |
+| **Auth handling** | Manual 15+ komponen | Centralized store + service |
 
 ---
 
-*Dokumen ini dibuat berdasarkan analisis codebase pada tanggal 17 Agustus 2026.*
+## Checklist Template Readiness
+
+### Wajib (Must Have)
+- [ ] File `.env` dan `.env.example` ada
+- [ ] `.htaccess` tersedia di `public/` untuk cPanel
+- [ ] Tidak ada URL hardcoded di source code
+- [ ] Semua routes menggunakan lazy loading
+- [ ] Auth guard berfungsi di router
+- [ ] Axios dengan token auto-attach dan 401 handling
+- [ ] State management Pinia (auth, ui, domain-specific)
+- [ ] Event bus menggunakan mitt
+- [ ] `useResponsive` composable tersedia
+- [ ] Fix: `process.env.BASE_URL` => `import.meta.env.BASE_URL`
+- [ ] Memory leak setInterval diperbaiki
+- [ ] Console.log production dihapus/guarded
+- [ ] Tidak ada file Vue > 500 baris
+
+### Direkomendasikan (Should Have)
+- [ ] Service layer (`src/api/`) — semua API terpusat
+- [ ] Base components (`src/components/base/`) — design system dasar
+- [ ] SCSS variables dengan design tokens
+- [ ] StorageService — abstraksi localStorage
+- [ ] `useImageUpload` composable
+- [ ] Vuetify custom theme dikonfigurasi
+- [ ] README.md yang jelas dengan instruksi setup
+- [ ] Gambar dioptimasi ke WebP
+- [ ] Minimal 1 unit test sebagai contoh pola
+
+### Opsional (Nice to Have)
+- [ ] TypeScript (bertahap)
+- [ ] Vitest setup
+- [ ] E2E test dengan Playwright
+- [ ] SEO meta tags dan Open Graph
+- [ ] Aksesibilitas dasar (aria-label)
+
+---
+
+## Catatan Deployment cPanel
+
+```bash
+# Flow deploy:
+npm run build
+# Upload isi dist/ ke public_html/ via FTP atau File Manager cPanel
+# Pastikan .htaccess ada di public_html/
+```
+
+**Jika deploy ke subfolder** (misal: `domain.com/app/`):
+
+```javascript
+// vite.config.js
+export default defineConfig({
+  base: "/app/",
+})
+```
+
+```javascript
+// router/index.js
+history: createWebHistory("/app/")
+```
+
+---
+
+*Dokumen ini diperbarui berdasarkan analisis mendalam codebase pada 19 Agustus 2026.*
+*Fokus: Menjadikan project sebagai template/boilerplate yang bersih, modern, dan maintainable dengan tetap mempertahankan deployment cPanel.*

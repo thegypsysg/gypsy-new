@@ -105,11 +105,11 @@ export default {
         this.$router.push(`/?token=${token}`);
       } else if (appId == "5") {
         localStorage.setItem("social", "Email");
-        const externalURL = `https://the-syringe.com?token=${token}`;
+        const externalURL = `${import.meta.env.VITE_SYRINGE_URL}?token=${token}`;
         window.location.href = externalURL;
       } else if (appId == "2") {
         localStorage.setItem("social", "Email");
-        const externalURL = `https://mall-e.in?token=${token}`;
+        const externalURL = `${import.meta.env.VITE_MALLE_URL}?token=${token}`;
         window.location.href = externalURL;
       }
     },

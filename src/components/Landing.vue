@@ -13,17 +13,16 @@
   </div>
 </template>
 
-<script setup>
+<script>
 import Banner from "@/components/Banner.vue";
 import TrendingApps from "@/components/TrendingApps.vue";
 import Partners from "@/components/Partners.vue";
 import Footer from "@/components/Footer.vue";
 import axios from "@/util/axios";
-</script>
 
-<script>
 export default {
-  name: "App",
+  name: "Landing",
+  components: { Banner, TrendingApps, Partners, Footer },
   data() {
     return {
       drawer: false,
@@ -44,7 +43,6 @@ export default {
         .get(`/header`)
         .then((response) => {
           const data = response.data.data;
-          // console.log(data);
           this.headerData = data;
         })
         .catch((error) => {
@@ -61,7 +59,6 @@ export default {
         .get(`/footer`)
         .then((response) => {
           const data = response.data.data;
-          // console.log(data[0]);
           this.footerData = data[0];
         })
         .catch((error) => {

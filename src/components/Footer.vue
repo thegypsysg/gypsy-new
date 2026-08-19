@@ -193,7 +193,6 @@ export default {
   props: ["footerData", "headerData"],
   data() {
     return {
-      // fileURL: "https://admin1.the-gypsy.sg",
       trendingCard: [],
       screenWidth: window.innerWidth,
     };
@@ -217,13 +216,11 @@ export default {
       app.config.globalProperties.$eventBus.$emit("scrollToTrendingSection");
     },
     getAppData() {
-      // this.isLoading = true;
       axios
         .get(`/app`)
         .then((response) => {
           const data = response.data.data;
           const dataItem = data.slice(0, 6);
-          // console.log(data);
           this.trendingCard = dataItem.map((item) => {
             return {
               img: item.app_main_image || "",

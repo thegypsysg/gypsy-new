@@ -816,19 +816,16 @@ export default {
               this.$router.push(`/?token=${data.token}`);
             } else if (this.appIdLogin == "5") {
               localStorage.setItem("social", "Email");
-              const externalURL = `https://the-syringe.com?token=${data.token}`;
+              const externalURL = `${import.meta.env.VITE_SYRINGE_URL}?token=${data.token}`;
               window.location.href = externalURL;
             } else if (this.appIdLogin == "2") {
               localStorage.setItem("social", "Email");
-              const externalURL = `https://mall-e.in?token=${data.token}`;
+              const externalURL = `${import.meta.env.VITE_MALLE_URL}?token=${data.token}`;
               window.location.href = externalURL;
             }
           }
-
-          // this.getUserData();
         })
         .catch((error) => {
-          // eslint-disable-next-line
           this.errorMessage = "Wrong Password";
           this.isError = true;
         })
@@ -849,11 +846,11 @@ export default {
         this.$router.push(`/?token=${this.tokenLogin}`);
       } else if (this.appIdLogin == "5") {
         localStorage.setItem("social", "Email");
-        const externalURL = `https://the-syringe.com?token=${this.tokenLogin}`;
+        const externalURL = `${import.meta.env.VITE_SYRINGE_URL}?token=${this.tokenLogin}`;
         window.location.href = externalURL;
       } else if (this.appIdLogin == "2") {
         localStorage.setItem("social", "Email");
-        const externalURL = `https://mall-e.in?token=${this.tokenLogin}`;
+        const externalURL = `${import.meta.env.VITE_MALLE_URL}?token=${this.tokenLogin}`;
         window.location.href = externalURL;
       }
     },

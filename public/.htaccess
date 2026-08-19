@@ -1,0 +1,15 @@
+﻿# Vue Router History Mode — Required for cPanel Deployment
+# Semua request yang bukan file/folder fisik akan diarahkan ke index.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Jika request adalah file yang ada, langsung serve
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+
+  # Semua route lainnya dikembalikan ke index.html
+  RewriteRule . /index.html [L]
+</IfModule>
