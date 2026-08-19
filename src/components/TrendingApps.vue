@@ -643,6 +643,7 @@ export default {
       this.locationStore.setActiveTag(tag);
     },
     countCards(tag) {
+      if (!this.trendingCard || !Array.isArray(this.trendingCard)) return 0;
       const count = this.trendingCard.filter(
         (trend) => trend.tag === tag
       ).length;

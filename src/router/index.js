@@ -1,75 +1,77 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Home from "../views/HomeView.vue";
-import MyProfile from "../views/MyProfile.vue";
-import PrivacyTerms from "../views/PrivacyTerms.vue";
-import SignUp from "../views/SignUpForm.vue";
-import SocialLogin from "../views/SocialLoginForm.vue";
-import OTPEmailForm from "../views/OTPEmailForm.vue";
-import CreatePasswordForm from "../views/CreatePasswordForm.vue";
-import EmailTemplate from "../components/SignUp/EmailTemplate.vue";
-import PartnersOnBoarding from "../views/PartnersOnBoarding.vue";
+import { useAuthStore } from "@/stores/auth.store";
 
 const routes = [
   {
     path: "/partners",
     name: "PartnersOnBoarding",
-    component: PartnersOnBoarding,
+    component: () => import("../views/PartnersOnBoarding.vue"),
   },
   {
     path: "/",
-    component: Home,
+    component: () => import("../views/HomeView.vue"),
     meta: {
       locationSelection: true,
     },
   },
   {
     path: "/my-profile",
-    component: MyProfile,
+    component: () => import("../views/MyProfile.vue"),
+    meta: {
+      requiresAuth: true,
+    },
   },
   {
     path: "/sign-in",
     name: "Welcome",
-    component: SignUp,
+    component: () => import("../views/SignUpForm.vue"),
+    meta: {
+      guestOnly: true,
+    },
   },
   {
     path: "/privacy-policy",
     name: "Privacy Policy",
-    component: PrivacyTerms,
+    component: () => import("../views/PrivacyTerms.vue"),
   },
   {
     path: "/our-terms",
     name: "OurTerms",
-    component: PrivacyTerms,
+    component: () => import("../views/PrivacyTerms.vue"),
   },
   {
     path: "/sign-up-email",
     name: "SignUpEmail",
-    component: OTPEmailForm,
+    component: () => import("../views/OTPEmailForm.vue"),
+    meta: {
+      guestOnly: true,
+    },
   },
   {
     path: "/signup-email",
     name: "Create Password",
-    component: CreatePasswordForm,
+    component: () => import("../views/CreatePasswordForm.vue"),
   },
   {
     path: "/try-email",
     name: "try email",
-    component: EmailTemplate,
+    component: () => import("../components/SignUp/EmailTemplate.vue"),
   },
   {
     path: "/social-sign-up",
     name: "Social Sign Up",
-    component: SocialLogin,
-    beforeRouteEnter(to, from, next) {
+    component: () => import("../views/SocialLoginForm.vue"),
+    beforeEnter(to, from, next) {
       const email = to.query.email || "";
       const name = to.query.name || "";
       const avatar = to.query.avatar || "";
 
-      // Anda dapat menyimpan nilai-nilai ini dalam state Vuex atau menggunakan mereka langsung dalam komponen
       next((vm) => {
-        vm.email = email;
-        vm.name = name;
-        vm.avatar = avatar;
+        if (vm) {
+          vm.email = email;
+          vm.name = name;
+          vm.avatar = avatar;
+        }
       });
     },
   },
@@ -85,6 +87,22 @@ const router = createRouter({
       return { top: 0 };
     }
   },
+});
+
+// Auth Guard
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore();
+
+  const requiresAuth = to.meta.requiresAuth;
+  const guestOnly = to.meta.guestOnly;
+
+  if (requiresAuth && !authStore.isAuthenticated) {
+    next({ name: "Welcome", query: { redirect: to.fullPath } });
+  } else if (guestOnly && authStore.isAuthenticated) {
+    next("/");
+  } else {
+    next();
+  }
 });
 
 export default router;

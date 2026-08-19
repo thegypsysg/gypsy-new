@@ -5,7 +5,8 @@
  * Migrasi dari Vuex store.js (Sprint 1).
  */
 import { defineStore } from "pinia";
-import axios from "@/util/axios";
+import LocationService from "@/services/location.service";
+import StorageService from "@/services/storage.service";
 
 export const useLocationStore = defineStore("location", {
   state: () => ({
@@ -66,7 +67,7 @@ export const useLocationStore = defineStore("location", {
       this.footerData = item;
     },
 
-    // Async actions (dari Vuex actions)
+    // Async actions
     async getLongLat() {
       if (navigator.geolocation) {
         try {
@@ -75,8 +76,8 @@ export const useLocationStore = defineStore("location", {
               const lat = position.coords.latitude;
               const lon = position.coords.longitude;
               console.log("Geolocation berhasil:", lat, lon);
-              localStorage.setItem("latitude", lat);
-              localStorage.setItem("longitude", lon);
+              StorageService.setLatitude(lat);
+              StorageService.setLongitude(lon);
               this.setLongLat({ latitude: lat, longitude: lon });
             },
             (error) => {
@@ -94,9 +95,9 @@ export const useLocationStore = defineStore("location", {
     async setDefaultCountry() {
       console.log("Memulai setDefaultCountry...");
       if (!this.latitude || !this.longitude) {
-        console.log("Latitude & Longitude belum tersedia, mencoba dari localStorage...");
-        this.latitude = localStorage.getItem("latitude") || this.latitude;
-        this.longitude = localStorage.getItem("longitude") || this.longitude;
+        console.log("Latitude & Longitude belum tersedia, mencoba dari StorageService...");
+        this.latitude = StorageService.getLatitude() || this.latitude;
+        this.longitude = StorageService.getLongitude() || this.longitude;
       }
       if (!this.latitude || !this.longitude) {
         console.log("Masih kosong, memanggil getLongLat...");
@@ -107,14 +108,13 @@ export const useLocationStore = defineStore("location", {
         }
       }
       console.log(`Menggunakan Latitude: ${this.latitude}, Longitude: ${this.longitude}`);
-      const link = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${this.latitude}&lon=${this.longitude}`;
       try {
-        const { data } = await axios.get(link);
+        const { data } = await LocationService.reverseGeocode(this.latitude, this.longitude);
         console.log("Response dari Nominatim API:", data);
         if (data.address) {
           const country = data.address.country;
           console.log("Negara yang ditemukan:", country);
-          localStorage.setItem("countryDevice", country);
+          StorageService.setCountryDevice(country);
           const currentLocation = this.country.find(
             (item) => item.country_name === country
           );
@@ -144,9 +144,9 @@ export const useLocationStore = defineStore("location", {
         console.error("getCityMall tidak bisa dijalankan karena country kosong.");
         return;
       }
-      const link = `/app-city-list/1/${this.selectedTrending ? this.selectedTrending.id : "1"}`;
       try {
-        const { data } = await axios.get(link);
+        const trendingId = this.selectedTrending ? this.selectedTrending.id : "1";
+        const { data } = await LocationService.getCityMall(trendingId);
         let filtering = this.country.map((item) => {
           const obj = { ...item, cities: [] };
           obj.cities = data.data.filter((city) => city.country_id === item.id);
@@ -166,11 +166,11 @@ export const useLocationStore = defineStore("location", {
     },
 
     async getCountryMall() {
-      const link = `/app-country-list/1/${this.selectedTrending ? this.selectedTrending.id : "1"}`;
       try {
         await this.getLongLat();
         console.log("getLongLat selesai.");
-        const { data } = await axios.get(link);
+        const trendingId = this.selectedTrending ? this.selectedTrending.id : "1";
+        const { data } = await LocationService.getCountryMall(trendingId);
         const allCountry = data.data
           .sort((a, b) => b.property_count - a.property_count)
           .map((country) => ({

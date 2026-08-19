@@ -1,4 +1,4 @@
-﻿/**
+/**
  * http.js
  *
  * Centralized HTTP client menggunakan Axios.
@@ -13,6 +13,7 @@
  */
 import axios from "axios";
 import router from "@/router";
+import StorageService from "@/services/storage.service";
 
 const http = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -26,7 +27,7 @@ const http = axios.create({
 // Request Interceptor — auto-attach token
 http.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = StorageService.getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -40,8 +41,7 @@ http.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("social");
+      StorageService.clearAuth();
       router.push("/sign-in");
     }
     return Promise.reject(error);

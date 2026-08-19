@@ -727,6 +727,8 @@ export default {
 
       appData: null,
       contactData: null,
+      trendingCard: [],
+      trendingBtn: [],
       selectedType: 0,
       activeIndex: 1,
       screenWidth: window.innerWidth,
@@ -1254,6 +1256,7 @@ export default {
     //   // eventBus.emit("filter-card-header", tag);
     // },
     countCards(tag) {
+      if (!this.trendingCard || !Array.isArray(this.trendingCard)) return 0;
       const count = this.trendingCard.filter(
         (trend) => trend.tag === tag
       ).length;
