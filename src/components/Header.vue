@@ -690,18 +690,19 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from "vuex";
+import { useLocationStore } from "@/stores/location.store";
 import app from "@/util/eventBus";
 import axios from "@/util/axios";
 import moment from "moment-timezone";
-
-// import eventBus from "@/util/eventBus";
-// import eventBus from "@/util/eventBus";
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names, vue/no-reserved-component-names
   name: "Header",
   props: ["isWelcome"],
+  setup() {
+    const locationStore = useLocationStore();
+    return { locationStore };
+  },
   data() {
     return {
       _timeInterval: null,
@@ -785,15 +786,27 @@ export default {
         ? this.capitalizeFirstLetter(this.$route.query.social)
         : "";
     },
-    ...mapState([
-      "activeTag",
-      "itemSelected",
-      "itemSelectedComplete",
-      "country",
-      "selectedPlace",
-      "activeCity",
-      "selectedTrending",
-    ]),
+    activeTag() {
+      return this.locationStore.activeTag;
+    },
+    itemSelected() {
+      return this.locationStore.itemSelected;
+    },
+    itemSelectedComplete() {
+      return this.locationStore.itemSelectedComplete;
+    },
+    country() {
+      return this.locationStore.country;
+    },
+    selectedPlace() {
+      return this.locationStore.selectedPlace;
+    },
+    activeCity() {
+      return this.locationStore.activeCity;
+    },
+    selectedTrending() {
+      return this.locationStore.selectedTrending;
+    },
     activeLocationButton() {
       return (
         this.$route.hasOwnProperty("meta") &&
@@ -806,29 +819,11 @@ export default {
     token() {
       return localStorage.getItem("token");
     },
-    // trendingBtn() {
-    //   return [
-    //     {
-    //       title: "View All",
-    //     },
-    //     { title: "Promo App", tag: "Promo App" },
-    //     { title: "Alcohol App", tag: "Alcohol App" },
-    //     { title: "Jobs App", tag: "Job App" },
-    //     { title: "On The Run Apps", tag: "On the Run App" },
-    //     { title: "Housing App", tag: "Housing App" },
-    //     { title: "Travel App", tag: "Travel App" },
-    //     { title: "Staycation App", tag: "Staycation App" },
-    //     { title: "Listings App", tag: "Listing App" },
-    //     { title: "Tournaments App", tag: "Tournament App" },
-    //     { title: "Cafe App", tag: "Cafe App" },
-    //     { title: "Overseas Study App", tag: "Overseas Study App" },
-    //   ];
-    // },
   },
   watch: {
     selectedTrending(newVal) {
       setTimeout(() => {
-        this.$store.dispatch("getCountryMall");
+        this.locationStore.getCountryMall();
       }, 400);
     },
   },
@@ -860,7 +855,7 @@ export default {
     this.getFooterData();
     this.getGroups();
     setTimeout(() => {
-      this.$store.dispatch("getCountryMall");
+      this.locationStore.getCountryMall();
     }, 800);
     const token = localStorage.getItem("token");
     if (this.tokenProvider != null) {
@@ -941,14 +936,24 @@ export default {
           this.isLoading = false;
         });
     },
-    ...mapMutations([
-      "setActiveTag",
-      "setItemSelected",
-      "setItemSelectedComplete",
-      "setSelectedTrending",
-      "setActiveCity",
-      "setSelectedPlace",
-    ]),
+    setActiveTag(tag) {
+      this.locationStore.setActiveTag(tag);
+    },
+    setItemSelected(item) {
+      this.locationStore.setItemSelected(item);
+    },
+    setItemSelectedComplete(item) {
+      this.locationStore.setItemSelectedComplete(item);
+    },
+    setSelectedTrending(item) {
+      this.locationStore.setSelectedTrending(item);
+    },
+    setActiveCity(item) {
+      this.locationStore.setActiveCity(item);
+    },
+    setSelectedPlace(item) {
+      this.locationStore.setSelectedPlace(item);
+    },
     changeItemSelected(city, country) {
       if (city.property_count == 0) {
         this.isZero = true;
@@ -1007,8 +1012,7 @@ export default {
       this.titleWelcome = title;
     },
     selectTag(tag) {
-      this.setActiveTag(tag); // Menetapkan tag yang dipilih sebagai tag aktif
-
+      this.locationStore.setActiveTag(tag);
       app.config.globalProperties.$eventBus.$emit("scrollToCardSection");
     },
     getHeaderUserData() {

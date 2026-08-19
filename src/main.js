@@ -15,7 +15,7 @@ import "@fortawesome/fontawesome-free/css/fontawesome.css";
 import "@fortawesome/fontawesome-free/css/brands.css";
 import "/node_modules/flag-icons/css/flag-icons.min.css";
 
-import store from "./store";
+import { createPinia } from "pinia";
 import vuetify from "./plugins/vuetify";
 import { autoAnimatePlugin } from "@formkit/auto-animate/vue";
 
@@ -25,11 +25,13 @@ import { autoAnimatePlugin } from "@formkit/auto-animate/vue";
 import "aos/dist/aos.css";
 
 const app = createApp(App);
+const pinia = createPinia();
+
 app.config.globalProperties.$fileURL = import.meta.env.VITE_FILE_URL;
 app.config.globalProperties.$appId = Number(import.meta.env.VITE_APP_ID) || 1;
 
+app.use(pinia);
 app.use(router);
-app.use(store);
 app.use(vuetify);
 app.use(autoAnimatePlugin);
 app.mount("#app");

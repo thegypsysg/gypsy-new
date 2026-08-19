@@ -423,14 +423,16 @@
 
 <script>
 import app from "@/util/eventBus";
-// import { computed, onMounted, onUnmounted } from "vue";
-// import eventBus from "@/util/eventBus";
-import { mapState } from "vuex";
+import { useLocationStore } from "@/stores/location.store";
 import axios from "@/util/axios";
 
 export default {
   name: "TrendingApps",
   props: ["appData"],
+  setup() {
+    const locationStore = useLocationStore();
+    return { locationStore };
+  },
   data() {
     return {
       isOpenLive: false,
@@ -447,7 +449,9 @@ export default {
     };
   },
   computed: {
-    ...mapState(["activeTag"]),
+    activeTag() {
+      return this.locationStore.activeTag;
+    },
     isSmall() {
       return this.screenWidth < 640;
     },
@@ -630,15 +634,13 @@ export default {
     },
 
     selectTag(tag) {
-      this.$store.commit("setActiveTag", tag); // Menetapkan tag yang dipilih sebagai tag aktif
+      this.locationStore.setActiveTag(tag); // Menetapkan tag yang dipilih sebagai tag aktif
     },
     filterCards(tag) {
-      // console.log("ok");
       this.selectedTag = tag;
     },
     filterCardHeader(tag) {
-      this.activeTag = tag;
-      // console.log(this.activeTag);
+      this.locationStore.setActiveTag(tag);
     },
     countCards(tag) {
       const count = this.trendingCard.filter(
