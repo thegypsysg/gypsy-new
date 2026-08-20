@@ -303,6 +303,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { emitter } from "@/util/eventBus";
 import axios from "@/util/axios";
+import { logger } from "@/utils/logger";
 import VueCropper from "vue-cropperjs";
 import "cropperjs/dist/cropper.css";
 
@@ -472,7 +473,7 @@ watch(
   () => input.value.country,
   (newVal) => {
     const countryObj = options.filter((o) => o.value === newVal)[0];
-    console.log(countryObj?.label);
+    logger.log(countryObj?.label);
     input.value.countryName = countryObj?.label;
     getCity(countryObj?.label);
   }
@@ -531,11 +532,11 @@ async function verifyEmail() {
       }
     );
     const data = response.data;
-    console.log(data);
+    logger.log(data);
     isEmailOTP.value = true;
     isVerifySent.value = true;
   } catch (error) {
-    console.log(error);
+    logger.log(error);
     const message = error.response?.data?.email_id
       ? error.response.data.email_id[0]
       : error.response?.data?.message === ""
@@ -571,10 +572,10 @@ async function saveEmailOTP() {
       },
     });
     const data = response.data;
-    console.log(data);
+    logger.log(data);
     isVerifySuccess.value = true;
   } catch (error) {
-    console.log(error);
+    logger.log(error);
     const message = error.response?.data?.verify_email_otp
       ? "Wrong OTP"
       : error.response?.data?.message === ""
@@ -609,7 +610,7 @@ function cropChosenImage() {
 }
 
 function onInputNationality() {
-  console.log("ok", input.value.nationality);
+  logger.log("ok", input.value.nationality);
 }
 
 async function getTown(id) {
@@ -634,7 +635,7 @@ async function getTown(id) {
       }));
     }
   } catch (error) {
-    console.log(error);
+    logger.log(error);
   }
 }
 
@@ -659,7 +660,7 @@ async function getCity(country_name) {
       }));
     }
   } catch (error) {
-    console.log(error);
+    logger.log(error);
   }
 }
 
@@ -679,7 +680,7 @@ async function getNationality() {
     }));
     await getUserData();
   } catch (error) {
-    console.log(error);
+    logger.log(error);
   } finally {
     isLoading.value = false;
   }
@@ -695,7 +696,7 @@ async function getUserData() {
       },
     });
     const data = response.data.data;
-    console.log(data);
+    logger.log(data);
 
     image_path.value =
       data.image != null ? (window.$fileURL || "/file/") + data.image : null;
@@ -741,7 +742,7 @@ async function getUserData() {
         ? true
         : null;
   } catch (error) {
-    console.log(error);
+    logger.log(error);
   } finally {
     isLoading.value = false;
   }
@@ -758,7 +759,7 @@ async function saveData() {
     date_of_birth: input.value.date,
     country_current: input.value.nationality?.[0]?.id || input.value.nationality?.id,
   };
-  console.log(payload);
+  logger.log(payload);
   const token = localStorage.getItem("token");
   try {
     const response = await axios.post(`/save-gypsy-user`, payload, {
@@ -770,12 +771,12 @@ async function saveData() {
       },
     });
     const data = response.data;
-    console.log(data);
+    logger.log(data);
     isSuccess.value = true;
     successMessage.value = data.message;
     await getUserData();
   } catch (error) {
-    console.log(error);
+    logger.log(error);
     const message = error.response?.data?.mobile_number
       ? error.response.data.mobile_number[0]
       : error.response?.data?.message === ""
@@ -796,7 +797,7 @@ async function saveDataDesktop1() {
     marital_status: input.value.marital?.value,
     nationality: input.value.nationality?.[0]?.id || input.value.nationality?.id,
   };
-  console.log(payload);
+  logger.log(payload);
   const token = localStorage.getItem("token");
   try {
     const response = await axios.post(`/save-gypsy-user`, payload, {
@@ -808,12 +809,12 @@ async function saveDataDesktop1() {
       },
     });
     const data = response.data;
-    console.log(data);
+    logger.log(data);
     isSuccess.value = true;
     successMessage.value = data.message;
     await getUserData();
   } catch (error) {
-    console.log(error);
+    logger.log(error);
     const message = error.response?.data?.mobile_number
       ? error.response.data.mobile_number[0]
       : error.response?.data?.message === ""
@@ -833,7 +834,7 @@ async function saveDataDesktop2() {
     name: input.value.name,
     date_of_birth: input.value.date,
   };
-  console.log(payload);
+  logger.log(payload);
   const token = localStorage.getItem("token");
   try {
     const response = await axios.post(`/save-gypsy-user`, payload, {
@@ -845,12 +846,12 @@ async function saveDataDesktop2() {
       },
     });
     const data = response.data;
-    console.log(data);
+    logger.log(data);
     isSuccess.value = true;
     successMessage.value = data.message;
     await getUserData();
   } catch (error) {
-    console.log(error);
+    logger.log(error);
     const message = error.response?.data?.mobile_number
       ? error.response.data.mobile_number[0]
       : error.response?.data?.message === ""
@@ -882,7 +883,7 @@ async function saveLocation() {
       ? input.value.town.title
       : input.value.town,
   };
-  console.log(payload);
+  logger.log(payload);
   const token = localStorage.getItem("token");
   try {
     const response = await axios.post(`/gypsy/save-current-location`, payload, {
@@ -893,12 +894,12 @@ async function saveLocation() {
       },
     });
     const data = response.data;
-    console.log(data);
+    logger.log(data);
     isSuccess.value = true;
     successMessage.value = data.message;
     await getUserData();
   } catch (error) {
-    console.log(error);
+    logger.log(error);
     const message =
       error.response?.data?.message === ""
         ? "Something Wrong!!!"
@@ -916,7 +917,7 @@ async function saveEmail() {
     gypsy_id: input.value.id,
     email_id: input.value.emailNew,
   };
-  console.log(payload);
+  logger.log(payload);
   const token = localStorage.getItem("token");
   try {
     const response = await axios.post(`/save-gypsy-user`, payload, {
@@ -928,7 +929,7 @@ async function saveEmail() {
       },
     });
     const data = response.data;
-    console.log(data);
+    logger.log(data);
     isSuccess.value = true;
     successMessage.value = data.message;
     isChangeEmail.value = false;
@@ -936,7 +937,7 @@ async function saveEmail() {
     input.value.emailNew = "";
     isEmailVerified.value = false;
   } catch (error) {
-    console.log(error);
+    logger.log(error);
     const message = error.response?.data?.email_id
       ? error.response.data.email_id[0]
       : error.response?.data?.message === ""
@@ -955,7 +956,7 @@ async function saveMobile() {
     gypsy_id: input.value.id,
     mobile_number: input.value.phoneNew || input.value.phone,
   };
-  console.log(payload);
+  logger.log(payload);
   const token = localStorage.getItem("token");
   try {
     const response = await axios.post(`/save-gypsy-user`, payload, {
@@ -967,7 +968,7 @@ async function saveMobile() {
       },
     });
     const data = response.data;
-    console.log(data);
+    logger.log(data);
     successMessage.value = "New Number Updated";
     isMobileChanged.value = true;
     isChangePhone.value = false;
@@ -978,7 +979,7 @@ async function saveMobile() {
     }, 5000);
     input.value.phoneNew = "";
   } catch (error) {
-    console.log(error);
+    logger.log(error);
     const message = error.response?.data?.mobile_number
       ? error.response.data.mobile_number[0]
       : error.response?.data?.message === ""
@@ -1003,13 +1004,13 @@ async function deleteImage() {
       },
     });
     const data = response.data;
-    console.log(data);
+    logger.log(data);
     isSuccess.value = true;
     successMessage.value = data.message;
     emitter.emit("getHeaderUserData");
     await getUserData();
   } catch (error) {
-    console.log(error);
+    logger.log(error);
     const message =
       error.response?.data?.message === ""
         ? "Something Wrong!!!"
@@ -1027,7 +1028,7 @@ async function saveImage() {
     gypsy_id: input.value.id,
     image: imageSend.value || null,
   };
-  console.log(payload);
+  logger.log(payload);
   const token = localStorage.getItem("token");
   try {
     const response = await axios.post(`/save-gypsy-user`, payload, {
@@ -1039,12 +1040,12 @@ async function saveImage() {
       },
     });
     const data = response.data;
-    console.log(data);
+    logger.log(data);
     isSuccess.value = true;
     successMessage.value = data.message;
     emitter.emit("changeHeaderImage", data.data.image);
   } catch (error) {
-    console.log(error);
+    logger.log(error);
     const message =
       error.response?.data?.message === ""
         ? "Something Wrong!!!"
@@ -1094,7 +1095,7 @@ async function changePassword() {
         },
       });
       const data = response.data;
-      console.log(data);
+      logger.log(data);
       input.value.password = input.value.passwordNew;
       successMessage.value = data.message;
       isChangePassword.value = false;
@@ -1105,7 +1106,7 @@ async function changePassword() {
       input.value.passwordNew = "";
       input.value.passwordConfirm = "";
     } catch (error) {
-      console.log(error);
+      logger.log(error);
       const message = error.response?.data?.email_id
         ? error.response.data.email_id[0]
         : error.response?.data?.message === ""
@@ -1158,7 +1159,7 @@ function onDateInput() {
   } else {
     input.value.date = formattedDate;
   }
-  console.log(input.value.date);
+  logger.log(input.value.date);
 }
 
 onMounted(() => {

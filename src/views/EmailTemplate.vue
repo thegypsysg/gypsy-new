@@ -1,3 +1,13 @@
+<template>
+  <div>
+    <div v-html="htmlContent"></div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from "vue";
+
+const htmlContent = ref(`
 <html>
   <body>
     <table
@@ -7,6 +17,7 @@
       border="0"
       style="background-color: #f5f5f5; padding-top: 100px"
     >
+      <!-- Header -->
       <tr>
         <td
           style="
@@ -21,20 +32,20 @@
             alt="Logo Perusahaan"
             style="max-width: 200px"
           />
-          <h1 style="margin-left: 30px">YOUR OTP</h1>
+          <h1 style="margin-left: 30px;">YOUR OTP</h1>
         </td>
       </tr>
+      <!-- Content -->
       <tr>
-        <td style="background-color: #ffffff; padding: 20px; font-weight: 600">
-          <div style="width: 70%">
+        <td style="background-color: #ffffff; padding: 20px; font-weight: 600;">
+          <div style="width: 70%;">
             <p>Hi</p>
             <p>Please enter this OTP ;</p>
             <br />
             <h2>1234</h2>
             <br />
-            <!-- <h2>{{ otpCode }}</h2> -->
             <p>
-              To Help is confirm your identity on The Gypsy. We need to Verify
+              To Help us confirm your identity on The Gypsy. We need to Verify
               your email address. Please enter this code to complete your
               verification process.
             </p>
@@ -49,6 +60,7 @@
           </div>
         </td>
       </tr>
+      <!-- Footer -->
       <tr>
         <td style="background-color: #ffffff; padding: 20px">
           <hr />
@@ -61,12 +73,8 @@
           >
             <p>
               This message was sent to
-              <a style="text-decoration: none" href=""
-                >chalrtonmendes@gmail.com</a
-              >
-              at your request.
+              <a style="text-decoration: none;" href="">chalrtonmendes@gmail.com</a> at your request.
             </p>
-            <!-- <p>This message was sent to <a href="#">{{email}}</a> at your request. </p> -->
             <img
               src="https://admin1.the-gypsy.sg/img/app/5a1d08542b8d76309ef8a9cce7b748d2.JPG"
               alt="Logo Perusahaan"
@@ -78,3 +86,5 @@
     </table>
   </body>
 </html>
+`);
+</script>

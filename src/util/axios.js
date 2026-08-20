@@ -1,4 +1,5 @@
 import axios from "axios";
+import { logger } from "@/utils/logger";
 
 // Atur base URL API
 axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL;
@@ -8,7 +9,7 @@ axios.interceptors.response.use(
     return response;
   },
   function (error) {
-    console.log(error.response);
+    logger.error("API response error:", error?.response || error);
     return Promise.reject(error);
   }
 );

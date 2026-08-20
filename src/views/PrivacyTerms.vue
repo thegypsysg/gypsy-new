@@ -31,6 +31,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
 import Footer from "@/components/Footer.vue";
 import axios from "@/util/axios";
+import { logger } from "@/utils/logger";
 
 const route = useRoute();
 
@@ -59,7 +60,7 @@ async function getPrivacyData() {
     );
     privacyData.value = response.data.data;
   } catch (error) {
-    console.log(error);
+    logger.error("Error fetching privacy data:", error);
   } finally {
     isLoading.value = false;
   }
@@ -71,7 +72,7 @@ async function getFooterData() {
     const response = await axios.get(`/footer`);
     footerData.value = response.data.data[0];
   } catch (error) {
-    console.log(error);
+    logger.error("Error fetching footer data:", error);
   } finally {
     isLoading.value = false;
   }

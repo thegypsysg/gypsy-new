@@ -1,0 +1,64 @@
+// _variables.scss
+// ============================================================
+// Design Tokens — ubah file ini untuk rebranding project baru
+// ============================================================
+
+// --- Brand Colors (CSS Custom Properties) ---
+:root {
+  --color-primary: #e53935;
+  --color-primary-dark: #b71c1c;
+  --color-primary-light: #ef9a9a;
+  --color-secondary: #1565c0;
+  --color-surface: #ffffff;
+  --color-background: #f5f5f5;
+  --color-text-primary: #212121;
+  --color-text-secondary: #757575;
+  --color-border: #d9d9d9;
+  --color-success: #2e7d32;
+  --color-error: #c62828;
+  --color-warning: #f57f17;
+}
+
+// --- SCSS Variables ---
+$color-primary: var(--color-primary);
+$color-secondary: var(--color-secondary);
+$color-border: #d9d9d9;
+
+// --- Spacing ---
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-xxl: 48px;
+
+// --- Typography ---
+$font-family-base: "Nunito", sans-serif;
+$font-size-xs: 10px;
+$font-size-sm: 12px;
+$font-size-base: 14px;
+$font-size-md: 16px;
+$font-size-lg: 18px;
+$font-size-xl: 20px;
+$font-size-xxl: 24px;
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// --- Border Radius ---
+$border-radius-sm: 4px;
+$border-radius-md: 8px;
+$border-radius-lg: 12px;
+$border-radius-xl: 20px;
+$border-radius-pill: 50px;
+
+// --- Shadows ---
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+$shadow-md: 0 2px 8px rgba(0, 0, 0, 0.15);
+$shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.2);
+
+// --- Z-index ---
+$z-header: 999999;
+$z-dialog: 1000;
+$z-snackbar: 1100;

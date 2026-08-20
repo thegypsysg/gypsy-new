@@ -1,5 +1,6 @@
-@import './responsive.scss';
-@import './fonts.scss';
+@use './_variables.scss' as *;
+@use './responsive.scss' as *;
+@use './fonts.scss' as *;
 * {
   font-family: Nunito;
   text-transform: none;

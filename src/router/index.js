@@ -60,7 +60,7 @@ const routes = [
   {
     path: "/try-email",
     name: "try email",
-    component: () => import("../components/SignUp/EmailTemplate.vue"),
+    component: () => import("../views/EmailTemplate.vue"),
   },
   {
     path: "/social-sign-up",

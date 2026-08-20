@@ -7,6 +7,7 @@
 import { defineStore } from "pinia";
 import LocationService from "@/services/location.service";
 import StorageService from "@/services/storage.service";
+import { logger } from "@/utils/logger";
 
 export const useLocationStore = defineStore("location", {
   state: () => ({
@@ -75,101 +76,122 @@ export const useLocationStore = defineStore("location", {
             (position) => {
               const lat = position.coords.latitude;
               const lon = position.coords.longitude;
-              console.log("Geolocation berhasil:", lat, lon);
+              logger.log("Geolocation berhasil:", lat, lon);
               StorageService.setLatitude(lat);
               StorageService.setLongitude(lon);
               this.setLongLat({ latitude: lat, longitude: lon });
             },
             (error) => {
-              console.error("Error geolocation:", error);
+              logger.error("Error geolocation:", error);
             }
           );
         } catch (error) {
-          console.error("Error di getLongLat:", error);
+          logger.error("Error di getLongLat:", error);
         }
       } else {
-        console.error("Geolocation tidak didukung di perangkat ini.");
+        logger.error("Geolocation tidak didukung di perangkat ini.");
       }
     },
 
     async setDefaultCountry() {
-      console.log("Memulai setDefaultCountry...");
+      logger.log("Memulai setDefaultCountry...");
       if (!this.latitude || !this.longitude) {
-        console.log("Latitude & Longitude belum tersedia, mencoba dari StorageService...");
+        logger.log(
+          "Latitude & Longitude belum tersedia, mencoba dari StorageService..."
+        );
         this.latitude = StorageService.getLatitude() || this.latitude;
         this.longitude = StorageService.getLongitude() || this.longitude;
       }
       if (!this.latitude || !this.longitude) {
-        console.log("Masih kosong, memanggil getLongLat...");
+        logger.log("Masih kosong, memanggil getLongLat...");
         await this.getLongLat();
         if (!this.latitude || !this.longitude) {
-          console.error("Latitude & Longitude tetap kosong. setDefaultCountry dibatalkan.");
+          logger.error(
+            "Latitude & Longitude tetap kosong. setDefaultCountry dibatalkan."
+          );
           return;
         }
       }
-      console.log(`Menggunakan Latitude: ${this.latitude}, Longitude: ${this.longitude}`);
+      logger.log(
+        `Menggunakan Latitude: ${this.latitude}, Longitude: ${this.longitude}`
+      );
       try {
-        const { data } = await LocationService.reverseGeocode(this.latitude, this.longitude);
-        console.log("Response dari Nominatim API:", data);
+        const { data } = await LocationService.reverseGeocode(
+          this.latitude,
+          this.longitude
+        );
+        logger.log("Response dari Nominatim API:", data);
         if (data.address) {
           const country = data.address.country;
-          console.log("Negara yang ditemukan:", country);
+          logger.log("Negara yang ditemukan:", country);
           StorageService.setCountryDevice(country);
           const currentLocation = this.country.find(
             (item) => item.country_name === country
           );
           if (currentLocation) {
-            console.log("Negara ditemukan di daftar:", currentLocation);
+            logger.log("Negara ditemukan di daftar:", currentLocation);
             this.setItemSelectedComplete(currentLocation);
             this.setItemSelected(currentLocation.title);
             this.setSelectedPlace(currentLocation.title);
           } else {
-            console.warn("Negara tidak ditemukan dalam daftar, menggunakan default.");
+            logger.warn(
+              "Negara tidak ditemukan dalam daftar, menggunakan default."
+            );
             this.setItemSelectedComplete(this.country[0]);
             this.setItemSelected(this.country[0]?.title || "");
             this.setSelectedPlace(this.country[0]?.title || "");
           }
-          console.log("setDefaultCountry berhasil dijalankan.");
+          logger.log("setDefaultCountry berhasil dijalankan.");
         } else {
-          console.warn("Alamat tidak ditemukan dalam response Nominatim.");
+          logger.warn("Alamat tidak ditemukan dalam response Nominatim.");
         }
       } catch (error) {
-        console.error("Error di setDefaultCountry:", error);
+        logger.error("Error di setDefaultCountry:", error);
       }
     },
 
     async getCityMall() {
-      console.log("Memulai getCityMall...");
+      logger.log("Memulai getCityMall...");
       if (this.country.length === 0) {
-        console.error("getCityMall tidak bisa dijalankan karena country kosong.");
+        logger.error(
+          "getCityMall tidak bisa dijalankan karena country kosong."
+        );
         return;
       }
       try {
-        const trendingId = this.selectedTrending ? this.selectedTrending.id : "1";
+        const trendingId = this.selectedTrending
+          ? this.selectedTrending.id
+          : "1";
         const { data } = await LocationService.getCityMall(trendingId);
         let filtering = this.country.map((item) => {
           const obj = { ...item, cities: [] };
-          obj.cities = data.data.filter((city) => city.country_id === item.id);
+          obj.cities = data.data.filter(
+            (city) => city.country_id === item.id
+          );
           return obj;
         });
-        this.country = filtering.filter((dataCountry) => dataCountry.cities.length > 0);
+        this.country = filtering.filter(
+          (dataCountry) => dataCountry.cities.length > 0
+        );
         const getCountry = this.country.find(
           (country) => country.title === this.selectedPlace
         );
         if (getCountry?.cities.length > 0) {
           this.setActiveCity(getCountry.cities[0]);
         }
-        console.log("getCityMall selesai.");
+        logger.log("getCityMall selesai.");
       } catch (error) {
-        console.error("Error di getCityMall:", error);
+        logger.error("Error di getCityMall:", error);
       }
     },
 
     async getCountryMall() {
       try {
         await this.getLongLat();
-        console.log("getLongLat selesai.");
-        const trendingId = this.selectedTrending ? this.selectedTrending.id : "1";
+        logger.log("getLongLat selesai.");
+        const trendingId = this.selectedTrending
+          ? this.selectedTrending.id
+          : "1";
         const { data } = await LocationService.getCountryMall(trendingId);
         const allCountry = data.data
           .sort((a, b) => b.property_count - a.property_count)
@@ -184,13 +206,13 @@ export const useLocationStore = defineStore("location", {
             cities: [],
           }));
         this.setCountry(allCountry);
-        console.log("setCountry selesai");
+        logger.log("setCountry selesai");
         await this.setDefaultCountry();
-        console.log("setDefaultCountry selesai");
+        logger.log("setDefaultCountry selesai");
         await this.getCityMall();
-        console.log("getCityMall selesai");
+        logger.log("getCityMall selesai");
       } catch (error) {
-        console.error("Error di getCountryMall:", error);
+        logger.error("Error di getCountryMall:", error);
       }
     },
   },

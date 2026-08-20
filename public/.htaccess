@@ -1,6 +1,7 @@
 ﻿# Vue Router History Mode — Required for cPanel Deployment
 # Semua request yang bukan file/folder fisik akan diarahkan ke index.html
 
+RewriteOptions inherit
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
