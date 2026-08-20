@@ -27,87 +27,73 @@
   </div>
 </template>
 <script setup>
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { useRoute } from "vue-router";
 import Footer from "@/components/Footer.vue";
 import axios from "@/util/axios";
-</script>
-<script>
-export default {
-  name: "App",
-  data() {
-    return {
-      drawer: false,
-      privacyData: {},
-      footerData: {},
-      isLoading: false,
-      screenWidth: window.innerWidth,
-    };
-  },
-  computed: {
-    privacyType() {
-      return this.$route.path == "/privacy-policy" ? "P" : "T";
-    },
-    isSmall() {
-      return this.screenWidth < 640;
-    },
-  },
-  watch: {
-    privacyType() {
-      this.getPrivacyData();
-    },
-  },
-  created() {
-    window.addEventListener("resize", this.handleResize);
-  },
-  mounted() {
-    this.getPrivacyData();
-    this.getFooterData();
-  },
-  unmounted() {
-    window.removeEventListener("resize", this.handleResize);
-  },
-  methods: {
-    formatInfo(info) {
-      return info.replace(/\n/g, "<br>");
-    },
-    getPrivacyData() {
-      this.isLoading = true;
-      axios
-        .get(`/privacy-policy/type/${this.privacyType}`)
-        .then((response) => {
-          const data = response.data.data;
-          console.log(data);
-          this.privacyData = data;
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-          console.log(error);
-        })
-        .finally(() => {
-          this.isLoading = false;
-        });
-    },
-    getFooterData() {
-      this.isLoading = true;
-      axios
-        .get(`/footer`)
-        .then((response) => {
-          const data = response.data.data;
-          // console.log(data[0]);
-          this.footerData = data[0];
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-          console.log(error);
-        })
-        .finally(() => {
-          this.isLoading = false;
-        });
-    },
-    handleResize() {
-      this.screenWidth = window.innerWidth;
-    },
-  },
-};
+
+const route = useRoute();
+
+const drawer = ref(false);
+const privacyData = ref({});
+const footerData = ref({});
+const headerData = ref({});
+const isLoading = ref(false);
+const screenWidth = ref(window.innerWidth);
+
+const privacyType = computed(() => {
+  return route.path === "/privacy-policy" ? "P" : "T";
+});
+
+const isSmall = computed(() => screenWidth.value < 640);
+
+function formatInfo(info) {
+  return info ? info.replace(/\n/g, "<br>") : "";
+}
+
+async function getPrivacyData() {
+  isLoading.value = true;
+  try {
+    const response = await axios.get(
+      `/privacy-policy/type/${privacyType.value}`
+    );
+    privacyData.value = response.data.data;
+  } catch (error) {
+    console.log(error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+async function getFooterData() {
+  isLoading.value = true;
+  try {
+    const response = await axios.get(`/footer`);
+    footerData.value = response.data.data[0];
+  } catch (error) {
+    console.log(error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+function handleResize() {
+  screenWidth.value = window.innerWidth;
+}
+
+watch(privacyType, () => {
+  getPrivacyData();
+});
+
+onMounted(() => {
+  getPrivacyData();
+  getFooterData();
+  window.addEventListener("resize", handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
+});
 </script>
 
 <style lang="scss" scoped></style>

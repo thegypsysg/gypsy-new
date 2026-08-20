@@ -142,62 +142,52 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import AOS from "aos";
 
-export default {
-  // eslint-disable-next-line vue/multi-word-component-names, vue/no-reserved-component-names
-  name: "Banner",
-  props: ["headerData"],
-  data() {
-    return {
-      drawer: false,
-      items: [
-        { title: "Home", path: "/home", icon: "home" },
-        { title: "Sign Up", path: "/signup", icon: "face" },
-        { title: "Sign In", path: "/signin", icon: "lock_open" },
-      ],
-      screenWidth: window.innerWidth,
-    };
+defineProps({
+  headerData: {
+    type: Object,
+    default: () => ({}),
   },
-  computed: {
-    isSmall() {
-      return this.screenWidth < 640;
-    },
-  },
-  created() {
-    window.addEventListener("resize", this.handleResize);
-  },
-  mounted() {
-    AOS.init();
-  },
-  unmounted() {
-    window.removeEventListener("resize", this.handleResize);
-  },
-  methods: {
-    handleResize() {
-      this.screenWidth = window.innerWidth;
-    },
-    scrollToTrending() {
-      const sectionElement = document.getElementById("trending");
-      if (sectionElement && !this.isSmall) {
-        const offset = 80; // Atur offset sesuai kebutuhan Anda
-        const topPos =
-          sectionElement.getBoundingClientRect().top +
-          window.pageYOffset -
-          offset;
-        window.scrollTo({ top: topPos, behavior: "smooth" });
-      } else {
-        const offset = 240; // Atur offset sesuai kebutuhan Anda
-        const topPos =
-          sectionElement.getBoundingClientRect().top +
-          window.pageYOffset -
-          offset;
-        window.scrollTo({ top: topPos, behavior: "smooth" });
-      }
-    },
-  },
-};
+});
+
+const screenWidth = ref(window.innerWidth);
+
+const isSmall = computed(() => screenWidth.value < 640);
+
+function handleResize() {
+  screenWidth.value = window.innerWidth;
+}
+
+onMounted(() => {
+  AOS.init();
+  window.addEventListener("resize", handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
+});
+
+function scrollToTrending() {
+  const sectionElement = document.getElementById("trending");
+  if (sectionElement && !isSmall.value) {
+    const offset = 80;
+    const topPos =
+      sectionElement.getBoundingClientRect().top +
+      window.pageYOffset -
+      offset;
+    window.scrollTo({ top: topPos, behavior: "smooth" });
+  } else if (sectionElement) {
+    const offset = 240;
+    const topPos =
+      sectionElement.getBoundingClientRect().top +
+      window.pageYOffset -
+      offset;
+    window.scrollTo({ top: topPos, behavior: "smooth" });
+  }
+}
 </script>
 
 <style scoped>

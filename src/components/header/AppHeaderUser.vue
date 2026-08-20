@@ -59,41 +59,39 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "AppHeaderUser",
-  props: {
-    userName: {
-      type: String,
-      default: null,
-    },
-    userImage: {
-      type: String,
-      default: null,
-    },
-    isLoading: {
-      type: Boolean,
-      default: false,
-    },
-    isWelcome: {
-      type: Boolean,
-      default: false,
-    },
-    isPrivacy: {
-      type: Boolean,
-      default: false,
-    },
-    isTerms: {
-      type: Boolean,
-      default: false,
-    },
-    isMyProfile: {
-      type: Boolean,
-      default: false,
-    },
+<script setup>
+defineProps({
+  userName: {
+    type: String,
+    default: null,
   },
-  emits: ["go-to-sign-in", "logout", "toggle-drawer"],
-};
+  userImage: {
+    type: String,
+    default: null,
+  },
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
+  isWelcome: {
+    type: Boolean,
+    default: false,
+  },
+  isPrivacy: {
+    type: Boolean,
+    default: false,
+  },
+  isTerms: {
+    type: Boolean,
+    default: false,
+  },
+  isMyProfile: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+defineEmits(["go-to-sign-in", "logout", "toggle-drawer"]);
 </script>
 
 <style scoped>

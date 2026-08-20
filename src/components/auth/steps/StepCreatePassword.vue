@@ -137,125 +137,115 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import axios from "@/util/axios";
-import app from "@/util/eventBus";
+import { emitter } from "@/util/eventBus";
 
-export default {
-  name: "StepCreatePassword",
-  props: {
-    authType: {
-      type: String,
-      default: "",
-    },
+const props = defineProps({
+  authType: {
+    type: String,
+    default: "",
   },
-  data() {
-    return {
-      valid: false,
-      email: "",
-      name: "",
-      country: "",
-      mobile: "",
-      gender: "",
-      countryName: "",
-      gypsyId: null,
-      token: "",
-      imageSend: null,
-      passwordRules: [
-        (v) => !!v || "Password is required",
-        (v) => (v && v.length >= 8) || "Password must be at least 8 characters",
-      ],
-      password2Rules: [
-        (v) => !!v || "Confirm Password is required",
-        (v) => v === this.password || "Passwords do not match",
-      ],
-      password: "",
-      password2: "",
-      screenWidth: window.innerWidth,
-      isError: false,
-      isSuccess: false,
-      showPassword1: false,
-      showPassword2: false,
-      errorMessage: "",
-      successMessage: "",
+});
+
+const emit = defineEmits(["nextStep", "backStep"]);
+
+const valid = ref(false);
+const email = ref("");
+const mobile = ref("");
+const gypsyId = ref(null);
+const token = ref("");
+const isSending = ref(false);
+
+const password = ref("");
+const password2 = ref("");
+const showPassword1 = ref(false);
+const showPassword2 = ref(false);
+
+const screenWidth = ref(window.innerWidth);
+const isError = ref(false);
+const isSuccess = ref(false);
+const errorMessage = ref("");
+const successMessage = ref("");
+
+const passwordRules = [
+  (v) => !!v || "Password is required",
+  (v) => (v && v.length >= 8) || "Password must be at least 8 characters",
+];
+
+const password2Rules = [
+  (v) => !!v || "Confirm Password is required",
+  (v) => v === password.value || "Passwords do not match",
+];
+
+const isSmall = computed(() => screenWidth.value < 640);
+
+function handleResize() {
+  screenWidth.value = window.innerWidth;
+}
+
+onMounted(() => {
+  window.addEventListener("resize", handleResize);
+  email.value = localStorage.getItem("email") || "";
+  mobile.value = localStorage.getItem("mobile") || "";
+  gypsyId.value = localStorage.getItem("gypsy_id");
+  token.value = localStorage.getItem("token");
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
+});
+
+function nextStep() {
+  emit("nextStep");
+}
+
+function backStep() {
+  emit("backStep");
+}
+
+async function saveData() {
+  if (valid.value) {
+    isSending.value = true;
+    const payload = {
+      gypsy_id: gypsyId.value,
+      password: password2.value,
     };
-  },
-  computed: {
-    isSmall() {
-      return this.screenWidth < 640;
-    },
-  },
-  created() {
-    window.addEventListener("resize", this.handleResize);
-  },
-  mounted() {
-    this.email = localStorage.getItem("email") || "";
-    this.mobile = localStorage.getItem("mobile") || "";
-    this.gypsyId = localStorage.getItem("gypsy_id");
-    this.token = localStorage.getItem("token");
-  },
-  unmounted() {
-    window.removeEventListener("resize", this.handleResize);
-  },
-  methods: {
-    nextStep() {
-      this.$emit("nextStep");
-    },
-    backStep() {
-      this.$emit("backStep");
-    },
-    handleResize() {
-      this.screenWidth = window.innerWidth;
-    },
-    saveData() {
-      if (this.valid) {
-        this.isSending = true;
-        const payload = {
-          gypsy_id: this.gypsyId,
-          password: this.password2,
-        };
 
-        if (this.authType === "mobile" || (!this.email && this.mobile)) {
-          payload.mobile_number = this.mobile;
-        } else {
-          payload.email_id = this.email;
-        }
+    if (props.authType === "mobile" || (!email.value && mobile.value)) {
+      payload.mobile_number = mobile.value;
+    } else {
+      payload.email_id = email.value;
+    }
 
-        axios
-          .post(`/gypsy-set-password`, payload, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-              Authorization: `Bearer ${this.token}`,
-            },
-          })
-          .then((response) => {
-            const data = response.data;
-            console.log(data);
-            this.successMessage = data.message;
-            this.isSuccess = true;
-            app.config.globalProperties.$eventBus.$emit(
-              "changeHeaderWelcome",
-              "Sign Up Completed"
-            );
-            this.nextStep();
-          })
-          .catch((error) => {
-            console.log(error);
-            const message = error.response?.data?.email_id
-              ? error.response.data.email_id[0]
-              : error.response?.data?.message === ""
-              ? "Something Wrong!!!"
-              : error.response?.data?.message || "Something Wrong!!!";
-            this.errorMessage = message;
-            this.isError = true;
-          })
-          .finally(() => {
-            this.isSending = false;
-          });
-      }
-    },
-  },
-};
+    try {
+      const response = await axios.post(`/gypsy-set-password`, payload, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token.value}`,
+        },
+      });
+      const data = response.data;
+      console.log(data);
+      successMessage.value = data.message;
+      isSuccess.value = true;
+      emitter.emit("changeHeaderWelcome", "Sign Up Completed");
+      nextStep();
+    } catch (error) {
+      console.log(error);
+      const message = error.response?.data?.email_id
+        ? error.response.data.email_id[0]
+        : error.response?.data?.message === ""
+        ? "Something Wrong!!!"
+        : error.response?.data?.message || "Something Wrong!!!";
+      errorMessage.value = message;
+      isError.value = true;
+    } finally {
+      isSending.value = false;
+    }
+  }
+}
 </script>
 
 <style scoped>

@@ -183,95 +183,82 @@
   </v-footer>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import axios from "@/util/axios";
-import app from "@/util/eventBus";
+import { emitter } from "@/util/eventBus";
 
-export default {
-  // eslint-disable-next-line vue/multi-word-component-names, vue/no-reserved-component-names
-  name: "Footer",
-  props: ["footerData", "headerData"],
-  data() {
-    return {
-      trendingCard: [],
-      screenWidth: window.innerWidth,
-    };
+defineProps({
+  footerData: {
+    type: Object,
+    default: null,
   },
-  computed: {
-    isSmall() {
-      return this.screenWidth < 640;
-    },
+  headerData: {
+    type: Object,
+    default: () => ({}),
   },
-  created() {
-    window.addEventListener("resize", this.handleResize);
-  },
-  mounted() {
-    this.getAppData();
-  },
-  unmounted() {
-    window.removeEventListener("resize", this.handleResize);
-  },
-  methods: {
-    scrollToTrending() {
-      app.config.globalProperties.$eventBus.$emit("scrollToTrendingSection");
-    },
-    getAppData() {
-      axios
-        .get(`/app`)
-        .then((response) => {
-          const data = response.data.data;
-          const dataItem = data.slice(0, 6);
-          this.trendingCard = dataItem.map((item) => {
-            return {
-              img: item.app_main_image || "",
-              title: item.app_name || "",
-              desc: item.app_description || "",
-              tag: item.app_group_name || "",
-              link: item.app_link || "",
-              views: item.app_views || "0",
+});
 
-              id: item.app_id || 1,
-              group_id: item.app_group_id || 1,
-              logo: item.app_logo || null,
-              image: item.app_main_image || null,
-              name: item.app_name || "",
-              description: item.app_description || "",
-              details: item.app_detail || "",
-              isActive:
-                item.active == "N" ? false : item.active == "Y" ? true : null,
-              isFav:
-                item.favorite == "N"
-                  ? false
-                  : item.favorite == "Y"
-                  ? true
-                  : null,
-              group: item.app_group_name || "",
-              user: item.user_id || 1,
-              created: item.dated || "",
-              likes: item.app_likes || "",
-              shares: item.app_shares || "",
-            };
-          });
-          // console.log(this.trendingCard);
+const trendingCard = ref([]);
+const screenWidth = ref(window.innerWidth);
 
-          // app.config.globalProperties.$eventBus.$emit(
-          //   'update-image',
-          //   this.items
-          // );
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-          console.log(error);
-        });
-      // .finally(() => {
-      //   this.isLoading = false;
-      // });
-    },
-    handleResize() {
-      this.screenWidth = window.innerWidth;
-    },
-  },
-};
+const isSmall = computed(() => screenWidth.value < 640);
+
+function handleResize() {
+  screenWidth.value = window.innerWidth;
+}
+
+function scrollToTrending() {
+  emitter.emit("scrollToTrendingSection");
+}
+
+async function getAppData() {
+  try {
+    const response = await axios.get(`/app`);
+    const data = response.data.data;
+    const dataItem = data.slice(0, 6);
+    trendingCard.value = dataItem.map((item) => ({
+      img: item.app_main_image || "",
+      title: item.app_name || "",
+      desc: item.app_description || "",
+      tag: item.app_group_name || "",
+      link: item.app_link || "",
+      views: item.app_views || "0",
+
+      id: item.app_id || 1,
+      group_id: item.app_group_id || 1,
+      logo: item.app_logo || null,
+      image: item.app_main_image || null,
+      name: item.app_name || "",
+      description: item.app_description || "",
+      details: item.app_detail || "",
+      isActive:
+        item.active === "N" ? false : item.active === "Y" ? true : null,
+      isFav:
+        item.favorite === "N"
+          ? false
+          : item.favorite === "Y"
+          ? true
+          : null,
+      group: item.app_group_name || "",
+      user: item.user_id || 1,
+      created: item.dated || "",
+      likes: item.app_likes || "",
+      shares: item.app_shares || "",
+    }));
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+onMounted(() => {
+  getAppData();
+  window.addEventListener("resize", handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
+});
 </script>
 
 <style scoped>

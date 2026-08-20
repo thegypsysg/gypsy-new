@@ -103,63 +103,61 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "SecurityForm",
-  props: {
-    input: {
-      type: Object,
-      required: true,
-    },
-    isChangePassword: {
-      type: Boolean,
-      default: false,
-    },
-    isPasswordChanged: {
-      type: Boolean,
-      default: false,
-    },
-    showPassword1: {
-      type: Boolean,
-      default: false,
-    },
-    showPassword2: {
-      type: Boolean,
-      default: false,
-    },
-    isPassword1: {
-      type: Boolean,
-      default: true,
-    },
-    isPassword2: {
-      type: Boolean,
-      default: true,
-    },
-    password2Mes: {
-      type: String,
-      default: "",
-    },
-    successMessage: {
-      type: String,
-      default: "",
-    },
-    isLoading: {
-      type: Boolean,
-      default: false,
-    },
-    isSmall: {
-      type: Boolean,
-      default: false,
-    },
+<script setup>
+defineProps({
+  input: {
+    type: Object,
+    required: true,
   },
-  emits: [
-    "change-password",
-    "toggle-change-password",
-    "toggle-show-password-1",
-    "toggle-show-password-2",
-    "update:isPasswordChanged",
-  ],
-};
+  isChangePassword: {
+    type: Boolean,
+    default: false,
+  },
+  isPasswordChanged: {
+    type: Boolean,
+    default: false,
+  },
+  showPassword1: {
+    type: Boolean,
+    default: false,
+  },
+  showPassword2: {
+    type: Boolean,
+    default: false,
+  },
+  isPassword1: {
+    type: Boolean,
+    default: true,
+  },
+  isPassword2: {
+    type: Boolean,
+    default: true,
+  },
+  password2Mes: {
+    type: String,
+    default: "",
+  },
+  successMessage: {
+    type: String,
+    default: "",
+  },
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
+  isSmall: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+defineEmits([
+  "change-password",
+  "toggle-change-password",
+  "toggle-show-password-1",
+  "toggle-show-password-2",
+  "update:isPasswordChanged",
+]);
 </script>
 
 <style scoped>

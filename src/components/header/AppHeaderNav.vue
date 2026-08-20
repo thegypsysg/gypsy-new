@@ -74,79 +74,72 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import AppHeaderLocation from "@/components/header/AppHeaderLocation.vue";
 
-export default {
-  name: "AppHeaderNav",
-  components: {
-    AppHeaderLocation,
+const props = defineProps({
+  activeLocationButton: {
+    type: Boolean,
+    default: false,
   },
-  props: {
-    activeLocationButton: {
-      type: Boolean,
-      default: false,
-    },
-    isSmall: {
-      type: Boolean,
-      default: false,
-    },
-    locationPlaceholder: {
-      type: String,
-      default: "",
-    },
-    itemSelectedComplete: {
-      type: Object,
-      default: null,
-    },
-    country: {
-      type: Array,
-      default: () => [],
-    },
-    userLocation: {
-      type: Boolean,
-      default: false,
-    },
-    activeCity: {
-      type: Object,
-      default: null,
-    },
-    trendingBtn: {
-      type: Array,
-      default: () => [],
-    },
-    trendingCard: {
-      type: Array,
-      default: () => [],
-    },
-    isLoading: {
-      type: Boolean,
-      default: false,
-    },
-    activeTag: {
-      type: String,
-      default: null,
-    },
+  isSmall: {
+    type: Boolean,
+    default: false,
   },
-  emits: [
-    "select-tag",
-    "change-item-selected",
-    "update:userLocation",
-    "update:activeTag",
-  ],
-  methods: {
-    countCards(tag) {
-      if (!this.trendingCard || !Array.isArray(this.trendingCard)) return 0;
-      const count = this.trendingCard.filter(
-        (trend) => trend.tag === tag
-      ).length;
-      return count;
-    },
-    preventSubmit(event) {
-      event.preventDefault();
-    },
+  locationPlaceholder: {
+    type: String,
+    default: "",
   },
-};
+  itemSelectedComplete: {
+    type: Object,
+    default: null,
+  },
+  country: {
+    type: Array,
+    default: () => [],
+  },
+  userLocation: {
+    type: Boolean,
+    default: false,
+  },
+  activeCity: {
+    type: Object,
+    default: null,
+  },
+  trendingBtn: {
+    type: Array,
+    default: () => [],
+  },
+  trendingCard: {
+    type: Array,
+    default: () => [],
+  },
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
+  activeTag: {
+    type: String,
+    default: null,
+  },
+});
+
+defineEmits([
+  "select-tag",
+  "change-item-selected",
+  "update:userLocation",
+  "update:activeTag",
+]);
+
+function countCards(tag) {
+  if (!props.trendingCard || !Array.isArray(props.trendingCard)) return 0;
+  const count = props.trendingCard.filter((trend) => trend.tag === tag).length;
+  return count;
+}
+
+function preventSubmit(event) {
+  event.preventDefault();
+}
 </script>
 
 <style scoped>

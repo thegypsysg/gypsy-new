@@ -55,21 +55,23 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "ProfileAvatar",
-  props: {
-    imagePath: {
-      type: String,
-      default: "",
-    },
-    isSaveImage: {
-      type: Boolean,
-      default: false,
-    },
+<script setup>
+import { ref } from "vue";
+
+defineProps({
+  imagePath: {
+    type: String,
+    default: "",
   },
-  emits: ["launch-cropper", "delete-image"],
-};
+  isSaveImage: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+defineEmits(["launch-cropper", "delete-image"]);
+
+const filePickerField = ref(null);
 </script>
 
 <style scoped>

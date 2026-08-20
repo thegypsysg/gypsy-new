@@ -99,38 +99,33 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import MazSelect from "maz-ui/components/MazSelect";
 
-export default {
-  name: "LocationForm",
-  components: {
-    MazSelect,
+defineProps({
+  input: {
+    type: Object,
+    required: true,
   },
-  props: {
-    input: {
-      type: Object,
-      required: true,
-    },
-    resource: {
-      type: Object,
-      required: true,
-    },
-    options: {
-      type: Array,
-      default: () => [],
-    },
-    rules: {
-      type: Object,
-      default: () => ({}),
-    },
-    isSmall: {
-      type: Boolean,
-      default: false,
-    },
+  resource: {
+    type: Object,
+    required: true,
   },
-  emits: ["save-location"],
-};
+  options: {
+    type: Array,
+    default: () => [],
+  },
+  rules: {
+    type: Object,
+    default: () => ({}),
+  },
+  isSmall: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+defineEmits(["save-location"]);
 </script>
 
 <style scoped>

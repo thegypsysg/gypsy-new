@@ -94,38 +94,31 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "PartnersOnBoarding",
-  data() {
-    return {
-      form: {
-        name: "",
-        email: "",
-        businessName: "",
-        contact: "",
-        city: "",
-      },
-      screenWidth: window.innerWidth,
-    };
-  },
-  computed: {
-    isSmall() {
-      return this.screenWidth < 640;
-    },
-  },
-  mounted() {
-    window.addEventListener("resize", this.handleResize);
-  },
-  unmounted() {
-    window.removeEventListener("resize", this.handleResize);
-  },
-  methods: {
-    handleResize() {
-      this.screenWidth = window.innerWidth;
-    },
-  },
-};
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from "vue";
+
+const form = ref({
+  name: "",
+  email: "",
+  businessName: "",
+  contact: "",
+  city: "",
+});
+
+const screenWidth = ref(window.innerWidth);
+const isSmall = computed(() => screenWidth.value < 640);
+
+function handleResize() {
+  screenWidth.value = window.innerWidth;
+}
+
+onMounted(() => {
+  window.addEventListener("resize", handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
+});
 </script>
 
 <style scoped>

@@ -116,7 +116,7 @@
     </v-row>
   </v-container>
 </template>
-<script></script>
+<script setup></script>
 <style>
 .img-cont {
   position: relative;

@@ -25,48 +25,50 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from "vue";
 import VueCropper from "vue-cropperjs";
 import "cropperjs/dist/cropper.css";
 
-export default {
-  name: "ImageCropperDialog",
-  components: {
-    VueCropper,
+const props = defineProps({
+  chosenImage: {
+    default: null,
   },
-  props: {
-    chosenImage: {
-      default: null,
-    },
-  },
-  data() {
-    return {
-      showCropper: false,
-      imageFileType: null,
-    };
-  },
-  methods: {
-    async initCropper(imageFileType) {
-      this.showCropper = true;
-      this.imageFileType = imageFileType;
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      this.$refs.cropper.replace(this.chosenImage);
-    },
+});
 
-    async resetCropper() {
-      this.$emit("onReset");
-      this.showCropper = false;
-    },
+const emit = defineEmits(["onReset", "onCrop"]);
 
-    async cropChosenImage() {
-      this.$emit(
-        "onCrop",
-        this.$refs.cropper.getCroppedCanvas().toDataURL(this.imageFileType)
-      );
-      this.resetCropper();
-    },
-  },
-};
+const showCropper = ref(false);
+const imageFileType = ref(null);
+const cropper = ref(null);
+
+async function initCropper(fileType) {
+  showCropper.value = true;
+  imageFileType.value = fileType;
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  cropper.value?.replace(props.chosenImage);
+}
+
+function resetCropper() {
+  emit("onReset");
+  showCropper.value = false;
+}
+
+function cropChosenImage() {
+  if (cropper.value) {
+    emit(
+      "onCrop",
+      cropper.value.getCroppedCanvas().toDataURL(imageFileType.value)
+    );
+  }
+  resetCropper();
+}
+
+defineExpose({
+  initCropper,
+  resetCropper,
+  cropChosenImage,
+});
 </script>
 
 <style>

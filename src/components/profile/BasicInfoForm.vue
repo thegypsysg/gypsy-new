@@ -389,71 +389,66 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import VueMultiselect from "vue-multiselect";
 import "vue-multiselect/dist/vue-multiselect.css";
 
-export default {
-  name: "BasicInfoForm",
-  components: {
-    VueMultiselect,
+defineProps({
+  section: {
+    type: String,
+    required: true,
   },
-  props: {
-    section: {
-      type: String,
-      required: true,
-    },
-    input: {
-      type: Object,
-      required: true,
-    },
-    resource: {
-      type: Object,
-      required: true,
-    },
-    age: {
-      type: [Number, String],
-      default: null,
-    },
-    isEmailVerified: {
-      type: Boolean,
-      default: false,
-    },
-    isEmailOTP: {
-      type: Boolean,
-      default: false,
-    },
-    isVerifying: {
-      type: Boolean,
-      default: false,
-    },
-    isChangeEmail: {
-      type: Boolean,
-      default: false,
-    },
-    isSending: {
-      type: Boolean,
-      default: false,
-    },
-    rules: {
-      type: Object,
-      default: () => ({}),
-    },
+  input: {
+    type: Object,
+    required: true,
   },
-  emits: [
-    "save-desktop-1",
-    "save-desktop-2",
-    "save-data",
-    "verify-email",
-    "open-why",
-    "handle-input-otp",
-    "save-email-otp",
-    "toggle-change-email",
-    "save-email",
-    "date-input",
-    "input-nationality",
-  ],
-};
+  resource: {
+    type: Object,
+    required: true,
+  },
+  age: {
+    type: [Number, String],
+    default: null,
+  },
+  isEmailVerified: {
+    type: Boolean,
+    default: false,
+  },
+  isEmailOTP: {
+    type: Boolean,
+    default: false,
+  },
+  isVerifying: {
+    type: Boolean,
+    default: false,
+  },
+  isChangeEmail: {
+    type: Boolean,
+    default: false,
+  },
+  isSending: {
+    type: Boolean,
+    default: false,
+  },
+  rules: {
+    type: Object,
+    default: () => ({}),
+  },
+});
+
+defineEmits([
+  "save-desktop-1",
+  "save-desktop-2",
+  "save-data",
+  "verify-email",
+  "open-why",
+  "handle-input-otp",
+  "save-email-otp",
+  "toggle-change-email",
+  "save-email",
+  "date-input",
+  "input-nationality",
+]);
 </script>
 
 <style scoped>

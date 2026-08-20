@@ -21,24 +21,13 @@
   </v-app>
 </template>
 
-<script>
-import { RouterView } from "vue-router";
+<script setup>
+import { computed } from "vue";
+import { useRoute, RouterView } from "vue-router";
 import Header from "./components/Header.vue";
 
-export default {
-  // eslint-disable-next-line vue/no-reserved-component-names
-  components: { RouterView, Header },
-  data() {
-    return {
-      currentRoute: this.$route.path,
-    };
-  },
-  watch: {
-    $route: function () {
-      this.currentRoute = this.$route.path;
-    },
-  },
-};
+const route = useRoute();
+const currentRoute = computed(() => route.path);
 </script>
 
 <style>

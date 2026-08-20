@@ -13,64 +13,46 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from "vue";
 import Banner from "@/components/Banner.vue";
 import TrendingApps from "@/components/TrendingApps.vue";
 import Partners from "@/components/Partners.vue";
 import Footer from "@/components/Footer.vue";
 import axios from "@/util/axios";
 
-export default {
-  name: "Landing",
-  components: { Banner, TrendingApps, Partners, Footer },
-  data() {
-    return {
-      drawer: false,
-      headerData: {},
-      footerData: {},
-      appData: [],
-      isLoading: false,
-    };
-  },
-  mounted() {
-    this.getHeaderData();
-    this.getFooterData();
-  },
-  methods: {
-    getHeaderData() {
-      this.isLoading = true;
-      axios
-        .get(`/header`)
-        .then((response) => {
-          const data = response.data.data;
-          this.headerData = data;
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-          console.log(error);
-        })
-        .finally(() => {
-          this.isLoading = false;
-        });
-    },
-    getFooterData() {
-      this.isLoading = true;
-      axios
-        .get(`/footer`)
-        .then((response) => {
-          const data = response.data.data;
-          this.footerData = data[0];
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-          console.log(error);
-        })
-        .finally(() => {
-          this.isLoading = false;
-        });
-    },
-  },
-};
+const headerData = ref({});
+const footerData = ref({});
+const isLoading = ref(false);
+
+async function getHeaderData() {
+  isLoading.value = true;
+  try {
+    const response = await axios.get(`/header`);
+    headerData.value = response.data.data;
+  } catch (error) {
+    console.log(error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+async function getFooterData() {
+  isLoading.value = true;
+  try {
+    const response = await axios.get(`/footer`);
+    footerData.value = response.data.data?.[0] || {};
+  } catch (error) {
+    console.log(error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+onMounted(() => {
+  getHeaderData();
+  getFooterData();
+});
 </script>
 
 <style>

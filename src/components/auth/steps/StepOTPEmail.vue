@@ -131,181 +131,177 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
 import axios from "@/util/axios";
-import app from "@/util/eventBus";
+import { emitter } from "@/util/eventBus";
 import VOtpInput from "vue3-otp-input";
 
-export default {
-  name: "StepOTPEmail",
-  data() {
-    return {
-      valid: false,
-      email: "",
-      otp: null,
-      rules: {
-        emailRules: [
-          (value) => {
-            if (value) return true;
-            return "E-mail is requred.";
-          },
-          (value) => {
-            if (/.+@.+\..+/.test(value)) return true;
-            return "E-mail must be valid.";
-          },
-        ],
-      },
-      screenWidth: window.innerWidth,
-      isError: false,
-      isSuccess: false,
-      errorMessage: "",
-      successMessage: "",
-      countdown: 0,
-      timer: null,
-      otpDigits: ["", "", "", ""],
-      otpFilled: 0,
-    };
-  },
-  computed: {
-    isSmall() {
-      return this.screenWidth < 640;
-    },
-  },
-  created() {
-    window.addEventListener("resize", this.handleResize);
-  },
-  mounted() {
-    this.startCountdown();
-    app.config.globalProperties.$eventBus.$emit(
-      "changeHeaderWelcome",
-      "Sign-up by Email"
-    );
-    this.email = localStorage.getItem("email")
-      ? localStorage.getItem("email")
-      : "";
-  },
-  unmounted() {
-    window.removeEventListener("resize", this.handleResize);
-  },
-  methods: {
-    onInput(index) {
-      if (this.otpDigits[index] && index < 3) {
-        let nextIndex = index + 1;
-        while (nextIndex <= 3 && this.otpDigits[nextIndex]) {
-          nextIndex++;
-        }
-        if (nextIndex <= 3) {
-          this.$refs.otpInput[nextIndex].focus();
-        }
-      } else if (!this.otpDigits[index] && index > 0) {
-        this.$refs.otpInput[index - 1].focus();
-      }
+const emit = defineEmits(["nextStep", "backStep"]);
+const router = useRouter();
 
-      this.otpFilled = this.otpDigits.filter((digit) => digit !== "").length;
+const valid = ref(false);
+const email = ref("");
+const otp = ref(null);
+const isSending = ref(false);
 
-      if (this.otpFilled === 4) {
-        this.otp = this.otpDigits.join("");
-      }
+const rules = {
+  emailRules: [
+    (value) => {
+      if (value) return true;
+      return "E-mail is requred.";
     },
-    startCountdown() {
-      if (this.timer) {
-        clearInterval(this.timer);
-      }
-
-      this.countdown = 120;
-
-      this.timer = setInterval(() => {
-        if (this.countdown > 0) {
-          this.countdown--;
-        } else {
-          clearInterval(this.timer);
-        }
-      }, 1000);
+    (value) => {
+      if (/.+@.+\..+/.test(value)) return true;
+      return "E-mail must be valid.";
     },
-    nextStep() {
-      this.$emit("nextStep");
-    },
-    backStep() {
-      app.config.globalProperties.$eventBus.$emit(
-        "changeHeaderWelcome",
-        "Sign-Up / Sign-in"
-      );
-      this.$router.push("/sign-in");
-    },
-    saveData() {
-      if (this.valid) {
-        this.isSending = true;
-        const payload = {
-          email_id: this.email,
-          otp: this.otp,
-        };
-        axios
-          .post(`/send-otp`, payload)
-          .then((response) => {
-            const data = response.data;
-            console.log(data);
-            this.isSuccess = true;
-            this.successMessage = "Success verify OTP";
-            this.email = "";
-            this.otp = null;
-
-            this.nextStep();
-            this.startCountdown();
-          })
-          .catch((error) => {
-            console.log(error);
-            const message = error.response.data.email_id
-              ? error.response.data.email_id[0]
-              : error.response.data.message
-              ? error.response.data.message
-              : "Something Wrong!!!";
-            this.errorMessage = message;
-            this.isError = true;
-            this.email = "";
-            this.otp = null;
-
-            this.startCountdown();
-          })
-          .finally(() => {
-            this.isSending = false;
-          });
-      }
-    },
-    handleResize() {
-      this.screenWidth = window.innerWidth;
-    },
-    resendOTP() {
-      if (this.countdown == 0) {
-        this.isSending = true;
-        const payload = {
-          email_id: localStorage.getItem("email"),
-        };
-        axios
-          .post(`/send-otp`, payload)
-          .then((response) => {
-            const data = response.data;
-            console.log(data);
-            this.isSuccess = true;
-            this.successMessage = "Success send OTP";
-            this.startCountdown();
-          })
-          .catch((error) => {
-            console.log(error);
-            const message = error.response.data.email_id
-              ? error.response.data.email_id[0]
-              : error.response.data.message
-              ? error.response.data.message
-              : "Something Wrong!!!";
-            this.errorMessage = message;
-            this.isError = true;
-          })
-          .finally(() => {
-            this.isSending = false;
-          });
-      }
-    },
-  },
+  ],
 };
+
+const screenWidth = ref(window.innerWidth);
+const isError = ref(false);
+const isSuccess = ref(false);
+const errorMessage = ref("");
+const successMessage = ref("");
+const countdown = ref(0);
+const timer = ref(null);
+const otpDigits = ref(["", "", "", ""]);
+const otpFilled = ref(0);
+const otpInput = ref([]);
+
+const isSmall = computed(() => screenWidth.value < 640);
+
+function handleResize() {
+  screenWidth.value = window.innerWidth;
+}
+
+function startCountdown() {
+  if (timer.value) {
+    clearInterval(timer.value);
+  }
+
+  countdown.value = 120;
+
+  timer.value = setInterval(() => {
+    if (countdown.value > 0) {
+      countdown.value--;
+    } else {
+      clearInterval(timer.value);
+    }
+  }, 1000);
+}
+
+onMounted(() => {
+  startCountdown();
+  emitter.emit("changeHeaderWelcome", "Sign-up by Email");
+  email.value = localStorage.getItem("email") || "";
+  window.addEventListener("resize", handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
+  if (timer.value) {
+    clearInterval(timer.value);
+  }
+});
+
+function onInput(index) {
+  if (otpDigits.value[index] && index < 3) {
+    let nextIndex = index + 1;
+    while (nextIndex <= 3 && otpDigits.value[nextIndex]) {
+      nextIndex++;
+    }
+    if (nextIndex <= 3 && otpInput.value[nextIndex]) {
+      otpInput.value[nextIndex].focus();
+    }
+  } else if (!otpDigits.value[index] && index > 0) {
+    if (otpInput.value[index - 1]) {
+      otpInput.value[index - 1].focus();
+    }
+  }
+
+  otpFilled.value = otpDigits.value.filter((digit) => digit !== "").length;
+
+  if (otpFilled.value === 4) {
+    otp.value = otpDigits.value.join("");
+  }
+}
+
+function nextStep() {
+  emit("nextStep");
+}
+
+function backStep() {
+  emitter.emit("changeHeaderWelcome", "Sign-Up / Sign-in");
+  emit("backStep");
+  router.push("/sign-in");
+}
+
+async function saveData() {
+  if (valid.value) {
+    isSending.value = true;
+    const payload = {
+      email_id: email.value,
+      otp: otp.value,
+    };
+    try {
+      const response = await axios.post(`/send-otp`, payload);
+      const data = response.data;
+      console.log(data);
+      isSuccess.value = true;
+      successMessage.value = "Success verify OTP";
+      email.value = "";
+      otp.value = null;
+
+      nextStep();
+      startCountdown();
+    } catch (error) {
+      console.log(error);
+      const message = error.response?.data?.email_id
+        ? error.response.data.email_id[0]
+        : error.response?.data?.message
+        ? error.response.data.message
+        : "Something Wrong!!!";
+      errorMessage.value = message;
+      isError.value = true;
+      email.value = "";
+      otp.value = null;
+
+      startCountdown();
+    } finally {
+      isSending.value = false;
+    }
+  }
+}
+
+async function resendOTP() {
+  if (countdown.value === 0) {
+    isSending.value = true;
+    const payload = {
+      email_id: localStorage.getItem("email"),
+    };
+    try {
+      const response = await axios.post(`/send-otp`, payload);
+      const data = response.data;
+      console.log(data);
+      isSuccess.value = true;
+      successMessage.value = "Success send OTP";
+      startCountdown();
+    } catch (error) {
+      console.log(error);
+      const message = error.response?.data?.email_id
+        ? error.response.data.email_id[0]
+        : error.response?.data?.message
+        ? error.response.data.message
+        : "Something Wrong!!!";
+      errorMessage.value = message;
+      isError.value = true;
+    } finally {
+      isSending.value = false;
+    }
+  }
+}
 </script>
 
 <style scoped>

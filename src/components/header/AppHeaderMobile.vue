@@ -276,53 +276,51 @@
   </v-navigation-drawer>
 </template>
 
-<script>
-export default {
-  name: "AppHeaderMobile",
-  props: {
-    modelValue: {
-      type: Boolean,
-      default: false,
-    },
-    userName: {
-      type: String,
-      default: null,
-    },
-    userImage: {
-      type: String,
-      default: null,
-    },
-    userDated: {
-      type: String,
-      default: null,
-    },
-    headerData: {
-      type: Object,
-      default: () => ({}),
-    },
-    footerData: {
-      type: Object,
-      default: null,
-    },
-    contactData: {
-      type: Object,
-      default: null,
-    },
-    currentTime: {
-      type: String,
-      default: "",
-    },
-    isWelcome: {
-      type: Boolean,
-      default: false,
-    },
-    isSmall: {
-      type: Boolean,
-      default: false,
-    },
+<script setup>
+defineProps({
+  modelValue: {
+    type: Boolean,
+    default: false,
   },
-  emits: ["update:modelValue", "logout"],
-};
+  userName: {
+    type: String,
+    default: null,
+  },
+  userImage: {
+    type: String,
+    default: null,
+  },
+  userDated: {
+    type: String,
+    default: null,
+  },
+  headerData: {
+    type: Object,
+    default: () => ({}),
+  },
+  footerData: {
+    type: Object,
+    default: null,
+  },
+  contactData: {
+    type: Object,
+    default: null,
+  },
+  currentTime: {
+    type: String,
+    default: "",
+  },
+  isWelcome: {
+    type: Boolean,
+    default: false,
+  },
+  isSmall: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+defineEmits(["update:modelValue", "logout"]);
 </script>
 
 <style scoped>

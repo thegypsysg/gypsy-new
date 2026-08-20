@@ -187,597 +187,448 @@
   </v-dialog>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useLocationStore } from "@/stores/location.store";
 import { useAuthStore } from "@/stores/auth.store";
 import AppHeaderMobile from "@/components/header/AppHeaderMobile.vue";
 import AppHeaderUser from "@/components/header/AppHeaderUser.vue";
 import AppHeaderLocation from "@/components/header/AppHeaderLocation.vue";
 import AppHeaderNav from "@/components/header/AppHeaderNav.vue";
-import app from "@/util/eventBus";
+import { emitter } from "@/util/eventBus";
 import axios from "@/util/axios";
 import moment from "moment-timezone";
 
-export default {
-  // eslint-disable-next-line vue/multi-word-component-names, vue/no-reserved-component-names
-  name: "Header",
-  components: {
-    AppHeaderMobile,
-    AppHeaderUser,
-    AppHeaderLocation,
-    AppHeaderNav,
+const props = defineProps({
+  isWelcome: {
+    type: Boolean,
+    default: false,
   },
-  props: ["isWelcome"],
-  setup() {
-    const locationStore = useLocationStore();
-    const authStore = useAuthStore();
-    return { locationStore, authStore };
-  },
-  data() {
-    return {
-      _timeInterval: null,
-      isLoading: false,
-      headerData: {},
-      userImage: null,
-      userName: null,
-      userDated: null,
-      titleWelcome: "Sign-Up / Sign-in",
-      drawer: false,
-      userLocation: false,
-      isZero: false,
-      cityName: null,
-      categoryName: null,
-      itemSelected: "Singapore",
-      items: [
-        { title: "Singapore", path: "#" },
-        { title: "Mumbai", path: "#" },
-        { title: "Goa", path: "#" },
-        { title: "Kuala Lumpur", path: "#" },
-      ],
+});
 
-      appData: null,
-      contactData: null,
-      trendingCard: [],
-      trendingBtn: [],
-      selectedType: 0,
-      activeIndex: 1,
-      screenWidth: window.innerWidth,
-      currentTime: "",
-      footerData: null,
-    };
-  },
-  computed: {
-    tokenProvider() {
-      // Mendapatkan URL dari browser
-      const url = new URL(window.location.href);
+const route = useRoute();
+const router = useRouter();
+const locationStore = useLocationStore();
+const authStore = useAuthStore();
 
-      // Mendapatkan nilai token dari parameter query 'token'
-      const tokenParam = url.searchParams.get("token");
-      if (tokenParam) {
-        localStorage.setItem("token", tokenParam);
-      }
+let timeInterval = null;
+const isLoading = ref(false);
+const headerData = ref({});
+const userImage = ref(null);
+const userName = ref(null);
+const userDated = ref(null);
+const titleWelcome = ref("Sign-Up / Sign-in");
+const drawer = ref(false);
+const userLocation = ref(false);
+const isZero = ref(false);
+const cityName = ref(null);
+const categoryName = ref(null);
+const itemSelected = ref("Singapore");
+const items = ref([
+  { title: "Singapore", path: "#" },
+  { title: "Mumbai", path: "#" },
+  { title: "Goa", path: "#" },
+  { title: "Kuala Lumpur", path: "#" },
+]);
 
-      // Mengupdate data 'token' dalam komponen dengan nilai yang ditemukan
-      return tokenParam;
-    },
-    isHome() {
-      return this.$route.path == "/";
-    },
-    isPrivacy() {
-      return this.$route.path == "/privacy-policy";
-    },
-    isMyProfile() {
-      return this.$route.path == "/my-profile";
-    },
-    appId() {
-      // Mendapatkan URL dari browser
-      //return this.$route.query.app_id || "";
-      const url = new URL(window.location.href);
+const appData = ref(null);
+const contactData = ref(null);
+const trendingCard = ref([]);
+const trendingBtn = ref([]);
+const selectedType = ref(0);
+const activeIndex = ref(1);
+const screenWidth = ref(window.innerWidth);
+const currentTime = ref("");
+const footerData = ref(null);
 
-      // Mendapatkan nilai token dari parameter query 'token'
-      const appId = url.searchParams.get("app_id");
-      return appId;
-    },
-    name() {
-      // Mendapatkan URL dari browser
-      //return this.$route.query.app_id || "";
-      const url = new URL(window.location.href);
+const tokenProvider = computed(() => {
+  const url = new URL(window.location.href);
+  const tokenParam = url.searchParams.get("token");
+  if (tokenParam) {
+    localStorage.setItem("token", tokenParam);
+  }
+  return tokenParam;
+});
 
-      // Mendapatkan nilai token dari parameter query 'token'
-      const name = url.searchParams.get("name");
-      return name;
-    },
-    isTerms() {
-      return this.$route.path == "/our-terms";
-    },
-    isSmall() {
-      return this.screenWidth < 640;
-    },
-    socialProvider() {
-      return this.$route.query.social && this.$route.query.token
-        ? this.capitalizeFirstLetter(this.$route.query.social)
-        : "";
-    },
-    activeTag() {
-      return this.locationStore.activeTag;
-    },
-    itemSelected() {
-      return this.locationStore.itemSelected;
-    },
-    itemSelectedComplete() {
-      return this.locationStore.itemSelectedComplete;
-    },
-    country() {
-      return this.locationStore.country;
-    },
-    selectedPlace() {
-      return this.locationStore.selectedPlace;
-    },
-    activeCity() {
-      return this.locationStore.activeCity;
-    },
-    selectedTrending() {
-      return this.locationStore.selectedTrending;
-    },
-    activeLocationButton() {
-      return (
-        this.$route.hasOwnProperty("meta") &&
-        this.$route.meta.locationSelection === true
-      );
-    },
-    locationPlaceholder() {
-      return this.activeCity ? this.activeCity?.city_name : this.selectedPlace;
-    },
-    token() {
-      return localStorage.getItem("token");
-    },
-  },
-  watch: {
-    selectedTrending(newVal) {
-      setTimeout(() => {
-        this.locationStore.getCountryMall();
-      }, 400);
-    },
-  },
-  created() {
-    window.addEventListener("resize", this.handleResize);
-    this._timeInterval = setInterval(this.updateTime, 1000);
-  },
-  beforeUnmount() {
-    if (this._timeInterval) {
-      clearInterval(this._timeInterval);
-    }
-    window.removeEventListener("resize", this.handleResize);
-  },
-  mounted() {
-    if (this.appId == "5" && this.tokenProvider && !this.name) {
-      console.log(this.appId);
-      const externalURL = `${import.meta.env.VITE_SYRINGE_URL}?token=${this.tokenProvider}`;
-      window.location.href = externalURL;
-    } else if (this.appId == "2" && this.tokenProvider && !this.name) {
-      console.log(this.appId);
-      const externalURL = `${import.meta.env.VITE_MALLE_URL}?token=${this.tokenProvider}`;
-      window.location.href = externalURL;
-    }
-    this.getApplicantsData();
-    this.getAppData();
-    this.getAppContactData();
-    this.getHeaderData();
-    this.getCountry();
-    this.getFooterData();
-    this.getGroups();
-    setTimeout(() => {
-      this.locationStore.getCountryMall();
-    }, 800);
-    const token = localStorage.getItem("token");
-    if (this.tokenProvider != null) {
-      this.getHeaderUserData();
-    } else if (token) {
-      this.getHeaderUserData();
-    }
-    app.config.globalProperties.$eventBus.$on(
-      "changeHeaderImage",
-      this.changeHeaderImage
-    );
-    app.config.globalProperties.$eventBus.$on(
-      "getHeaderUserData",
-      this.getHeaderUserData
-    );
-    app.config.globalProperties.$eventBus.$on(
-      "changeHeaderWelcome",
-      this.changeHeaderWelcome
-    );
-    app.config.globalProperties.$eventBus.$on(
-      "changeHeaderWelcome2",
-      this.changeHeaderWelcome2
-    );
-    app.config.globalProperties.$eventBus.$on(
-      "changeHeaderWelcome3",
-      this.changeHeaderWelcome3
-    );
-    // this.interval = setInterval(this.setCurrentTime, 1000);
-  },
-  beforeUnmount() {
-    // clearInterval(this.interval);
-    app.config.globalProperties.$eventBus.$off(
-      "changeHeaderImage",
-      this.changeHeaderImage
-    );
-    app.config.globalProperties.$eventBus.$off(
-      "getHeaderUserData",
-      this.getHeaderUserData
-    );
-    app.config.globalProperties.$eventBus.$off(
-      "changeHeaderWelcome",
-      this.changeHeaderWelcome
-    );
-    app.config.globalProperties.$eventBus.$off(
-      "changeHeaderWelcome2",
-      this.changeHeaderWelcome2
-    );
-    app.config.globalProperties.$eventBus.$off(
-      "changeHeaderWelcome3",
-      this.changeHeaderWelcome3
-    );
-  },
-  unmounted() {
-    window.removeEventListener("resize", this.handleResize);
-  },
-  methods: {
-    changeHeaderImage(image) {
-      console.log(image);
-      this.userImage = this.$fileURL + image;
-    },
-    capitalizeFirstLetter(string) {
-      return string.charAt(0).toUpperCase() + string.slice(1);
-    },
-    getFooterData() {
-      this.isLoading = true;
-      axios
-        .get(`/footer`)
-        .then((response) => {
-          const data = response.data.data;
-          // console.log(data[0]);
-          this.footerData = data[0];
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-          console.log(error);
-        })
-        .finally(() => {
-          this.isLoading = false;
-        });
-    },
-    setActiveTag(tag) {
-      this.locationStore.setActiveTag(tag);
-    },
-    setItemSelected(item) {
-      this.locationStore.setItemSelected(item);
-    },
-    setItemSelectedComplete(item) {
-      this.locationStore.setItemSelectedComplete(item);
-    },
-    setSelectedTrending(item) {
-      this.locationStore.setSelectedTrending(item);
-    },
-    setActiveCity(item) {
-      this.locationStore.setActiveCity(item);
-    },
-    setSelectedPlace(item) {
-      this.locationStore.setSelectedPlace(item);
-    },
-    changeItemSelected(city, country) {
-      if (city.property_count == 0) {
-        this.isZero = true;
-        this.cityName = city.city_name;
-        this.categoryName = this.selectedTrending?.title;
-        return false;
-      }
-      this.setActiveCity(city);
+const isHome = computed(() => route.path === "/");
+const isPrivacy = computed(() => route.path === "/privacy-policy");
+const isMyProfile = computed(() => route.path === "/my-profile");
+const appId = computed(() => {
+  const url = new URL(window.location.href);
+  return url.searchParams.get("app_id");
+});
+const nameParam = computed(() => {
+  const url = new URL(window.location.href);
+  return url.searchParams.get("name");
+});
+const isTerms = computed(() => route.path === "/our-terms");
+const isSmall = computed(() => screenWidth.value < 640);
+const socialProvider = computed(() => {
+  return route.query.social && route.query.token
+    ? capitalizeFirstLetter(route.query.social)
+    : "";
+});
+const activeTag = computed(() => locationStore.activeTag);
+const itemSelectedComplete = computed(() => locationStore.itemSelectedComplete);
+const country = computed(() => locationStore.country);
+const selectedPlace = computed(() => locationStore.selectedPlace);
+const activeCity = computed(() => locationStore.activeCity);
+const selectedTrending = computed(() => locationStore.selectedTrending);
+const activeLocationButton = computed(
+  () => route.meta?.locationSelection === true
+);
+const locationPlaceholder = computed(() =>
+  activeCity.value ? activeCity.value?.city_name : selectedPlace.value
+);
+const token = computed(() => localStorage.getItem("token"));
 
-      this.setItemSelectedComplete(country);
-      this.setSelectedPlace(city.country_name);
-    },
-    updateTime() {
-      // Ambil zona waktu Singapore
-      const singaporeTime = moment().tz("Asia/Singapore");
-      // Format waktu dalam hh:mm:ss
-      this.currentTime = singaporeTime.format("HH:mm:ss");
-    },
-    goToSignIn() {
-      this.authStore.clearAuth();
-      this.$router.push("/sign-in");
-    },
-    logout() {
-      const token = localStorage.getItem("token");
-      axios
-        .get(`/gypsy-logout`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => {
-          const data = response.data.data;
-          console.log(data);
-          this.authStore.clearAuth();
-          window.location.href = "/";
-        })
-        .catch((error) => {
-          console.log(error);
-          this.authStore.clearAuth();
-          window.location.href = "/";
-        });
-    },
-    changeHeaderWelcome(title) {
-      this.titleWelcome = title;
-    },
-    changeHeaderWelcome2(title) {
-      this.userName = localStorage.getItem("name");
-      this.userDated = localStorage.getItem("last_login");
-      this.userImage = this.$fileURL + localStorage.getItem("user_image");
-      console.log(this.userName);
-      console.log(this.userDated);
-      console.log(this.userImage);
-      this.getHeaderUserData();
-      this.titleWelcome = title;
-    },
-    changeHeaderWelcome3(title) {
-      this.getHeaderUserData2();
-      this.titleWelcome = title;
-    },
-    selectTag(tag) {
-      this.locationStore.setActiveTag(tag);
-      app.config.globalProperties.$eventBus.$emit("scrollToCardSection");
-    },
-    getHeaderUserData() {
-      this.isLoading = true;
-      console.log(this.tokenProvider);
-      const token = localStorage.getItem("token");
-      axios
-        .get(`/gypsy-user`, {
-          headers: {
-            Authorization: `Bearer ${
-              this.tokenProvider ? this.tokenProvider : token
-            }`,
-          },
-        })
-        .then((response) => {
-          const data = response.data.data;
-          console.log(data);
+watch(selectedTrending, () => {
+  setTimeout(() => {
+    locationStore.getCountryMall();
+  }, 400);
+});
 
-          this.userName = data.name;
-          this.userDated = data.last_login;
-          this.userImage =
-            data.image != null ? this.$fileURL + data.image : null;
-          // this.userImage = null;
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-          console.log(error);
-        })
-        .finally(() => {
-          this.isLoading = false;
-        });
-    },
-    getHeaderUserData2() {
-      this.isLoading = true;
-      const token = localStorage.getItem("token");
-      axios
-        .get(`/gypsy-user`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => {
-          const data = response.data.data;
-          console.log(data);
+function handleResize() {
+  screenWidth.value = window.innerWidth;
+}
 
-          this.userName = data.name;
-          this.userDated = data.last_login;
-          this.userImage =
-            data.image != null ? this.$fileURL + data.image : null;
-          // this.userImage = null;
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-          console.log(error);
-        })
-        .finally(() => {
-          this.isLoading = false;
-        });
-    },
-    getAppData() {
-      // this.isLoading = true;
-      axios
-        .get(`/app`)
-        .then((response) => {
-          const data = response.data.data;
-          // console.log(data);
-          this.trendingCard = data.map((item) => {
-            return {
-              img: item.app_main_image || "",
-              title: item.app_name || "",
-              desc: item.app_description || "",
-              tag: item.app_group_name || "",
-              link: item.app_link || "",
-              views: item.app_views || "0",
+function updateTime() {
+  const singaporeTime = moment().tz("Asia/Singapore");
+  currentTime.value = singaporeTime.format("HH:mm:ss");
+}
 
-              id: item.app_id || 1,
-              group_id: item.app_group_id || 1,
-              logo: item.app_logo || null,
-              image: item.app_main_image || null,
-              name: item.app_name || "",
-              description: item.app_description || "",
-              details: item.app_detail || "",
-              isActive:
-                item.active == "N" ? false : item.active == "Y" ? true : null,
-              isFav:
-                item.favorite == "N"
-                  ? false
-                  : item.favorite == "Y"
-                  ? true
-                  : null,
-              group: item.app_group_name || "",
-              user: item.user_id || 1,
-              created: item.dated || "",
-              likes: item.app_likes || "",
-              shares: item.app_shares || "",
-            };
-          });
-          // console.log(this.trendingCard);
+function changeHeaderImage(image) {
+  userImage.value = (window.$fileURL || "/file/") + image;
+}
 
-          // app.config.globalProperties.$eventBus.$emit(
-          //   'update-image',
-          //   this.items
-          // );
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-          console.log(error);
-        });
-      // .finally(() => {
-      //   this.isLoading = false;
-      // });
-    },
-    getApplicantsData() {
-      // this.isLoading = true;
-      const token = localStorage.getItem("token");
-      axios
-        .get(`/applicants`, {
-          headers: {
-            Authorization: `Bearer ${
-              this.tokenProvider ? this.tokenProvider : token
-            }`,
-          },
-        })
-        .then((response) => {
-          const data = response.data.data;
-          // console.log(data);
-          this.appData = data;
-          // console.log(this.trendingCard);
+function capitalizeFirstLetter(string) {
+  return string ? string.charAt(0).toUpperCase() + string.slice(1) : "";
+}
 
-          // app.config.globalProperties.$eventBus.$emit(
-          //   'update-image',
-          //   this.items
-          // );
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-          console.log(error);
-        });
-      // .finally(() => {
-      //   this.isLoading = false;
-      // });
-    },
-    getAppContactData() {
-      // this.isLoading = true;
-      const token = localStorage.getItem("token");
-      axios
-        .get(`/app/contact/${this.$appId}`, {
-          headers: {
-            Authorization: `Bearer ${
-              this.tokenProvider ? this.tokenProvider : token
-            }`,
-          },
-        })
-        .then((response) => {
-          const data = response.data.data;
-          // console.log(data);
-          this.contactData = data;
-          // console.log(this.trendingCard);
+function getFooterData() {
+  isLoading.value = true;
+  axios
+    .get(`/footer`)
+    .then((response) => {
+      const data = response.data.data;
+      footerData.value = data[0];
+    })
+    .catch((error) => {
+      console.log(error);
+    })
+    .finally(() => {
+      isLoading.value = false;
+    });
+}
 
-          // app.config.globalProperties.$eventBus.$emit(
-          //   'update-image',
-          //   this.items
-          // );
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-          console.log(error);
-        });
-      // .finally(() => {
-      //   this.isLoading = false;
-      // });
-    },
-    getGroups() {
-      this.isLoading = true;
-      axios
-        .get(`/groups`)
-        .then((response) => {
-          const data = response.data.data;
-          this.isLoading = false;
-          // console.log(data);
-          this.trendingBtn = data.map((group) => {
-            return {
-              id: group.app_group_id,
-              title: group.app_group_name,
-              tag: group.app_group_name,
-            };
-          });
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-          console.log(error);
-        })
-        .finally(() => {
-          this.isLoading = false;
-        });
-    },
-    getHeaderData() {
-      // this.isLoading = true;
-      axios
-        .get(`/header`)
-        .then((response) => {
-          const data = response.data.data;
-          // console.log(data);
-          this.headerData = data;
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-          console.log(error);
-        });
-      // .finally(() => {
-      //   this.isLoading = false;
-      // });
-    },
-    getCountry() {
-      axios
-        .get(`/city`)
-        .then((response) => {
-          const data = response.data.data;
-          // console.log(data);
-          this.items = data.map((city) => {
-            return {
-              id: city.city_id,
-              title: city.city_name,
-              path: "#",
-            };
-          });
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-          console.log(error);
-        });
-    },
-    // emitFilterEvent(tag) {
-    //   this.$emit("filter-card", tag);
-    // },
-    // filterCards(tag) {
-    //   this.selectedTag = tag;
-    //   app.config.globalProperties.$eventBus.$emit("filter-card-header", tag);
-    //   // eventBus.emit("filter-card-header", tag);
-    // },
-    handleResize() {
-      this.screenWidth = window.innerWidth;
-    },
-    previousSlide() {
-      this.activeIndex--;
-    },
-    nextSlide() {
-      this.activeIndex++;
-    },
-  },
-};
+function setActiveTag(tag) {
+  locationStore.setActiveTag(tag);
+}
+
+function setItemSelected(item) {
+  locationStore.setItemSelected(item);
+}
+
+function setItemSelectedComplete(item) {
+  locationStore.setItemSelectedComplete(item);
+}
+
+function setSelectedTrending(item) {
+  locationStore.setSelectedTrending(item);
+}
+
+function setActiveCity(item) {
+  locationStore.setActiveCity(item);
+}
+
+function setSelectedPlace(item) {
+  locationStore.setSelectedPlace(item);
+}
+
+function changeItemSelected(city, countryItem) {
+  if (city.property_count == 0) {
+    isZero.value = true;
+    cityName.value = city.city_name;
+    categoryName.value = selectedTrending.value?.title;
+    return false;
+  }
+  setActiveCity(city);
+  setItemSelectedComplete(countryItem);
+  setSelectedPlace(city.country_name);
+}
+
+function goToSignIn() {
+  authStore.clearAuth();
+  router.push("/sign-in");
+}
+
+function logout() {
+  const tokenVal = localStorage.getItem("token");
+  axios
+    .get(`/gypsy-logout`, {
+      headers: {
+        Authorization: `Bearer ${tokenVal}`,
+      },
+    })
+    .then(() => {
+      authStore.clearAuth();
+      window.location.href = "/";
+    })
+    .catch((error) => {
+      console.log(error);
+      authStore.clearAuth();
+      window.location.href = "/";
+    });
+}
+
+function changeHeaderWelcome(title) {
+  titleWelcome.value = title;
+}
+
+function changeHeaderWelcome2(title) {
+  userName.value = localStorage.getItem("name");
+  userDated.value = localStorage.getItem("last_login");
+  const img = localStorage.getItem("user_image");
+  userImage.value = img ? (window.$fileURL || "/file/") + img : null;
+  getHeaderUserData();
+  titleWelcome.value = title;
+}
+
+function changeHeaderWelcome3(title) {
+  getHeaderUserData2();
+  titleWelcome.value = title;
+}
+
+function selectTag(tag) {
+  locationStore.setActiveTag(tag);
+  emitter.emit("scrollToCardSection");
+}
+
+function getHeaderUserData() {
+  isLoading.value = true;
+  const tokenVal = localStorage.getItem("token");
+  axios
+    .get(`/gypsy-user`, {
+      headers: {
+        Authorization: `Bearer ${
+          tokenProvider.value ? tokenProvider.value : tokenVal
+        }`,
+      },
+    })
+    .then((response) => {
+      const data = response.data.data;
+      userName.value = data.name;
+      userDated.value = data.last_login;
+      userImage.value =
+        data.image != null ? (window.$fileURL || "/file/") + data.image : null;
+    })
+    .catch((error) => {
+      console.log(error);
+    })
+    .finally(() => {
+      isLoading.value = false;
+    });
+}
+
+function getHeaderUserData2() {
+  isLoading.value = true;
+  const tokenVal = localStorage.getItem("token");
+  axios
+    .get(`/gypsy-user`, {
+      headers: {
+        Authorization: `Bearer ${tokenVal}`,
+      },
+    })
+    .then((response) => {
+      const data = response.data.data;
+      userName.value = data.name;
+      userDated.value = data.last_login;
+      userImage.value =
+        data.image != null ? (window.$fileURL || "/file/") + data.image : null;
+    })
+    .catch((error) => {
+      console.log(error);
+    })
+    .finally(() => {
+      isLoading.value = false;
+    });
+}
+
+function getAppData() {
+  axios
+    .get(`/app`)
+    .then((response) => {
+      const data = response.data.data;
+      trendingCard.value = data.map((item) => ({
+        img: item.app_main_image || "",
+        title: item.app_name || "",
+        desc: item.app_description || "",
+        tag: item.app_group_name || "",
+        link: item.app_link || "",
+        views: item.app_views || "0",
+        id: item.app_id || 1,
+        group_id: item.app_group_id || 1,
+        logo: item.app_logo || null,
+        image: item.app_main_image || null,
+        name: item.app_name || "",
+        description: item.app_description || "",
+        details: item.app_detail || "",
+        isActive:
+          item.active == "N" ? false : item.active == "Y" ? true : null,
+        isFav:
+          item.favorite == "N" ? false : item.favorite == "Y" ? true : null,
+        group: item.app_group_name || "",
+        user: item.user_id || 1,
+        created: item.dated || "",
+        likes: item.app_likes || "",
+        shares: item.app_shares || "",
+      }));
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
+function getApplicantsData() {
+  const tokenVal = localStorage.getItem("token");
+  axios
+    .get(`/applicants`, {
+      headers: {
+        Authorization: `Bearer ${
+          tokenProvider.value ? tokenProvider.value : tokenVal
+        }`,
+      },
+    })
+    .then((response) => {
+      appData.value = response.data.data;
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
+function getAppContactData() {
+  const tokenVal = localStorage.getItem("token");
+  axios
+    .get(`/app/contact/1`, {
+      headers: {
+        Authorization: `Bearer ${
+          tokenProvider.value ? tokenProvider.value : tokenVal
+        }`,
+      },
+    })
+    .then((response) => {
+      contactData.value = response.data.data;
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
+function getGroups() {
+  isLoading.value = true;
+  axios
+    .get(`/groups`)
+    .then((response) => {
+      const data = response.data.data;
+      trendingBtn.value = data.map((group) => ({
+        id: group.app_group_id,
+        title: group.app_group_name,
+        tag: group.app_group_name,
+      }));
+    })
+    .catch((error) => {
+      console.log(error);
+    })
+    .finally(() => {
+      isLoading.value = false;
+    });
+}
+
+function getHeaderData() {
+  axios
+    .get(`/header`)
+    .then((response) => {
+      headerData.value = response.data.data;
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
+function getCountry() {
+  axios
+    .get(`/city`)
+    .then((response) => {
+      const data = response.data.data;
+      items.value = data.map((city) => ({
+        id: city.city_id,
+        title: city.city_name,
+        path: "#",
+      }));
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
+function previousSlide() {
+  activeIndex.value--;
+}
+
+function nextSlide() {
+  activeIndex.value++;
+}
+
+onMounted(() => {
+  window.addEventListener("resize", handleResize);
+  timeInterval = setInterval(updateTime, 1000);
+
+  if (appId.value === "5" && tokenProvider.value && !nameParam.value) {
+    const externalURL = `${import.meta.env.VITE_SYRINGE_URL}?token=${
+      tokenProvider.value
+    }`;
+    window.location.href = externalURL;
+  } else if (appId.value === "2" && tokenProvider.value && !nameParam.value) {
+    const externalURL = `${import.meta.env.VITE_MALLE_URL}?token=${
+      tokenProvider.value
+    }`;
+    window.location.href = externalURL;
+  }
+
+  getApplicantsData();
+  getAppData();
+  getAppContactData();
+  getHeaderData();
+  getCountry();
+  getFooterData();
+  getGroups();
+  setTimeout(() => {
+    locationStore.getCountryMall();
+  }, 800);
+
+  const tokenVal = localStorage.getItem("token");
+  if (tokenProvider.value != null || tokenVal) {
+    getHeaderUserData();
+  }
+
+  emitter.on("changeHeaderImage", changeHeaderImage);
+  emitter.on("getHeaderUserData", getHeaderUserData);
+  emitter.on("changeHeaderWelcome", changeHeaderWelcome);
+  emitter.on("changeHeaderWelcome2", changeHeaderWelcome2);
+  emitter.on("changeHeaderWelcome3", changeHeaderWelcome3);
+});
+
+onBeforeUnmount(() => {
+  if (timeInterval) clearInterval(timeInterval);
+  window.removeEventListener("resize", handleResize);
+  emitter.off("changeHeaderImage", changeHeaderImage);
+  emitter.off("getHeaderUserData", getHeaderUserData);
+  emitter.off("changeHeaderWelcome", changeHeaderWelcome);
+  emitter.off("changeHeaderWelcome2", changeHeaderWelcome2);
+  emitter.off("changeHeaderWelcome3", changeHeaderWelcome3);
+});
 </script>
 
 <style scoped>

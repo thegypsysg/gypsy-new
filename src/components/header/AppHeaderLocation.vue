@@ -81,35 +81,33 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "AppHeaderLocation",
-  props: {
-    modelValue: {
-      type: Boolean,
-      default: false,
-    },
-    locationPlaceholder: {
-      type: String,
-      default: "",
-    },
-    itemSelectedComplete: {
-      type: Object,
-      default: null,
-    },
-    country: {
-      type: Array,
-      default: () => [],
-    },
-    activeCity: {
-      type: Object,
-      default: null,
-    },
-    isDesktop: {
-      type: Boolean,
-      default: false,
-    },
+<script setup>
+defineProps({
+  modelValue: {
+    type: Boolean,
+    default: false,
   },
-  emits: ["update:modelValue", "change-item-selected"],
-};
+  locationPlaceholder: {
+    type: String,
+    default: "",
+  },
+  itemSelectedComplete: {
+    type: Object,
+    default: null,
+  },
+  country: {
+    type: Array,
+    default: () => [],
+  },
+  activeCity: {
+    type: Object,
+    default: null,
+  },
+  isDesktop: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+defineEmits(["update:modelValue", "change-item-selected"]);
 </script>

@@ -315,343 +315,287 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useRoute } from "vue-router";
 import axios from "@/util/axios";
-import app from "@/util/eventBus";
+import { emitter } from "@/util/eventBus";
 import MazPhoneNumberInput from "maz-ui/components/MazPhoneNumberInput";
 import MazSelect from "maz-ui/components/MazSelect";
 import ImageCropperDialog from "@/components/ImageCropperDialog.vue";
 import { countryOptions } from "@/constants/countries";
 
-export default {
-  name: "StepPersonalSocials",
-  components: {
-    MazPhoneNumberInput,
-    MazSelect,
-    ImageCropperDialog,
-  },
-  data() {
-    return {
-      isName: true,
-      isGender: true,
-      isMobile: true,
-      valid: false,
-      image: null,
-      imageSend: null,
-      image_path: "",
-      name: "",
-      email: "",
-      country: "SG",
-      gender: "",
-      code: "",
-      mobile: null,
-      phoneEvent: null,
-      screenWidth: window.innerWidth,
-      isError: false,
-      isErrorPhone: false,
-      isSuccess: false,
-      errorMessage: "",
-      errorMessagePhone: "",
-      successMessage: "",
-      emailErrorPhone: "",
-      resource: {
-        code: [],
-      },
-      options: countryOptions,
+const emit = defineEmits(["nextStep", "backStep"]);
+const route = useRoute();
+
+const isName = ref(true);
+const isGender = ref(true);
+const isMobile = ref(true);
+const valid = ref(false);
+const isSending = ref(false);
+
+const image = ref(null);
+const imageSend = ref(null);
+const image_path = ref("");
+
+const name = ref("");
+const email = ref("");
+const country = ref("SG");
+const gender = ref("");
+const code = ref("");
+const mobile = ref(null);
+const phoneEvent = ref(null);
+
+const filePickerField = ref(null);
+const cropperDialog = ref(null);
+
+const screenWidth = ref(window.innerWidth);
+const isError = ref(false);
+const isErrorPhone = ref(false);
+const isSuccess = ref(false);
+const errorMessage = ref("");
+const errorMessagePhone = ref("");
+const successMessage = ref("");
+const emailErrorPhone = ref("");
+
+const resource = ref({
+  code: [],
+});
+
+const options = countryOptions;
+
+const isSmall = computed(() => screenWidth.value < 640);
+const emailProvider = computed(() => route.query.email || "");
+const nameProvider = computed(() => route.query.name || "");
+const tokenProvider = computed(() => route.query.token || "");
+const appId = computed(() => route.query.app_id || "");
+
+const avatarProvider = computed(() => {
+  const { social, avatar } = route.query;
+  let avatarURL = "";
+  if (social === "Linkedin-openid") {
+    const url = route.fullPath;
+    const startIndex = url.indexOf("&avatar=") + 8;
+    const endIndex = url.indexOf("&email=");
+    avatarURL = url.substring(startIndex, endIndex);
+  } else {
+    avatarURL = avatar;
+  }
+  return avatarURL;
+});
+
+function capitalizeFirstLetter(str) {
+  return str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+}
+
+const socialProvider = computed(() => {
+  const s = route.query.social;
+  return capitalizeFirstLetter(s) === "Linkedin-openid"
+    ? "LinkedIn"
+    : capitalizeFirstLetter(s);
+});
+
+const socialType = computed(() => {
+  const s = route.query.social?.toLowerCase();
+  const em = route.query.email;
+  return s === "linkedin-openid" && em
+    ? "L"
+    : s === "google" && em
+    ? "G"
+    : s === "facebook" && em
+    ? "F"
+    : s === "tiktok" && em
+    ? "T"
+    : s === "twitter" && em
+    ? "X"
+    : "E";
+});
+
+function handleResize() {
+  screenWidth.value = window.innerWidth;
+}
+
+function deleteImage() {
+  image.value = null;
+  imageSend.value = null;
+  image_path.value = "";
+}
+
+function nextStep() {
+  emit("nextStep");
+}
+
+function backStep() {
+  emit("backStep");
+  emitter.emit("changeHeaderWelcome", "Sign-Up / Sign-in");
+}
+
+function onFileChangeInput(e) {
+  const files = e.target.files || e.dataTransfer.files;
+  if (files && files[0]) {
+    image.value = files[0];
+    image_path.value = URL.createObjectURL(files[0]);
+  }
+}
+
+async function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+}
+
+async function launchCropper(event) {
+  if (!event) return;
+  const file = event.target.files[0];
+  if (!file) return;
+  image.value = await toBase64(file);
+  imageSend.value = file;
+  cropperDialog.value?.initCropper(file.type);
+}
+
+function goBack() {
+  window.history.back();
+}
+
+async function getCountryCode() {
+  try {
+    const response = await axios.get(`/country`);
+    const data = response.data.data;
+    resource.value.code = data.map((c) => ({
+      name: `${c.country_name} (${c.country_code})`,
+      code: c.country_code,
+    }));
+  } catch (error) {
+    console.log(error);
+    const message =
+      error.response?.data?.message === ""
+        ? "Something Wrong!!!"
+        : error.response?.data?.message || "Something Wrong!!!";
+    errorMessage.value = message;
+    isError.value = true;
+  }
+}
+
+async function getUserData() {
+  await getCountryCode();
+}
+
+async function saveData() {
+  if (valid.value) {
+    isName.value = name.value !== "";
+    isGender.value = gender.value !== "";
+    isMobile.value = mobile.value !== null && mobile.value !== "";
+
+    isSending.value = true;
+    const countryName = options
+      .filter((o) => o.value === country.value)
+      .map((op) => op.label)[0];
+    const payload = {
+      email_id: email.value,
+      name: name.value,
+      mobile_number: mobile.value,
+      country_prefix: country.value,
+      gender: gender.value,
+      app_id: appId.value,
+      registered_type: isSmall.value ? "M" : "W",
+      social_type: socialType.value,
+      token: tokenProvider.value,
+      country_name: countryName,
+      image: imageSend.value || avatarProvider.value,
+      country_code: phoneEvent.value?.countryCallingCode
+        ? `+${phoneEvent.value.countryCallingCode}`
+        : "",
+      flag: `https://flagicons.lipis.dev/flags/4x3/${phoneEvent.value?.countryCode?.toLowerCase() || 'sg'}.svg`,
     };
-  },
-  computed: {
-    isSmall() {
-      return this.screenWidth < 640;
-    },
-    emailProvider() {
-      return this.$route.query.email || "";
-    },
-    nameProvider() {
-      return this.$route.query.name || "";
-    },
-    tokenProvider() {
-      return this.$route.query.token || "";
-    },
-    appId() {
-      return this.$route.query.app_id || "";
-    },
-    avatarProvider() {
-      const { social, avatar } = this.$route.query;
 
-      let avatarURL = "";
-      if (social == "Linkedin-openid") {
-        const url = this.$route.fullPath;
-        const startIndex = url.indexOf("&avatar=") + 8;
-        const endIndex = url.indexOf("&email=");
-        avatarURL = url.substring(startIndex, endIndex);
-      } else {
-        avatarURL = avatar;
-      }
-
-      return avatarURL;
-    },
-    socialProvider() {
-      return this.capitalizeFirstLetter(this.$route.query.social) ==
-        "Linkedin-openid"
-        ? "LinkedIn"
-        : this.capitalizeFirstLetter(this.$route.query.social);
-    },
-    socialType() {
-      return this.$route.query.social?.toLowerCase() == "linkedin-openid" &&
-        this.$route.query.email
-        ? "L"
-        : this.$route.query.social?.toLowerCase() == "google" &&
-          this.$route.query.email
-        ? "G"
-        : this.$route.query.social?.toLowerCase() == "facebook" &&
-          this.$route.query.email
-        ? "F"
-        : this.$route.query.social?.toLowerCase() == "tiktok" &&
-          this.$route.query.email
-        ? "T"
-        : this.$route.query.social?.toLowerCase() == "twitter" &&
-          this.$route.query.email
-        ? "X"
-        : "E";
-    },
-  },
-
-  created() {
-    window.addEventListener("resize", this.handleResize);
-  },
-  mounted() {
-    this.email = this.emailProvider;
-    this.password = "";
-    this.name = this.nameProvider;
-    this.image_path = this.avatarProvider;
-    this.getCountryCode();
-    app.config.globalProperties.$eventBus.$emit(
-      "changeHeaderWelcome",
-      this.socialProvider + " Registration"
-    );
-    console.log(this.emailProvider);
-    console.log(this.nameProvider);
-    console.log(this.avatarProvider);
-    console.log(this.appId);
-  },
-  unmounted() {
-    window.removeEventListener("resize", this.handleResize);
-  },
-  methods: {
-    deleteImage() {
-      this.image = null;
-      this.imageSend = null;
-      this.image_path = "";
-    },
-    capitalizeFirstLetter(string) {
-      return string ? string.charAt(0).toUpperCase() + string.slice(1) : "";
-    },
-    nextStep() {
-      this.$emit("nextStep");
-    },
-    backStep() {
-      this.$emit("backStep");
-      app.config.globalProperties.$eventBus.$emit(
-        "changeHeaderWelcome",
-        "Sign-Up / Sign-in"
-      );
-    },
-    onFileChangeInput(e) {
-      var files = e.target.files || e.dataTransfer.files;
-      this.image = files[0];
-      this.image_path = URL.createObjectURL(files[0]);
-    },
-    async launchCropper(event) {
-      if (!event) return;
-      var file = event.target.files[0];
-      this.image = await this.toBase64(file);
-      this.imageSend = file;
-      this.$refs.cropperDialog.initCropper(file.type);
-    },
-
-    async toBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = (error) => reject(error);
+    try {
+      const response = await axios.post(`/gypsy/save-social-user`, payload, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
-    },
-    goBack() {
-      window.history.back();
-    },
-    saveData() {
-      if (this.valid) {
-        if (this.name == "") {
-          this.isName = false;
-        } else {
-          this.isName = true;
-        }
-        if (this.gender == "") {
-          this.isGender = false;
-        } else {
-          this.isGender = true;
-        }
-        if (this.mobile == null) {
-          this.isMobile = false;
-        } else {
-          this.isMobile = true;
-        }
-        this.isSending = true;
-        const countryName = this.options
-          .filter((o) => o.value == this.country)
-          .map((op) => op.label)[0];
-        const payload = {
-          email_id: this.email,
-          name: this.name,
-          mobile_number: this.mobile,
-          country_prefix: this.country,
-          gender: this.gender,
-          app_id: this.appId,
-          registered_type: this.isSmall ? "M" : "W",
-          social_type: this.socialType,
-          token: this.tokenProvider,
-          country_name: countryName,
-          image: this.imageSend != null ? this.imageSend : this.avatarProvider,
-          country_code: this.phoneEvent?.countryCallingCode
-            ? `+${this.phoneEvent.countryCallingCode}`
-            : "",
-          flag: `https://flagicons.lipis.dev/flags/4x3/${this.phoneEvent?.countryCode?.toLowerCase() || 'sg'}.svg`,
-        };
-        axios
-          .post(`/gypsy/save-social-user`, payload, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          })
-          .then((response) => {
-            const data = response.data;
-            console.log(data);
-            this.successMessage = data.message;
-            localStorage.setItem("name", data.data.name);
-            localStorage.setItem("g_id", data.data.gypsy_ref_no);
-            localStorage.setItem("user_image", data.data.image);
-            localStorage.setItem("last_login", data.data.last_login);
-            localStorage.setItem("token", data.data.token);
+      const data = response.data;
+      console.log(data);
+      successMessage.value = data.message;
+      localStorage.setItem("name", data.data.name);
+      localStorage.setItem("g_id", data.data.gypsy_ref_no);
+      localStorage.setItem("user_image", data.data.image);
+      localStorage.setItem("last_login", data.data.last_login);
+      localStorage.setItem("token", data.data.token);
 
-            let typeSocial =
-              this.socialType == "L"
-                ? "LinkedIn"
-                : this.socialType == "G"
-                ? "Google"
-                : this.socialType == "F"
-                ? "Facebook"
-                : this.socialType == "T"
-                ? "Tiktok"
-                : this.socialType == "X"
-                ? "Twitter"
-                : this.socialType == "E"
-                ? "Email"
-                : "";
+      const typeSocial =
+        socialType.value === "L"
+          ? "LinkedIn"
+          : socialType.value === "G"
+          ? "Google"
+          : socialType.value === "F"
+          ? "Facebook"
+          : socialType.value === "T"
+          ? "Tiktok"
+          : socialType.value === "X"
+          ? "Twitter"
+          : socialType.value === "E"
+          ? "Email"
+          : "";
 
-            localStorage.setItem("social", typeSocial);
+      localStorage.setItem("social", typeSocial);
 
-            this.isSuccess = true;
-            this.email = "";
-            this.name = "";
-            this.country = null;
-            this.city = null;
-            this.mobile = "";
-            this.gender = "";
-            app.config.globalProperties.$eventBus.$emit(
-              "changeHeaderWelcome",
-              "Sign Up Completed"
-            );
-            this.nextStep();
-            this.getUserData();
-          })
-          .catch((error) => {
-            console.log(error);
-            if (error.response?.status == 422) {
-              const message =
-                error.response.status == 422 &&
-                error.response.data.email_id &&
-                error.response.data.message
-                  ? `This Mobile Number ${this.mobile} already exist in our database using the email id `
-                  : error.response.status == 422 &&
-                    error.response.data.email_id == null &&
-                    error.response.data.message
-                  ? `This Mobile Number ${this.mobile} already exists in our database`
-                  : "";
-              this.emailErrorPhone = error.response.data.email_id
-                ? error.response.data.email_id
-                : "";
-              this.errorMessagePhone = message;
-              this.isErrorPhone = true;
-            } else {
-              const message = error.response?.data?.email_id
-                ? error.response.data.email_id[0]
-                : error.response?.data?.message === ""
-                ? "Something Wrong!!!"
-                : error.response?.data?.message || "Something Wrong!!!";
-              this.errorMessage = message;
-              this.isError = true;
-            }
-          })
-          .finally(() => {
-            this.isSending = false;
-          });
+      isSuccess.value = true;
+      email.value = "";
+      name.value = "";
+      country.value = null;
+      mobile.value = "";
+      gender.value = "";
+      emitter.emit("changeHeaderWelcome", "Sign Up Completed");
+      nextStep();
+      getUserData();
+    } catch (error) {
+      console.log(error);
+      if (error.response?.status === 422) {
+        const message =
+          error.response.data.email_id && error.response.data.message
+            ? `This Mobile Number ${mobile.value} already exist in our database using the email id `
+            : error.response.data.email_id == null && error.response.data.message
+            ? `This Mobile Number ${mobile.value} already exists in our database`
+            : "";
+        emailErrorPhone.value = error.response.data.email_id || "";
+        errorMessagePhone.value = message;
+        isErrorPhone.value = true;
+      } else {
+        const message = error.response?.data?.email_id
+          ? error.response.data.email_id[0]
+          : error.response?.data?.message === ""
+          ? "Something Wrong!!!"
+          : error.response?.data?.message || "Something Wrong!!!";
+        errorMessage.value = message;
+        isError.value = true;
       }
-    },
-    getUserData() {
-      axios
-        .get(`/country`)
-        .then((response) => {
-          const data = response.data.data;
-          this.resource.code = data.map((country) => {
-            return {
-              name: `${country.country_name} (${country.country_code})`,
-              code: country.country_code,
-            };
-          });
-        })
-        .catch((error) => {
-          console.log(error);
-          const message =
-            error.response?.data?.message === ""
-              ? "Something Wrong!!!"
-              : error.response?.data?.message || "Something Wrong!!!";
-          this.errorMessage = message;
-          this.isError = true;
-        });
-    },
-    getCountryCode() {
-      axios
-        .get(`/country`)
-        .then((response) => {
-          const data = response.data.data;
-          this.resource.code = data.map((country) => {
-            return {
-              name: `${country.country_name} (${country.country_code})`,
-              code: country.country_code,
-            };
-          });
-        })
-        .catch((error) => {
-          console.log(error);
-          const message =
-            error.response?.data?.message === ""
-              ? "Something Wrong!!!"
-              : error.response?.data?.message || "Something Wrong!!!";
-          this.errorMessage = message;
-          this.isError = true;
-        });
-    },
-    handleResize() {
-      this.screenWidth = window.innerWidth;
-    },
-    resendOTP() {
-      this.isSuccess = true;
-      this.successMessage = "Success send OTP";
-    },
-  },
-};
+    } finally {
+      isSending.value = false;
+    }
+  }
+}
+
+function resendOTP() {
+  isSuccess.value = true;
+  successMessage.value = "Success send OTP";
+}
+
+onMounted(() => {
+  email.value = emailProvider.value;
+  name.value = nameProvider.value;
+  image_path.value = avatarProvider.value;
+  getCountryCode();
+  emitter.emit("changeHeaderWelcome", socialProvider.value + " Registration");
+  window.addEventListener("resize", handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
+});
 </script>
 
 <style scoped>

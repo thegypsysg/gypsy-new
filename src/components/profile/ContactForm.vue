@@ -60,47 +60,42 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import MazPhoneNumberInput from "maz-ui/components/MazPhoneNumberInput";
 
-export default {
-  name: "ContactForm",
-  components: {
-    MazPhoneNumberInput,
+defineProps({
+  input: {
+    type: Object,
+    required: true,
   },
-  props: {
-    input: {
-      type: Object,
-      required: true,
-    },
-    isPhoneVerified: {
-      type: Boolean,
-      default: false,
-    },
-    isChangePhone: {
-      type: Boolean,
-      default: false,
-    },
-    isMobileChanged: {
-      type: Boolean,
-      default: false,
-    },
-    successMessage: {
-      type: String,
-      default: "",
-    },
-    isSmall: {
-      type: Boolean,
-      default: false,
-    },
+  isPhoneVerified: {
+    type: Boolean,
+    default: false,
   },
-  emits: [
-    "toggle-change-phone",
-    "save-mobile",
-    "phone-update",
-    "update:isMobileChanged",
-  ],
-};
+  isChangePhone: {
+    type: Boolean,
+    default: false,
+  },
+  isMobileChanged: {
+    type: Boolean,
+    default: false,
+  },
+  successMessage: {
+    type: String,
+    default: "",
+  },
+  isSmall: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+defineEmits([
+  "toggle-change-phone",
+  "save-mobile",
+  "phone-update",
+  "update:isMobileChanged",
+]);
 </script>
 
 <style scoped>

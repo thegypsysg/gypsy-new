@@ -401,384 +401,381 @@
   </div>
 </template>
 <script setup>
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import MazPhoneNumberInput from "maz-ui/components/MazPhoneNumberInput";
-</script>
-
-<script>
 import axios from "@/util/axios";
-import app from "@/util/eventBus";
-export default {
-  name: "StepWelcome",
-  data() {
-    return {
-      appIdLogin: "",
-      tokenLogin: null,
-      isSending: false,
-      isSuccessForgot: false,
-      isForgotPassword: false,
-      isChangePassword: false,
-      isFacebook: false,
-      isLoadingForgot: false,
-      isSendOtp: false,
-      isChangeMobile: false,
-      isResendOTP: false,
-      valid: false,
-      isMobile: false,
-      isNext: false,
-      isLogin: false,
-      rememberMe: false,
-      showPassword: false,
-      email: null,
-      password: "",
-      mobile: null,
-      otp: "",
-      phoneEvent: null,
-      isError: false,
-      token: null,
-      isSuccess: false,
-      errorMessage: "",
-      successMessage: "",
-      emailRules: [
-        (value) => {
-          if (value) return true;
-          return "E-mail is requred.";
-        },
-        (value) => {
-          if (/.+@.+\..+/.test(value)) return true;
-          return "E-mail must be valid.";
-        },
-      ],
-      passwordRules: [
-        (value) => {
-          if (value) return true;
-          return "Password is requred.";
-        },
-      ],
-      screenWidth: window.innerWidth,
-    };
-  },
-  computed: {
-    isSmall() {
-      return this.screenWidth < 640;
-    },
-    socialProvider() {
-      return this.capitalizeFirstLetter(localStorage.getItem("social")) ==
-        "Linkedin-openid"
-        ? "LinkedIn Login"
-        : this.capitalizeFirstLetter(localStorage.getItem("social")) + " Login";
-    },
-    appId() {
-      localStorage.setItem("app_id", this.$route.query.app_id || "");
-      return this.$route.query.app_id || "";
-    },
-  },
-  watch: {
-    isMobile(newVal) {
-      if (newVal) {
-        this.email = null;
-        this.mobile = null;
-        this.isNext = false;
-      }
-    },
-    email(newVal) {
-      if (this.email == null) {
-        this.isNext = false;
-      } else if (/.+@.+\..+/.test(newVal)) {
-        this.isNext = true;
-      }
-    },
-    mobile() {
-      if (this.mobile == null) {
-        this.isNext = false;
-      } else {
-        this.isNext = true;
-      }
-    },
-  },
-  created() {
-    window.addEventListener("resize", this.handleResize);
-  },
-  mounted() {
-    console.log(this.appId);
-  },
-  unmounted() {
-    window.removeEventListener("resize", this.handleResize);
-  },
-  methods: {
-    sendOTP() {
-      this.isSending = true;
-      const payload = {
-        email_id: this.email,
-      };
-      axios
-        .post(`/send-otp`, payload)
-        .then((response) => {
-          const data = response.data;
-          console.log(data);
-          this.successMessage = data.message;
-          this.isSuccess = true;
-          localStorage.setItem("email", data.data.email_id);
-          this.$router.push("/sign-up-email");
-        })
-        .catch((error) => {
-          console.log(error);
-          const message = error.response.data.email_id
-            ? error.response.data.email_id[0]
-            : error.response.data.message
-            ? error.response.data.message
-            : "Something Wrong!!!";
-          this.errorMessage = message;
-          this.isError = true;
-        })
-        .finally(() => {
-          this.isSending = false;
-        });
-    },
-    resendOTP() {
-      this.isResendOTP = true;
-      setTimeout(() => {
-        this.isResendOTP = false;
-      }, 3000);
-    },
-    capitalizeFirstLetter(string) {
-      return string ? string.charAt(0).toUpperCase() + string.slice(1) : "";
-    },
-    nextStep() {
-      this.$emit("nextStep");
-    },
-    loginSocial(social_name) {
-      if (social_name == "facebook") {
-        this.isFacebook = true;
-      } else {
-        axios
-          .post(`/gypsy-login/${social_name}`, {
-            app_id: this.appId == "" ? this.$appId : this.appId,
-          })
-          .then((response) => {
-            console.log(response);
-            if (response) {
-              window.location.assign(response.data.target_url);
-            } else {
-              window.location.href = "/sign-in";
-            }
-            console.log(response.data.target_url);
-          })
-          .catch((error) => {
-            console.log(error);
-            window.location.href = "/sign-in";
-          });
-      }
-    },
-    forgotPassword() {
-      this.isLoadingForgot = true;
-      axios
-        .post(`/gypsy/send-forget-password-email`, {
-          email_id: this.email,
-        })
-        .then((response) => {
-          console.log(response);
-          if (response) {
-            this.isSuccessForgot = true;
-            this.isForgotPassword = true;
-          }
-        })
-        .catch((error) => {
-          const message = error.response.data.email_id
-            ? error.response.data.email_id[0]
-            : error.response.data.message
-            ? error.response.data.message
-            : "Something Wrong!!!";
-          this.errorMessage = message;
-          this.isError = true;
-        })
-        .finally(() => {
-          this.isLoadingForgot = false;
-        });
-    },
-    hideEmail(email) {
-      const atIndex = email.indexOf("@");
-      if (atIndex >= 0) {
-        const username = email.substring(0, atIndex);
-        const hiddenPart = username
-          .substring(0, Math.max(0, username.length - 6))
-          .replace(/./g, "*");
-        const visiblePart = username.substring(
-          Math.max(0, username.length - 6)
-        );
-        return hiddenPart + visiblePart + email.substring(atIndex);
-      } else {
-        return email;
-      }
-    },
-    sendDataMobile() {
-      if (this.valid) {
-        this.isSending = true;
-        const payload = {
-          mobile_number: this.mobile,
-        };
-        axios
-          .post(`/gypsy-registration/check-mobile-exists`, payload)
-          .then((response) => {
-            const data = response.data;
-            this.successMessage = data.message;
-            this.isSuccess = true;
-            localStorage.setItem("mobile", this.mobile);
-            this.nextStep();
-          })
-          .catch((error) => {
-            console.log(error);
-            const message = error.response.data.mobile_number
-              ? error.response.data.mobile_number[0]
-              : error.response.data.message
-              ? `This Mobile Number ${
-                  this.mobile
-                } is already exist in our database using the email id ${this.hideEmail(
-                  error.response.data.email_id
-                )}`
-              : "Something Wrong!!!";
-            this.errorMessage = message;
-            this.isError = true;
-          })
-          .finally(() => {
-            this.isSending = false;
-          });
-      }
-    },
-    sendDataEmail() {
-      if (this.valid) {
-        this.isSending = true;
-        const payload = {
-          email_id: this.email,
-        };
-        axios
-          .post(`/gypsy/check-info-by-email`, payload)
-          .then((response) => {
-            const data = response.data.data;
-            console.log(data);
-            if (data == null) {
-              localStorage.setItem("email", this.email);
-              this.$router.push("/sign-up-email");
-            } else if (data.social_type == "E" && data.password) {
-              this.isLogin = true;
-            } else if (data.social_type == "E" && !data.password) {
-              localStorage.setItem("email", data.email_id);
-              localStorage.setItem("gypsy_id", data.gypsy_id);
-              localStorage.setItem("token", data.token);
-              this.$router.push("/signup-email");
-            } else if (data.social_type == "G") {
-              this.successMessage =
-                "You Last used Google to Sign-Up please use it again for faster login your account or please Enter your Password to proceed .";
-              this.isLogin = true;
-              this.isSuccess = true;
-            } else if (data.social_type == "F") {
-              this.successMessage =
-                "You Last used Facebook to Sign-Up please use it again for faster login your account or please Enter your Password to proceed .";
-              this.isLogin = true;
-              this.isSuccess = true;
-            } else if (data.social_type == "L") {
-              this.successMessage =
-                "You Last used Linkedin to Sign-Up please use it again for faster login your account or please Enter your Password to proceed .";
-              this.isLogin = true;
-              this.isSuccess = true;
-            } else if (data.social_type == "T") {
-              this.successMessage =
-                "You Last used Tiktok to Sign-Up please use it again for faster login your account or please Enter your Password to proceed .";
-              this.isLogin = true;
-              this.isSuccess = true;
-            } else if (data.social_type == "X") {
-              this.successMessage =
-                "You Last used Twitter to Sign-Up please use it again for faster login your account or please Enter your Password to proceed .";
-              this.isLogin = true;
-              this.isSuccess = true;
-            }
-          })
-          .catch((error) => {
-            console.log(error);
-            const message = error.response.data.email_id
-              ? error.response.data.email_id[0]
-              : error.response.data.message
-              ? error.response.data.message
-              : "Something Wrong!!!";
-            this.errorMessage = message;
-            this.isError = true;
-          })
-          .finally(() => {
-            this.isSending = false;
-          });
-      }
-    },
-    loginEmail() {
-      this.appIdLogin = localStorage.getItem("app_id");
-      this.isSending = true;
-      const payload = {
-        email_id: this.email,
-        password: this.password,
-      };
-      axios
-        .post(`/gypsy/login`, payload)
-        .then((response) => {
-          const data = response.data;
-          console.log(data);
-          if (this.isForgotPassword) {
-            this.isChangePassword = true;
-            this.tokenLogin = data.token;
-          } else {
-            this.successMessage = data.message;
-            this.isSuccess = true;
+import { emitter } from "@/util/eventBus";
 
-            if (this.appIdLogin == "") {
-              localStorage.setItem("social", "Email");
-              localStorage.setItem("token", data.token);
-              app.config.globalProperties.$eventBus.$emit(
-                "changeHeaderWelcome3",
-                "Sign-Up / Sign-in"
-              );
-              this.$router.push(`/?token=${data.token}`);
-            } else if (this.appIdLogin == "5") {
-              localStorage.setItem("social", "Email");
-              const externalURL = `${import.meta.env.VITE_SYRINGE_URL}?token=${data.token}`;
-              window.location.href = externalURL;
-            } else if (this.appIdLogin == "2") {
-              localStorage.setItem("social", "Email");
-              const externalURL = `${import.meta.env.VITE_MALLE_URL}?token=${data.token}`;
-              window.location.href = externalURL;
-            }
-          }
-        })
-        .catch((error) => {
-          this.errorMessage = "Wrong Password";
-          this.isError = true;
-        })
-        .finally(() => {
-          this.isSending = false;
-        });
-    },
-    closeChangePassword() {
-      this.isChangePassword = false;
-      if (this.appIdLogin == "") {
-        console.log("app id, ", this.appIdLogin);
+const emit = defineEmits(["nextStep"]);
+
+const route = useRoute();
+const router = useRouter();
+
+const appIdLogin = ref("");
+const tokenLogin = ref(null);
+const isSending = ref(false);
+const isSuccessForgot = ref(false);
+const isForgotPassword = ref(false);
+const isChangePassword = ref(false);
+const isFacebook = ref(false);
+const isLoadingForgot = ref(false);
+const isSendOtp = ref(false);
+const isChangeMobile = ref(false);
+const isResendOTP = ref(false);
+const valid = ref(false);
+const isMobile = ref(false);
+const isNext = ref(false);
+const isLogin = ref(false);
+const rememberMe = ref(false);
+const showPassword = ref(false);
+const email = ref(null);
+const password = ref("");
+const mobile = ref(null);
+const otp = ref("");
+const phoneEvent = ref(null);
+const isError = ref(false);
+const token = ref(null);
+const isSuccess = ref(false);
+const errorMessage = ref("");
+const successMessage = ref("");
+
+const emailRules = [
+  (value) => {
+    if (value) return true;
+    return "E-mail is requred.";
+  },
+  (value) => {
+    if (/.+@.+\..+/.test(value)) return true;
+    return "E-mail must be valid.";
+  },
+];
+
+const passwordRules = [
+  (value) => {
+    if (value) return true;
+    return "Password is requred.";
+  },
+];
+
+const screenWidth = ref(window.innerWidth);
+
+const isSmall = computed(() => screenWidth.value < 640);
+
+function capitalizeFirstLetter(string) {
+  return string ? string.charAt(0).toUpperCase() + string.slice(1) : "";
+}
+
+const socialProvider = computed(() => {
+  const social = localStorage.getItem("social");
+  return capitalizeFirstLetter(social) === "Linkedin-openid"
+    ? "LinkedIn Login"
+    : capitalizeFirstLetter(social) + " Login";
+});
+
+const appId = computed(() => {
+  const aid = route.query.app_id || "";
+  localStorage.setItem("app_id", aid);
+  return aid;
+});
+
+watch(isMobile, (newVal) => {
+  if (newVal) {
+    email.value = null;
+    mobile.value = null;
+    isNext.value = false;
+  }
+});
+
+watch(email, (newVal) => {
+  if (email.value == null) {
+    isNext.value = false;
+  } else if (/.+@.+\..+/.test(newVal)) {
+    isNext.value = true;
+  }
+});
+
+watch(mobile, () => {
+  if (mobile.value == null) {
+    isNext.value = false;
+  } else {
+    isNext.value = true;
+  }
+});
+
+function handleResize() {
+  screenWidth.value = window.innerWidth;
+}
+
+async function sendOTP() {
+  isSending.value = true;
+  const payload = {
+    email_id: email.value,
+  };
+  try {
+    const response = await axios.post(`/send-otp`, payload);
+    const data = response.data;
+    console.log(data);
+    successMessage.value = data.message;
+    isSuccess.value = true;
+    localStorage.setItem("email", data.data.email_id);
+    router.push("/sign-up-email");
+  } catch (error) {
+    console.log(error);
+    const message = error.response?.data?.email_id
+      ? error.response.data.email_id[0]
+      : error.response?.data?.message
+      ? error.response.data.message
+      : "Something Wrong!!!";
+    errorMessage.value = message;
+    isError.value = true;
+  } finally {
+    isSending.value = false;
+  }
+}
+
+function resendOTP() {
+  isResendOTP.value = true;
+  setTimeout(() => {
+    isResendOTP.value = false;
+  }, 3000);
+}
+
+function nextStep() {
+  emit("nextStep");
+}
+
+async function loginSocial(social_name) {
+  if (social_name === "facebook") {
+    isFacebook.value = true;
+  } else {
+    try {
+      const response = await axios.post(`/gypsy-login/${social_name}`, {
+        app_id: appId.value === "" ? window.$appId || 1 : appId.value,
+      });
+      console.log(response);
+      if (response && response.data?.target_url) {
+        window.location.assign(response.data.target_url);
+      } else {
+        window.location.href = "/sign-in";
+      }
+    } catch (error) {
+      console.log(error);
+      window.location.href = "/sign-in";
+    }
+  }
+}
+
+async function forgotPassword() {
+  isLoadingForgot.value = true;
+  try {
+    const response = await axios.post(`/gypsy/send-forget-password-email`, {
+      email_id: email.value,
+    });
+    console.log(response);
+    if (response) {
+      isSuccessForgot.value = true;
+      isForgotPassword.value = true;
+    }
+  } catch (error) {
+    const message = error.response?.data?.email_id
+      ? error.response.data.email_id[0]
+      : error.response?.data?.message
+      ? error.response.data.message
+      : "Something Wrong!!!";
+    errorMessage.value = message;
+    isError.value = true;
+  } finally {
+    isLoadingForgot.value = false;
+  }
+}
+
+function hideEmail(emailStr) {
+  const atIndex = emailStr.indexOf("@");
+  if (atIndex >= 0) {
+    const username = emailStr.substring(0, atIndex);
+    const hiddenPart = username
+      .substring(0, Math.max(0, username.length - 6))
+      .replace(/./g, "*");
+    const visiblePart = username.substring(Math.max(0, username.length - 6));
+    return hiddenPart + visiblePart + emailStr.substring(atIndex);
+  } else {
+    return emailStr;
+  }
+}
+
+async function sendDataMobile() {
+  if (valid.value) {
+    isSending.value = true;
+    const payload = {
+      mobile_number: mobile.value,
+    };
+    try {
+      const response = await axios.post(
+        `/gypsy-registration/check-mobile-exists`,
+        payload
+      );
+      const data = response.data;
+      successMessage.value = data.message;
+      isSuccess.value = true;
+      localStorage.setItem("mobile", mobile.value);
+      nextStep();
+    } catch (error) {
+      console.log(error);
+      const message = error.response?.data?.mobile_number
+        ? error.response.data.mobile_number[0]
+        : error.response?.data?.message
+        ? `This Mobile Number ${
+            mobile.value
+          } is already exist in our database using the email id ${hideEmail(
+            error.response.data.email_id
+          )}`
+        : "Something Wrong!!!";
+      errorMessage.value = message;
+      isError.value = true;
+    } finally {
+      isSending.value = false;
+    }
+  }
+}
+
+async function sendDataEmail() {
+  if (valid.value) {
+    isSending.value = true;
+    const payload = {
+      email_id: email.value,
+    };
+    try {
+      const response = await axios.post(`/gypsy/check-info-by-email`, payload);
+      const data = response.data.data;
+      console.log(data);
+      if (data == null) {
+        localStorage.setItem("email", email.value);
+        router.push("/sign-up-email");
+      } else if (data.social_type === "E" && data.password) {
+        isLogin.value = true;
+      } else if (data.social_type === "E" && !data.password) {
+        localStorage.setItem("email", data.email_id);
+        localStorage.setItem("gypsy_id", data.gypsy_id);
+        localStorage.setItem("token", data.token);
+        router.push("/signup-email");
+      } else if (data.social_type === "G") {
+        successMessage.value =
+          "You Last used Google to Sign-Up please use it again for faster login your account or please Enter your Password to proceed .";
+        isLogin.value = true;
+        isSuccess.value = true;
+      } else if (data.social_type === "F") {
+        successMessage.value =
+          "You Last used Facebook to Sign-Up please use it again for faster login your account or please Enter your Password to proceed .";
+        isLogin.value = true;
+        isSuccess.value = true;
+      } else if (data.social_type === "L") {
+        successMessage.value =
+          "You Last used Linkedin to Sign-Up please use it again for faster login your account or please Enter your Password to proceed .";
+        isLogin.value = true;
+        isSuccess.value = true;
+      } else if (data.social_type === "T") {
+        successMessage.value =
+          "You Last used Tiktok to Sign-Up please use it again for faster login your account or please Enter your Password to proceed .";
+        isLogin.value = true;
+        isSuccess.value = true;
+      } else if (data.social_type === "X") {
+        successMessage.value =
+          "You Last used Twitter to Sign-Up please use it again for faster login your account or please Enter your Password to proceed .";
+        isLogin.value = true;
+        isSuccess.value = true;
+      }
+    } catch (error) {
+      console.log(error);
+      const message = error.response?.data?.email_id
+        ? error.response.data.email_id[0]
+        : error.response?.data?.message
+        ? error.response.data.message
+        : "Something Wrong!!!";
+      errorMessage.value = message;
+      isError.value = true;
+    } finally {
+      isSending.value = false;
+    }
+  }
+}
+
+async function loginEmail() {
+  appIdLogin.value = localStorage.getItem("app_id");
+  isSending.value = true;
+  const payload = {
+    email_id: email.value,
+    password: password.value,
+  };
+  try {
+    const response = await axios.post(`/gypsy/login`, payload);
+    const data = response.data;
+    console.log(data);
+    if (isForgotPassword.value) {
+      isChangePassword.value = true;
+      tokenLogin.value = data.token;
+    } else {
+      successMessage.value = data.message;
+      isSuccess.value = true;
+
+      if (appIdLogin.value === "") {
         localStorage.setItem("social", "Email");
-        localStorage.setItem("token", this.tokenLogin);
-        app.config.globalProperties.$eventBus.$emit(
-          "changeHeaderWelcome3",
-          "Sign-Up / Sign-in"
-        );
-        this.$router.push(`/?token=${this.tokenLogin}`);
-      } else if (this.appIdLogin == "5") {
+        localStorage.setItem("token", data.token);
+        emitter.emit("changeHeaderWelcome3", "Sign-Up / Sign-in");
+        router.push(`/?token=${data.token}`);
+      } else if (appIdLogin.value === "5") {
         localStorage.setItem("social", "Email");
-        const externalURL = `${import.meta.env.VITE_SYRINGE_URL}?token=${this.tokenLogin}`;
+        const externalURL = `${import.meta.env.VITE_SYRINGE_URL}?token=${
+          data.token
+        }`;
         window.location.href = externalURL;
-      } else if (this.appIdLogin == "2") {
+      } else if (appIdLogin.value === "2") {
         localStorage.setItem("social", "Email");
-        const externalURL = `${import.meta.env.VITE_MALLE_URL}?token=${this.tokenLogin}`;
+        const externalURL = `${import.meta.env.VITE_MALLE_URL}?token=${
+          data.token
+        }`;
         window.location.href = externalURL;
       }
-    },
-    handleResize() {
-      this.screenWidth = window.innerWidth;
-    },
-  },
-};
+    }
+  } catch (error) {
+    errorMessage.value = "Wrong Password";
+    isError.value = true;
+  } finally {
+    isSending.value = false;
+  }
+}
+
+function closeChangePassword() {
+  isChangePassword.value = false;
+  if (appIdLogin.value === "") {
+    console.log("app id, ", appIdLogin.value);
+    localStorage.setItem("social", "Email");
+    localStorage.setItem("token", tokenLogin.value);
+    emitter.emit("changeHeaderWelcome3", "Sign-Up / Sign-in");
+    router.push(`/?token=${tokenLogin.value}`);
+  } else if (appIdLogin.value === "5") {
+    localStorage.setItem("social", "Email");
+    const externalURL = `${import.meta.env.VITE_SYRINGE_URL}?token=${
+      tokenLogin.value
+    }`;
+    window.location.href = externalURL;
+  } else if (appIdLogin.value === "2") {
+    localStorage.setItem("social", "Email");
+    const externalURL = `${import.meta.env.VITE_MALLE_URL}?token=${
+      tokenLogin.value
+    }`;
+    window.location.href = externalURL;
+  }
+}
+
+onMounted(() => {
+  console.log(appId.value);
+  window.addEventListener("resize", handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
+});
 </script>
 
 <style scoped>

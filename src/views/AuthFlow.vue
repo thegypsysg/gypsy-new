@@ -84,7 +84,9 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, watch } from "vue";
+import { useRoute } from "vue-router";
 import StepWelcome from "@/components/auth/steps/StepWelcome.vue";
 import StepOTPEmail from "@/components/auth/steps/StepOTPEmail.vue";
 import StepPersonalEmail from "@/components/auth/steps/StepPersonalEmail.vue";
@@ -93,41 +95,25 @@ import StepPersonalSocials from "@/components/auth/steps/StepPersonalSocials.vue
 import StepCreatePassword from "@/components/auth/steps/StepCreatePassword.vue";
 import StepResult from "@/components/auth/steps/StepResult.vue";
 
-export default {
-  name: "AuthFlow",
-  components: {
-    StepWelcome,
-    StepOTPEmail,
-    StepPersonalEmail,
-    StepPersonalMobile,
-    StepPersonalSocials,
-    StepCreatePassword,
-    StepResult,
-  },
-  data() {
-    return {
-      currentStep: 1,
-    };
-  },
-  computed: {
-    flow() {
-      return this.$route.meta?.flow || "mobile";
-    },
-  },
-  watch: {
-    "$route.meta.flow"() {
-      this.currentStep = 1;
-    },
-  },
-  methods: {
-    nextStep() {
-      this.currentStep++;
-    },
-    backStep() {
-      if (this.currentStep > 1) {
-        this.currentStep--;
-      }
-    },
-  },
-};
+const route = useRoute();
+const currentStep = ref(1);
+
+const flow = computed(() => route.meta?.flow || "mobile");
+
+watch(
+  () => route.meta?.flow,
+  () => {
+    currentStep.value = 1;
+  }
+);
+
+function nextStep() {
+  currentStep.value++;
+}
+
+function backStep() {
+  if (currentStep.value > 1) {
+    currentStep.value--;
+  }
+}
 </script>

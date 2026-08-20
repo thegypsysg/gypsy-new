@@ -421,245 +421,199 @@
   </v-container>
 </template>
 
-<script>
-import app from "@/util/eventBus";
+<script setup>
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { emitter } from "@/util/eventBus";
 import { useLocationStore } from "@/stores/location.store";
 import axios from "@/util/axios";
 
-export default {
-  name: "TrendingApps",
-  props: ["appData"],
-  setup() {
-    const locationStore = useLocationStore();
-    return { locationStore };
+defineProps({
+  appData: {
+    type: Object,
+    default: null,
   },
-  data() {
-    return {
-      isOpenLive: false,
-      liveData: {
-        img: "",
-        title: "",
-      },
-      selectedTag: null,
-      trendingBtn: [],
-      trendingCard: [],
-      selectedType: 0,
-      activeIndex: 1,
-      screenWidth: window.innerWidth,
-    };
-  },
-  computed: {
-    activeTag() {
-      return this.locationStore.activeTag;
-    },
-    isSmall() {
-      return this.screenWidth < 640;
-    },
-    filteredItemsMobile() {
-      // console.log(this.activeTag);
-      if (!this.activeTag || this.activeTag == undefined) {
-        return this.trendingCard;
-      } else {
-        // const searchTextLower = this.search.toLowerCase();
-        return this.trendingCard.filter((item) => {
-          return item.tag.includes(this.activeTag);
-        });
-      }
-    },
-    filteredItemsDesktop() {
-      if (!this.selectedTag) {
-        return this.trendingCard;
-      } else {
-        // const searchTextLower = this.search.toLowerCase();
-        return this.trendingCard.filter((item) => {
-          return item.tag.includes(this.selectedTag);
-        });
-      }
-    },
-  },
-  created() {
-    window.addEventListener("resize", this.handleResize);
-  },
-  mounted() {
-    app.config.globalProperties.$eventBus.$on(
-      "scrollToCardSection",
-      this.scrollToCardSection
-    );
-    app.config.globalProperties.$eventBus.$on(
-      "scrollToTrendingSection",
-      this.scrollToTrendingSection
-    );
-    this.getAppData();
-    this.getGroups();
-  },
-  beforeUnmount() {
-    app.config.globalProperties.$eventBus.$off(
-      "scrollToCardSection",
-      this.scrollToCardSection
-    );
-    app.config.globalProperties.$eventBus.$off(
-      "scrollToTrendingSection",
-      this.scrollToTrendingSection
-    );
-    // eventBus.off("filter-card-header", this.filterCards);
-  },
-  unmounted() {
-    window.removeEventListener("resize", this.handleResize);
-  },
-  methods: {
-    // selectTag(tag) {
-    //   this.activeTag = tag; // Menetapkan tag yang dipilih sebagai tag aktif di komponen kartu
-    // },
-    openLive(item) {
-      this.isOpenLive = true;
-      this.liveData = {
-        img: this.$fileURL + item.img,
-        title: item.title,
-      };
-    },
-    closeLive() {
-      this.isOpenLive = false;
-      this.liveData = {
-        img: "",
-        title: "",
-      };
-    },
-    getAppData() {
-      // this.isLoading = true;
-      axios
-        .get(`/app`)
-        .then((response) => {
-          const data = response.data.data;
+});
 
-          this.trendingCard = data.map((item) => {
-            return {
-              img: item.app_main_image || "",
-              title: item.app_name || "",
-              desc: item.app_description || "",
-              tag: item.app_group_name || "",
-              link:
-                item.app_name == "4 Walls"
-                  ? "https://4walls.the-gypsy.sg/"
-                  : item.app_link,
-              views: item.app_views || "0",
+const locationStore = useLocationStore();
 
-              id: item.app_id || 1,
-              group_id: item.app_group_id || 1,
-              logo: item.app_logo || null,
-              image: item.app_main_image || null,
-              name: item.app_name || "",
-              description: item.app_description || "",
-              details: item.app_detail || "",
-              isActive:
-                item.active == "N" ? false : item.active == "Y" ? true : null,
-              isFav:
-                item.favorite == "N"
-                  ? false
-                  : item.favorite == "Y"
-                  ? true
-                  : null,
-              isLive:
-                item.live == "N" || item.live == null
-                  ? false
-                  : item.live == "Y"
-                  ? true
-                  : null,
-              group: item.app_group_name || "",
-              user: item.user_id || 1,
-              created: item.dated || "",
-              likes: item.app_likes || "",
-              shares: item.app_shares || "",
-            };
-          });
+const isOpenLive = ref(false);
+const liveData = ref({
+  img: "",
+  title: "",
+});
+const selectedTag = ref(null);
+const trendingBtn = ref([]);
+const trendingCard = ref([]);
+const selectedType = ref(0);
+const activeIndex = ref(1);
+const screenWidth = ref(window.innerWidth);
 
-          // app.config.globalProperties.$eventBus.$emit(
-          //   'update-image',
-          //   this.items
-          // );
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-          console.log(error);
-        });
-      // .finally(() => {
-      //   this.isLoading = false;
-      // });
-    },
-    getGroups() {
-      axios
-        .get(`/groups`)
-        .then((response) => {
-          const data = response.data.data;
-          // console.log(data);
-          this.trendingBtn = data.map((group) => {
-            return {
-              id: group.app_group_id,
-              title: group.app_group_name,
-              tag: group.app_group_name,
-            };
-          });
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-          console.log(error);
-        });
-    },
-    scrollToCardSection() {
-      const cardSection = document.getElementById("trending");
-      const cardRect = cardSection.getBoundingClientRect();
-      const scrollTop =
-        window.pageYOffset || document.documentElement.scrollTop;
-      const offset = cardRect.top + scrollTop - 300; // Nilai offset yang diinginkan, dalam piksel
+const activeTag = computed(() => locationStore.activeTag);
+const isSmall = computed(() => screenWidth.value < 640);
 
-      window.scrollTo({
-        top: offset,
-        behavior: "smooth",
-      });
-      // window.scrollBy(0, -scrollOffset);
-    },
-    scrollToTrendingSection() {
-      const cardSection = document.getElementById("trending");
-      const cardRect = cardSection.getBoundingClientRect();
-      const scrollTop =
-        window.pageYOffset || document.documentElement.scrollTop;
-      const offset = this.isSmall
-        ? cardRect.top + scrollTop - 300
-        : cardRect.top + scrollTop - 200; // Nilai offset yang diinginkan, dalam piksel
+const filteredItemsMobile = computed(() => {
+  if (!activeTag.value) {
+    return trendingCard.value;
+  }
+  return trendingCard.value.filter((item) => item.tag.includes(activeTag.value));
+});
 
-      window.scrollTo({
-        top: offset,
-        behavior: "smooth",
-      });
-      // window.scrollBy(0, -scrollOffset);
-    },
+const filteredItemsDesktop = computed(() => {
+  if (!selectedTag.value) {
+    return trendingCard.value;
+  }
+  return trendingCard.value.filter((item) =>
+    item.tag.includes(selectedTag.value)
+  );
+});
 
-    selectTag(tag) {
-      this.locationStore.setActiveTag(tag); // Menetapkan tag yang dipilih sebagai tag aktif
-    },
-    filterCards(tag) {
-      this.selectedTag = tag;
-    },
-    filterCardHeader(tag) {
-      this.locationStore.setActiveTag(tag);
-    },
-    countCards(tag) {
-      if (!this.trendingCard || !Array.isArray(this.trendingCard)) return 0;
-      const count = this.trendingCard.filter(
-        (trend) => trend.tag === tag
-      ).length;
-      return count;
-    },
-    handleResize() {
-      this.screenWidth = window.innerWidth;
-    },
-    previousSlide() {
-      this.activeIndex--;
-    },
-    nextSlide() {
-      this.activeIndex++;
-    },
-  },
-};
+function openLive(item) {
+  isOpenLive.value = true;
+  liveData.value = {
+    img: (window.$fileURL || "/file/") + item.img,
+    title: item.title,
+  };
+}
+
+function closeLive() {
+  isOpenLive.value = false;
+  liveData.value = {
+    img: "",
+    title: "",
+  };
+}
+
+async function getAppData() {
+  try {
+    const response = await axios.get(`/app`);
+    const data = response.data.data;
+    trendingCard.value = data.map((item) => ({
+      img: item.app_main_image || "",
+      title: item.app_name || "",
+      desc: item.app_description || "",
+      tag: item.app_group_name || "",
+      link:
+        item.app_name === "4 Walls"
+          ? "https://4walls.the-gypsy.sg/"
+          : item.app_link,
+      views: item.app_views || "0",
+
+      id: item.app_id || 1,
+      group_id: item.app_group_id || 1,
+      logo: item.app_logo || null,
+      image: item.app_main_image || null,
+      name: item.app_name || "",
+      description: item.app_description || "",
+      details: item.app_detail || "",
+      isActive:
+        item.active === "N" ? false : item.active === "Y" ? true : null,
+      isFav:
+        item.favorite === "N"
+          ? false
+          : item.favorite === "Y"
+          ? true
+          : null,
+      isLive:
+        item.live === "N" || item.live == null
+          ? false
+          : item.live === "Y"
+          ? true
+          : null,
+      group: item.app_group_name || "",
+      user: item.user_id || 1,
+      created: item.dated || "",
+      likes: item.app_likes || "",
+      shares: item.app_shares || "",
+    }));
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function getGroups() {
+  try {
+    const response = await axios.get(`/groups`);
+    const data = response.data.data;
+    trendingBtn.value = data.map((group) => ({
+      id: group.app_group_id,
+      title: group.app_group_name,
+      tag: group.app_group_name,
+    }));
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+function scrollToCardSection() {
+  const cardSection = document.getElementById("trending");
+  if (!cardSection) return;
+  const cardRect = cardSection.getBoundingClientRect();
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  const offset = cardRect.top + scrollTop - 300;
+
+  window.scrollTo({
+    top: offset,
+    behavior: "smooth",
+  });
+}
+
+function scrollToTrendingSection() {
+  const cardSection = document.getElementById("trending");
+  if (!cardSection) return;
+  const cardRect = cardSection.getBoundingClientRect();
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  const offset = isSmall.value
+    ? cardRect.top + scrollTop - 300
+    : cardRect.top + scrollTop - 200;
+
+  window.scrollTo({
+    top: offset,
+    behavior: "smooth",
+  });
+}
+
+function selectTag(tag) {
+  locationStore.setActiveTag(tag);
+}
+
+function filterCards(tag) {
+  selectedTag.value = tag;
+}
+
+function filterCardHeader(tag) {
+  locationStore.setActiveTag(tag);
+}
+
+function countCards(tag) {
+  if (!trendingCard.value || !Array.isArray(trendingCard.value)) return 0;
+  return trendingCard.value.filter((trend) => trend.tag === tag).length;
+}
+
+function handleResize() {
+  screenWidth.value = window.innerWidth;
+}
+
+function previousSlide() {
+  activeIndex.value--;
+}
+
+function nextSlide() {
+  activeIndex.value++;
+}
+
+onMounted(() => {
+  emitter.on("scrollToCardSection", scrollToCardSection);
+  emitter.on("scrollToTrendingSection", scrollToTrendingSection);
+  getAppData();
+  getGroups();
+  window.addEventListener("resize", handleResize);
+});
+
+onBeforeUnmount(() => {
+  emitter.off("scrollToCardSection", scrollToCardSection);
+  emitter.off("scrollToTrendingSection", scrollToTrendingSection);
+  window.removeEventListener("resize", handleResize);
+});
 </script>
 
 <style scoped>

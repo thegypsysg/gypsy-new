@@ -296,267 +296,229 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import axios from "@/util/axios";
-import app from "@/util/eventBus";
+import { emitter } from "@/util/eventBus";
 import MazPhoneNumberInput from "maz-ui/components/MazPhoneNumberInput";
 import MazSelect from "maz-ui/components/MazSelect";
 import ImageCropperDialog from "@/components/ImageCropperDialog.vue";
 import { countryOptions } from "@/constants/countries";
 
-export default {
-  name: "StepPersonalMobile",
-  components: {
-    MazPhoneNumberInput,
-    MazSelect,
-    ImageCropperDialog,
-  },
-  data() {
-    return {
-      isName: true,
-      isGender: true,
-      isMobile: true,
-      valid: false,
-      image: null,
-      imageSend: null,
-      image_path: "",
-      name: "",
-      email: "",
-      country: "SG",
-      gender: "",
-      code: "",
-      mobile: null,
-      phoneEvent: null,
-      screenWidth: window.innerWidth,
-      isError: false,
-      isErrorPhone: false,
-      isSuccess: false,
-      errorMessage: "",
-      errorMessagePhone: "",
-      successMessage: "",
-      emailErrorPhone: "",
-      resource: {
-        code: [],
-      },
-      options: countryOptions,
+const emit = defineEmits(["nextStep", "backStep"]);
+
+const isName = ref(true);
+const isGender = ref(true);
+const isMobile = ref(true);
+const valid = ref(false);
+const isSending = ref(false);
+
+const image = ref(null);
+const imageSend = ref(null);
+const image_path = ref("");
+
+const name = ref("");
+const email = ref("");
+const country = ref("SG");
+const gender = ref("");
+const code = ref("");
+const mobile = ref(null);
+const phoneEvent = ref(null);
+
+const filePickerField = ref(null);
+const cropperDialog = ref(null);
+
+const screenWidth = ref(window.innerWidth);
+const isError = ref(false);
+const isErrorPhone = ref(false);
+const isSuccess = ref(false);
+const errorMessage = ref("");
+const errorMessagePhone = ref("");
+const successMessage = ref("");
+const emailErrorPhone = ref("");
+
+const resource = ref({
+  code: [],
+});
+
+const options = countryOptions;
+
+const isSmall = computed(() => screenWidth.value < 640);
+
+function handleResize() {
+  screenWidth.value = window.innerWidth;
+}
+
+function deleteImage() {
+  image.value = null;
+  imageSend.value = null;
+  image_path.value = "";
+}
+
+function capitalizeFirstLetter(string) {
+  return string ? string.charAt(0).toUpperCase() + string.slice(1) : "";
+}
+
+function nextStep() {
+  emit("nextStep");
+}
+
+function backStep() {
+  emit("backStep");
+  emitter.emit("changeHeaderWelcome", "Sign-Up / Sign-in");
+}
+
+function onFileChangeInput(e) {
+  const files = e.target.files || e.dataTransfer.files;
+  if (files && files[0]) {
+    image.value = files[0];
+    image_path.value = URL.createObjectURL(files[0]);
+  }
+}
+
+async function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+}
+
+async function launchCropper(event) {
+  if (!event) return;
+  const file = event.target.files[0];
+  if (!file) return;
+  image.value = await toBase64(file);
+  imageSend.value = file;
+  cropperDialog.value?.initCropper(file.type);
+}
+
+function goBack() {
+  emit("backStep");
+}
+
+async function getCountryCode() {
+  try {
+    const response = await axios.get(`/country`);
+    const data = response.data.data;
+    resource.value.code = data.map((c) => ({
+      name: `${c.country_name} (${c.country_code})`,
+      code: c.country_code,
+    }));
+  } catch (error) {
+    console.log(error);
+    const message =
+      error.response?.data?.message === ""
+        ? "Something Wrong!!!"
+        : error.response?.data?.message || "Something Wrong!!!";
+    errorMessage.value = message;
+    isError.value = true;
+  }
+}
+
+async function getUserData() {
+  await getCountryCode();
+}
+
+async function saveData() {
+  if (valid.value) {
+    isName.value = name.value !== "";
+    isGender.value = gender.value !== "";
+    isMobile.value = mobile.value !== null && mobile.value !== "";
+
+    isSending.value = true;
+    const countryName = options
+      .filter((o) => o.value === country.value)
+      .map((op) => op.label)[0];
+    const appId = localStorage.getItem("app_id");
+    const payload = {
+      name: name.value,
+      mobile_number: mobile.value,
+      country_prefix: country.value,
+      gender: gender.value,
+      app_id: appId || "",
+      registered_type: isSmall.value ? "M" : "W",
+      country_name: countryName,
+      image: imageSend.value || null,
+      email_id: email.value || null,
+      country_code: phoneEvent.value?.countryCallingCode
+        ? `+${phoneEvent.value.countryCallingCode}`
+        : "",
+      flag: `https://flagicons.lipis.dev/flags/4x3/${phoneEvent.value?.countryCode?.toLowerCase() || 'sg'}.svg`,
     };
-  },
-  computed: {
-    isSmall() {
-      return this.screenWidth < 640;
-    },
-  },
-  created() {
-    window.addEventListener("resize", this.handleResize);
-  },
-  mounted() {
-    this.getCountryCode();
 
-    app.config.globalProperties.$eventBus.$emit(
-      "changeHeaderWelcome",
-      "Sign-up by Mobile"
-    );
-    this.mobile = localStorage.getItem("mobile")
-      ? localStorage.getItem("mobile")
-      : "";
-  },
-  unmounted() {
-    window.removeEventListener("resize", this.handleResize);
-  },
-  methods: {
-    capitalizeFirstLetter(string) {
-      return string.charAt(0).toUpperCase() + string.slice(1);
-    },
-    nextStep() {
-      this.$emit("nextStep");
-    },
-    backStep() {
-      this.$emit("backStep");
-      app.config.globalProperties.$eventBus.$emit(
-        "changeHeaderWelcome",
-        "Sign-Up / Sign-in"
-      );
-    },
-    onFileChangeInput(e) {
-      var files = e.target.files || e.dataTransfer.files;
-      this.image = files[0];
-      this.image_path = URL.createObjectURL(files[0]);
-    },
-    async launchCropper(event) {
-      if (!event) return;
-      var file = event.target.files[0];
-      this.image = await this.toBase64(file);
-      this.imageSend = file;
-      this.$refs.cropperDialog.initCropper(file.type);
-    },
-
-    async toBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = (error) => reject(error);
-      });
-    },
-    goBack() {
-      this.$emit("backStep");
-    },
-    saveData() {
-      if (this.valid) {
-        if (this.name == "") {
-          this.isName = false;
+    if (isMobile.value && isName.value && isGender.value) {
+      try {
+        const response = await axios.post(`/gypsy/save-normal-user-by-mobile`, payload, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        const data = response.data;
+        console.log(data);
+        successMessage.value = data.message;
+        localStorage.setItem("name", data.data.name);
+        localStorage.setItem("mobile", data.data.mobile_number);
+        if (data.data.email_id) {
+          localStorage.setItem("email", data.data.email_id);
         } else {
-          this.isName = true;
+          localStorage.setItem("email", "");
         }
-        if (this.gender == "") {
-          this.isGender = false;
+        localStorage.setItem("g_id", data.data.gypsy_ref_no);
+        localStorage.setItem("gypsy_id", data.data.gypsy_id);
+        localStorage.setItem("user_image", data.data.image);
+        localStorage.setItem("last_login", data.data.last_login);
+        localStorage.setItem("token", data.data.token);
+        isSuccess.value = true;
+        nextStep();
+      } catch (error) {
+        console.log(error);
+        if (error.response?.status === 422) {
+          const message =
+            error.response.data.email_id && error.response.data.message
+              ? `This Mobile Number ${mobile.value} already exist in our database using the email id `
+              : error.response.data.email_id == null && error.response.data.message
+              ? `This Mobile Number ${mobile.value} already exists in our database`
+              : "";
+          emailErrorPhone.value = error.response.data.email_id || "";
+          errorMessagePhone.value = message;
+          isErrorPhone.value = true;
         } else {
-          this.isGender = true;
+          const message = error.response?.data?.email_id
+            ? error.response.data.email_id[0]
+            : error.response?.data?.mobile_number
+            ? error.response.data.mobile_number[0]
+            : error.response?.data?.message === ""
+            ? "Something Wrong!!!"
+            : error.response?.data?.message || "Something Wrong!!!";
+          errorMessage.value = message;
+          isError.value = true;
         }
-        if (this.mobile == null) {
-          this.isMobile = false;
-        } else {
-          this.isMobile = true;
-        }
-        this.isSending = true;
-        const countryName = this.options
-          .filter((o) => o.value == this.country)
-          .map((op) => op.label)[0];
-        const appId = localStorage.getItem("app_id");
-        const payload = {
-          name: this.name,
-          mobile_number: this.mobile,
-          country_prefix: this.country,
-          gender: this.gender,
-          app_id: appId == "" ? this.$appId : appId,
-          registered_type: this.isSmall ? "M" : "W",
-          country_name: countryName,
-          image: this.imageSend || null,
-          email_id: this.email || null,
-          country_code: this.phoneEvent?.countryCallingCode
-            ? `+${this.phoneEvent.countryCallingCode}`
-            : "",
-          flag: `https://flagicons.lipis.dev/flags/4x3/${this.phoneEvent?.countryCode?.toLowerCase() || 'sg'}.svg`,
-        };
-        if (
-          this.isMobile == true &&
-          this.isName == true &&
-          this.isGender == true
-        ) {
-          axios
-            .post(`/gypsy/save-normal-user-by-mobile`, payload, {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            })
-            .then((response) => {
-              const data = response.data;
-              console.log(data);
-              this.successMessage = data.message;
-              localStorage.setItem("name", data.data.name);
-              localStorage.setItem("mobile", data.data.mobile_number);
-              if (data.data.email_id) {
-                localStorage.setItem("email", data.data.email_id);
-              } else {
-                localStorage.setItem("email", "");
-              }
-              localStorage.setItem("g_id", data.data.gypsy_ref_no);
-              localStorage.setItem("gypsy_id", data.data.gypsy_id);
-              localStorage.setItem("user_image", data.data.image);
-              localStorage.setItem("last_login", data.data.last_login);
-              localStorage.setItem("token", data.data.token);
-              this.isSuccess = true;
-              this.nextStep();
-            })
-            .catch((error) => {
-              console.log(error);
-              if (error.response?.status == 422) {
-                const message =
-                  error.response.status == 422 &&
-                  error.response.data.email_id &&
-                  error.response.data.message
-                    ? `This Mobile Number ${this.mobile} already exist in our database using the email id `
-                    : error.response.status == 422 &&
-                      error.response.data.email_id == null &&
-                      error.response.data.message
-                    ? `This Mobile Number ${this.mobile} already exists in our database`
-                    : "";
-                this.emailErrorPhone = error.response.data.email_id
-                  ? error.response.data.email_id
-                  : "";
-                this.errorMessagePhone = message;
-                this.isErrorPhone = true;
-              } else {
-                const message = error.response?.data?.email_id
-                  ? error.response.data.email_id[0]
-                  : error.response?.data?.mobile_number
-                  ? error.response.data.mobile_number[0]
-                  : error.response?.data?.message === ""
-                  ? "Something Wrong!!!"
-                  : error.response?.data?.message || "Something Wrong!!!";
-                this.errorMessage = message;
-                this.isError = true;
-              }
-            })
-            .finally(() => {
-              this.isSending = false;
-            });
-        }
+      } finally {
+        isSending.value = false;
       }
-    },
-    getUserData() {
-      axios
-        .get(`/country`)
-        .then((response) => {
-          const data = response.data.data;
-          this.resource.code = data.map((country) => {
-            return {
-              name: `${country.country_name} (${country.country_code})`,
-              code: country.country_code,
-            };
-          });
-        })
-        .catch((error) => {
-          console.log(error);
-          const message =
-            error.response?.data?.message === ""
-              ? "Something Wrong!!!"
-              : error.response?.data?.message || "Something Wrong!!!";
-          this.errorMessage = message;
-          this.isError = true;
-        });
-    },
-    getCountryCode() {
-      axios
-        .get(`/country`)
-        .then((response) => {
-          const data = response.data.data;
-          this.resource.code = data.map((country) => {
-            return {
-              name: `${country.country_name} (${country.country_code})`,
-              code: country.country_code,
-            };
-          });
-        })
-        .catch((error) => {
-          console.log(error);
-          const message =
-            error.response?.data?.message === ""
-              ? "Something Wrong!!!"
-              : error.response?.data?.message || "Something Wrong!!!";
-          this.errorMessage = message;
-          this.isError = true;
-        });
-    },
-    handleResize() {
-      this.screenWidth = window.innerWidth;
-    },
-    resendOTP() {
-      this.isSuccess = true;
-      this.successMessage = "Success send OTP";
-    },
-  },
-};
+    } else {
+      isSending.value = false;
+    }
+  }
+}
+
+function resendOTP() {
+  isSuccess.value = true;
+  successMessage.value = "Success send OTP";
+}
+
+onMounted(() => {
+  getCountryCode();
+  emitter.emit("changeHeaderWelcome", "Sign-up by Mobile");
+  mobile.value = localStorage.getItem("mobile") || "";
+  window.addEventListener("resize", handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
+});
 </script>
 
 <style scoped>

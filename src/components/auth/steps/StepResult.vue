@@ -61,81 +61,77 @@
   </div>
 </template>
 
-<script>
-import app from "@/util/eventBus";
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
+import { emitter } from "@/util/eventBus";
 
-export default {
-  name: "StepResult",
-  props: {
-    authType: {
-      type: String,
-      default: "",
-    },
+const props = defineProps({
+  authType: {
+    type: String,
+    default: "",
   },
-  data() {
-    return {
-      name: "",
-      gId: "",
-      screenWidth: window.innerWidth,
-      isSuccess: false,
-      successMessage: "",
-    };
-  },
-  computed: {
-    isSmall() {
-      return this.screenWidth < 640;
-    },
-  },
-  created() {
-    window.addEventListener("resize", this.handleResize);
-  },
-  mounted() {
-    this.name = localStorage.getItem("name") || "";
-    this.gId = localStorage.getItem("g_id") || "";
-  },
-  unmounted() {
-    window.removeEventListener("resize", this.handleResize);
-  },
-  methods: {
-    changeHeader() {
-      const appId = localStorage.getItem("app_id");
-      const token = localStorage.getItem("token");
+});
 
-      if (this.authType === "mobile") {
-        localStorage.setItem("social", "Mobile");
-      } else if (this.authType === "email") {
-        localStorage.setItem("social", "Email");
-      }
+const emit = defineEmits(["nextStep", "backStep"]);
+const router = useRouter();
 
-      if (appId === "" || !appId) {
-        app.config.globalProperties.$eventBus.$emit(
-          "changeHeaderWelcome2",
-          "Sign-Up / Sign-in"
-        );
-        this.$router.push(token ? `/?token=${token}` : "/");
-      } else if (appId === "5") {
-        const externalURL = `${import.meta.env.VITE_SYRINGE_URL}?token=${token}`;
-        window.location.href = externalURL;
-      } else if (appId === "2") {
-        const externalURL = `${import.meta.env.VITE_MALLE_URL}?token=${token}`;
-        window.location.href = externalURL;
-      }
-    },
-    nextStep() {
-      this.$emit("nextStep");
-    },
-    backStep() {
-      this.$emit("backStep");
-    },
-    handleResize() {
-      this.screenWidth = window.innerWidth;
-    },
-    resendOTP() {
-      this.isSuccess = true;
-      this.successMessage = "Success send OTP";
-    },
-  },
-};
+const name = ref("");
+const gId = ref("");
+const screenWidth = ref(window.innerWidth);
+const isSuccess = ref(false);
+const successMessage = ref("");
+
+const isSmall = computed(() => screenWidth.value < 640);
+
+function handleResize() {
+  screenWidth.value = window.innerWidth;
+}
+
+onMounted(() => {
+  window.addEventListener("resize", handleResize);
+  name.value = localStorage.getItem("name") || "";
+  gId.value = localStorage.getItem("g_id") || "";
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
+});
+
+function changeHeader() {
+  const appId = localStorage.getItem("app_id");
+  const token = localStorage.getItem("token");
+
+  if (props.authType === "mobile") {
+    localStorage.setItem("social", "Mobile");
+  } else if (props.authType === "email") {
+    localStorage.setItem("social", "Email");
+  }
+
+  if (appId === "" || !appId) {
+    emitter.emit("changeHeaderWelcome2", "Sign-Up / Sign-in");
+    router.push(token ? `/?token=${token}` : "/");
+  } else if (appId === "5") {
+    const externalURL = `${import.meta.env.VITE_SYRINGE_URL}?token=${token}`;
+    window.location.href = externalURL;
+  } else if (appId === "2") {
+    const externalURL = `${import.meta.env.VITE_MALLE_URL}?token=${token}`;
+    window.location.href = externalURL;
+  }
+}
+
+function nextStep() {
+  emit("nextStep");
+}
+
+function backStep() {
+  emit("backStep");
+}
+
+function resendOTP() {
+  isSuccess.value = true;
+  successMessage.value = "Success send OTP";
+}
 </script>
 
 <style scoped>
