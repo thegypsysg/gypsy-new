@@ -24,8 +24,9 @@ const routes = [
   {
     path: "/sign-in",
     name: "Welcome",
-    component: () => import("../views/SignUpForm.vue"),
+    component: () => import("../views/AuthFlow.vue"),
     meta: {
+      flow: "mobile",
       guestOnly: true,
     },
   },
@@ -42,15 +43,19 @@ const routes = [
   {
     path: "/sign-up-email",
     name: "SignUpEmail",
-    component: () => import("../views/OTPEmailForm.vue"),
+    component: () => import("../views/AuthFlow.vue"),
     meta: {
+      flow: "email",
       guestOnly: true,
     },
   },
   {
     path: "/signup-email",
     name: "Create Password",
-    component: () => import("../views/CreatePasswordForm.vue"),
+    component: () => import("../views/AuthFlow.vue"),
+    meta: {
+      flow: "create-password",
+    },
   },
   {
     path: "/try-email",
@@ -60,7 +65,10 @@ const routes = [
   {
     path: "/social-sign-up",
     name: "Social Sign Up",
-    component: () => import("../views/SocialLoginForm.vue"),
+    component: () => import("../views/AuthFlow.vue"),
+    meta: {
+      flow: "social",
+    },
     beforeEnter(to, from, next) {
       const email = to.query.email || "";
       const name = to.query.name || "";
