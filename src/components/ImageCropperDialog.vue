@@ -16,9 +16,9 @@
           />
         </v-card-text>
         <v-card-actions class="py-0 mx-10">
-          <v-btn text color="red" @click="resetCropper"> Cancel </v-btn>
+          <v-btn text color="red" aria-label="Cancel image crop" @click="resetCropper"> Cancel </v-btn>
           <v-spacer />
-          <v-btn text color="blue" @click="cropChosenImage"> Crop </v-btn>
+          <v-btn text color="blue" aria-label="Confirm image crop" @click="cropChosenImage"> Crop </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

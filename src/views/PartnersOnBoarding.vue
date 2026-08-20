@@ -123,7 +123,7 @@ onUnmounted(() => {
 
 <style scoped>
 .bg-wrapper {
-  background-image: url("@/assets/images/partner-background.jpg");
+  background-image: url("@/assets/images/partner-background.webp");
 }
 .v-text-field :deep(.v-field__outline) {
   --v-field-border-opacity: 0.3;

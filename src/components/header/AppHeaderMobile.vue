@@ -64,6 +64,7 @@
             variant="text"
             color="black"
             icon="mdi-share-outline"
+            aria-label="Share"
             width="30"
             height="30"
             class="mx-4"
@@ -113,7 +114,7 @@
     <ul class="pt-1" nav dense>
       <li class="v-list-item">
         <div class="v-list-item__icon">
-          <v-img height="20" width="30" src="@/assets/images/icons/home.png" />
+          <v-img height="20" width="30" src="@/assets/images/icons/home.webp" />
         </div>
         <v-list-item-title style="font-size: 12px"> Home </v-list-item-title>
       </li>
@@ -123,7 +124,7 @@
           <v-img
             height="18"
             width="25"
-            src="@/assets/images/icons/menu-shopper.png"
+            src="@/assets/images/icons/menu-shopper.webp"
           />
         </div>
         <router-link class="text-decoration-none text-black" to="/my-profile">
@@ -135,7 +136,7 @@
 
       <li class="v-list-item mt-n2">
         <div class="v-list-item__icon">
-          <v-img height="18" width="25" src="@/assets/images/icons/shop.png" />
+          <v-img height="18" width="25" src="@/assets/images/icons/shop.webp" />
         </div>
         <v-list-item-title style="font-size: 12px"> My Cart </v-list-item-title>
       </li>
@@ -198,27 +199,30 @@
           :class="{ 'mb-2': userName == null }"
         >
           <v-col cols="3" class="d-flex justify-end">
-            <a :href="contactData?.facebook">
+            <a :href="contactData?.facebook" aria-label="Facebook">
               <v-img
-                src="@/assets/images/icons/facebook.png"
+                src="@/assets/images/icons/facebook.webp"
+                alt="Facebook icon"
                 height="40"
                 width="32"
               />
             </a>
           </v-col>
           <v-col class="d-flex justify-center" cols="3">
-            <a :href="contactData?.instagram">
+            <a :href="contactData?.instagram" aria-label="Instagram">
               <v-img
-                src="@/assets/images/icons/insta.png"
+                src="@/assets/images/icons/insta.webp"
+                alt="Instagram icon"
                 height="40"
                 width="32"
               />
             </a>
           </v-col>
           <v-col class="d-flex justify-start" cols="3">
-            <a :href="contactData?.tiktok">
+            <a :href="contactData?.tiktok" aria-label="TikTok">
               <v-img
-                src="@/assets/images/icons/tiktok.png"
+                src="@/assets/images/icons/tiktok.webp"
+                alt="TikTok icon"
                 class="mt-1"
                 height="35"
                 width="35"
@@ -232,9 +236,11 @@
             <p class="text-caption">Wha'ts App Support (24 hrs)</p>
             <a
               :href="`https://api.whatsapp.com/send?phone=${footerData?.whats_app}&text=The Gypsy Support here - How may I help you. ?`"
+              aria-label="WhatsApp Support"
             >
               <v-img
                 src="@/assets/whatsapp.svg"
+                alt="WhatsApp icon"
                 class="mt-1"
                 height="35"
                 width="35"

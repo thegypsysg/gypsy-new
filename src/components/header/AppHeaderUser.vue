@@ -31,16 +31,20 @@
     <div
       v-if="!isWelcome || $route.path === '/partners'"
       style="height: 48px; width: 48px; border-radius: 50%; cursor: pointer"
-      icon
+      role="button"
+      aria-label="Toggle user menu"
+      tabindex="0"
       :class="{
         'mr-2':
           isPrivacy || isTerms || isMyProfile || $route.path === '/partners',
       }"
       @click="$emit('toggle-drawer')"
+      @keyup.enter="$emit('toggle-drawer')"
     >
       <v-img
         v-if="userImage != null"
         :src="userImage"
+        alt="User profile picture"
         cover
         style="height: 100%; width: 100%; border-radius: 50%"
       >
@@ -50,7 +54,8 @@
       </v-img>
       <img
         v-else-if="userImage == null && !isLoading"
-        src="@/assets/images/icons/user_icon.png"
+        src="@/assets/images/icons/user_icon.webp"
+        alt="User icon"
         cover
         height="48"
         style="height: 100%; width: 100%"

@@ -27,4 +27,54 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("vuetify")) {
+              return "vuetify";
+            }
+            if (id.includes("maz-ui")) {
+              return "maz-ui";
+            }
+            if (
+              id.includes("@fortawesome") ||
+              id.includes("@mdi") ||
+              id.includes("flag-icons")
+            ) {
+              return "icons";
+            }
+            if (
+              id.includes("vue3-country-intl") ||
+              id.includes("vue-country-code-select") ||
+              id.includes("vue3-country-region-select") ||
+              id.includes("libphonenumber-js")
+            ) {
+              return "country-phone";
+            }
+            if (id.includes("cropperjs") || id.includes("vue-cropperjs")) {
+              return "cropper";
+            }
+            if (id.includes("animejs") || id.includes("aos")) {
+              return "animations";
+            }
+            if (
+              id.includes("vue") ||
+              id.includes("vue-router") ||
+              id.includes("pinia") ||
+              id.includes("axios")
+            ) {
+              return "vendor";
+            }
+          }
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
+  },
+  test: {
+    globals: true,
+    environment: "jsdom",
+  },
 });

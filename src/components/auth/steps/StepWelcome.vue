@@ -47,11 +47,12 @@
                     color="white"
                     style="background: transparent"
                     icon
+                    aria-label="Sign in with Google"
                     @click="loginSocial('google')"
                   >
                     <v-icon :size="!isSmall ? '35' : '40'">
                       <v-img
-                        src="@/assets/images/icons/google.png"
+                        src="@/assets/images/icons/google.webp"
                         alt="Google Logo"
                       />
                     </v-icon>
@@ -63,6 +64,7 @@
                     style="background: #4267b2"
                     color="white"
                     icon
+                    aria-label="Sign in with Facebook"
                     @click="loginSocial('facebook')"
                   >
                     <v-icon :size="!isSmall ? '18' : '24'">
@@ -332,7 +334,12 @@
           {{ errorMessage }}
 
           <template #actions>
-            <v-btn color="white" variant="text" @click="isError = false">
+            <v-btn
+              color="white"
+              variant="text"
+              aria-label="Close error message"
+              @click="isError = false"
+            >
               <v-icon>mdi-close</v-icon>
             </v-btn>
           </template>
@@ -346,7 +353,12 @@
           {{ successMessage }}
 
           <template #actions>
-            <v-btn color="white" variant="text" @click="isSuccess = false">
+            <v-btn
+              color="white"
+              variant="text"
+              aria-label="Close success message"
+              @click="isSuccess = false"
+            >
               <v-icon>mdi-close</v-icon>
             </v-btn>
           </template>
@@ -780,7 +792,7 @@ onUnmounted(() => {
 
 <style scoped>
 .login-container {
-  background-image: url("@/assets/header.png");
+  background-image: url("@/assets/header.webp");
   background-position: center;
   background-size: cover;
   background-color: #cccccc;

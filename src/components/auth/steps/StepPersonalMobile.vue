@@ -523,7 +523,7 @@ onUnmounted(() => {
 
 <style scoped>
 .login-container {
-  background-image: url("@/assets/header.png");
+  background-image: url("@/assets/header.webp");
   background-position: center;
   background-size: cover;
   background-color: #cccccc;

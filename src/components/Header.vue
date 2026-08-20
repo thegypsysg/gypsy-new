@@ -117,7 +117,7 @@
         aria-label="Search"
         data-autocompleturl="https://boozards.com/merchant-product/search"
       />
-      <button class="btn btn--search" type="submit">
+      <button class="btn btn--search" type="submit" aria-label="Search">
         <v-icon color="white"> mdi-magnify </v-icon>
       </button>
     </form>
