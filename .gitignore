@@ -24,3 +24,8 @@ pnpm-debug.log*
 *.sln
 *.sw?
 node_modules
+
+# Agent rules and skills
+.agents/
+AGENTS.md
+
