@@ -29,8 +29,9 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
+import DOMPurify from "dompurify";
 import Footer from "@/components/Footer.vue";
-import axios from "@/util/axios";
+import http from "@/api/http";
 import { logger } from "@/utils/logger";
 
 const route = useRoute();
@@ -49,13 +50,18 @@ const privacyType = computed(() => {
 const isSmall = computed(() => screenWidth.value < 640);
 
 function formatInfo(info) {
-  return info ? info.replace(/\n/g, "<br>") : "";
+  if (!info) return "";
+  const withLineBreaks = info.replace(/\n/g, "<br>");
+  return DOMPurify.sanitize(withLineBreaks, {
+    ALLOWED_TAGS: ["br", "strong", "em", "p", "b", "i", "u", "span", "a"],
+    ALLOWED_ATTR: ["href", "target", "rel", "class"],
+  });
 }
 
 async function getPrivacyData() {
   isLoading.value = true;
   try {
-    const response = await axios.get(
+    const response = await http.get(
       `/privacy-policy/type/${privacyType.value}`
     );
     privacyData.value = response.data.data;
@@ -69,7 +75,7 @@ async function getPrivacyData() {
 async function getFooterData() {
   isLoading.value = true;
   try {
-    const response = await axios.get(`/footer`);
+    const response = await http.get(`/footer`);
     footerData.value = response.data.data[0];
   } catch (error) {
     logger.error("Error fetching footer data:", error);

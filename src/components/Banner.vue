@@ -3,7 +3,7 @@
     <div
       class="bg-image"
       :style="{
-        backgroundImage: `url(${$fileURL + headerData.app_main_image})`,
+        backgroundImage: `url(${fileURL + headerData.app_main_image})`,
       }"
       :class="{ 'bg-image-mobile': isSmall }"
     >
@@ -144,6 +144,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useAppConfig } from "@/composables/useAppConfig";
 import AOS from "aos";
 
 defineProps({
@@ -153,6 +154,7 @@ defineProps({
   },
 });
 
+const { fileURL } = useAppConfig();
 const screenWidth = ref(window.innerWidth);
 
 const isSmall = computed(() => screenWidth.value < 640);

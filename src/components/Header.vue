@@ -11,8 +11,9 @@
     <router-link to="/">
       <div class="logo-img-container">
         <v-img
+          v-if="headerData?.app_logo"
           class="logo-img"
-          :src="$fileURL + headerData?.app_logo"
+          :src="fileURL + headerData.app_logo"
           height="90"
           :class="{ 'ml-8': isWelcome && isPrivacy && isTerms && isMyProfile }"
         >
@@ -192,12 +193,15 @@ import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useLocationStore } from "@/stores/location.store";
 import { useAuthStore } from "@/stores/auth.store";
+import { useAppConfig } from "@/composables/useAppConfig";
 import AppHeaderMobile from "@/components/header/AppHeaderMobile.vue";
 import AppHeaderUser from "@/components/header/AppHeaderUser.vue";
 import AppHeaderLocation from "@/components/header/AppHeaderLocation.vue";
 import AppHeaderNav from "@/components/header/AppHeaderNav.vue";
 import { emitter } from "@/util/eventBus";
-import axios from "@/util/axios";
+import http from "@/api/http";
+import { logger } from "@/utils/logger";
+import StorageService from "@/services/storage.service";
 import moment from "moment-timezone";
 
 const props = defineProps({
@@ -211,42 +215,41 @@ const route = useRoute();
 const router = useRouter();
 const locationStore = useLocationStore();
 const authStore = useAuthStore();
+const { fileURL } = useAppConfig();
 
 let timeInterval = null;
-const isLoading = ref(false);
-const headerData = ref({});
-const userImage = ref(null);
-const userName = ref(null);
-const userDated = ref(null);
+const activeIndex = ref(1);
+const isZero = ref(false);
+const cityName = ref("");
+const categoryName = ref("");
+const trendingBtn = ref([]);
+const contactData = ref({});
+const appData = ref([]);
+const userName = ref(StorageService.getName() || null);
+const userDated = ref(StorageService.getLastLogin() || null);
+const userImage = ref(
+  StorageService.getUserImage()
+    ? fileURL + StorageService.getUserImage()
+    : null
+);
 const titleWelcome = ref("Sign-Up / Sign-in");
 const drawer = ref(false);
-const userLocation = ref(false);
-const isZero = ref(false);
-const cityName = ref(null);
-const categoryName = ref(null);
-const itemSelected = ref("Singapore");
-const items = ref([
-  { title: "Singapore", path: "#" },
-  { title: "Mumbai", path: "#" },
-  { title: "Goa", path: "#" },
-  { title: "Kuala Lumpur", path: "#" },
-]);
-
-const appData = ref(null);
-const contactData = ref(null);
 const trendingCard = ref([]);
-const trendingBtn = ref([]);
-const selectedType = ref(0);
-const activeIndex = ref(1);
+const headerData = ref({});
+const isLoading = ref(false);
+const items = ref([]);
 const screenWidth = ref(window.innerWidth);
 const currentTime = ref("");
 const footerData = ref(null);
+const userLocation = ref(false);
 
 const tokenProvider = computed(() => {
   const url = new URL(window.location.href);
   const tokenParam = url.searchParams.get("token");
   if (tokenParam) {
-    localStorage.setItem("token", tokenParam);
+    StorageService.setToken(tokenParam);
+    url.searchParams.delete("token");
+    window.history.replaceState({}, "", url.toString());
   }
   return tokenParam;
 });
@@ -264,11 +267,6 @@ const nameParam = computed(() => {
 });
 const isTerms = computed(() => route.path === "/our-terms");
 const isSmall = computed(() => screenWidth.value < 640);
-const socialProvider = computed(() => {
-  return route.query.social && route.query.token
-    ? capitalizeFirstLetter(route.query.social)
-    : "";
-});
 const activeTag = computed(() => locationStore.activeTag);
 const itemSelectedComplete = computed(() => locationStore.itemSelectedComplete);
 const country = computed(() => locationStore.country);
@@ -281,7 +279,6 @@ const activeLocationButton = computed(
 const locationPlaceholder = computed(() =>
   activeCity.value ? activeCity.value?.city_name : selectedPlace.value
 );
-const token = computed(() => localStorage.getItem("token"));
 
 watch(selectedTrending, () => {
   setTimeout(() => {
@@ -298,24 +295,20 @@ function updateTime() {
   currentTime.value = singaporeTime.format("HH:mm:ss");
 }
 
-function changeHeaderImage(image) {
-  userImage.value = (window.$fileURL || "/file/") + image;
-}
-
 function capitalizeFirstLetter(string) {
   return string ? string.charAt(0).toUpperCase() + string.slice(1) : "";
 }
 
 function getFooterData() {
   isLoading.value = true;
-  axios
+  http
     .get(`/footer`)
     .then((response) => {
       const data = response.data.data;
       footerData.value = data[0];
     })
     .catch((error) => {
-      console.log(error);
+      logger.error("Header API error:", error);
     })
     .finally(() => {
       isLoading.value = false;
@@ -326,26 +319,6 @@ function setActiveTag(tag) {
   locationStore.setActiveTag(tag);
 }
 
-function setItemSelected(item) {
-  locationStore.setItemSelected(item);
-}
-
-function setItemSelectedComplete(item) {
-  locationStore.setItemSelectedComplete(item);
-}
-
-function setSelectedTrending(item) {
-  locationStore.setSelectedTrending(item);
-}
-
-function setActiveCity(item) {
-  locationStore.setActiveCity(item);
-}
-
-function setSelectedPlace(item) {
-  locationStore.setSelectedPlace(item);
-}
-
 function changeItemSelected(city, countryItem) {
   if (city.property_count == 0) {
     isZero.value = true;
@@ -353,9 +326,9 @@ function changeItemSelected(city, countryItem) {
     categoryName.value = selectedTrending.value?.title;
     return false;
   }
-  setActiveCity(city);
-  setItemSelectedComplete(countryItem);
-  setSelectedPlace(city.country_name);
+  locationStore.setActiveCity(city);
+  locationStore.setItemSelectedComplete(countryItem);
+  locationStore.setSelectedPlace(city.country_name);
 }
 
 function goToSignIn() {
@@ -364,22 +337,22 @@ function goToSignIn() {
 }
 
 function logout() {
-  const tokenVal = localStorage.getItem("token");
-  axios
-    .get(`/gypsy-logout`, {
-      headers: {
-        Authorization: `Bearer ${tokenVal}`,
-      },
-    })
+  http
+    .get(`/gypsy-logout`)
     .then(() => {
       authStore.clearAuth();
       window.location.href = "/";
     })
     .catch((error) => {
-      console.log(error);
+      logger.error("Header API error:", error);
       authStore.clearAuth();
       window.location.href = "/";
     });
+}
+
+function changeHeaderImage(image) {
+  logger.log("changeHeaderImage:", image);
+  userImage.value = image ? fileURL + image : null;
 }
 
 function changeHeaderWelcome(title) {
@@ -387,10 +360,10 @@ function changeHeaderWelcome(title) {
 }
 
 function changeHeaderWelcome2(title) {
-  userName.value = localStorage.getItem("name");
-  userDated.value = localStorage.getItem("last_login");
-  const img = localStorage.getItem("user_image");
-  userImage.value = img ? (window.$fileURL || "/file/") + img : null;
+  userName.value = StorageService.getName();
+  userDated.value = StorageService.getLastLogin();
+  const img = StorageService.getUserImage();
+  userImage.value = img ? fileURL + img : null;
   getHeaderUserData();
   titleWelcome.value = title;
 }
@@ -407,24 +380,17 @@ function selectTag(tag) {
 
 function getHeaderUserData() {
   isLoading.value = true;
-  const tokenVal = localStorage.getItem("token");
-  axios
-    .get(`/gypsy-user`, {
-      headers: {
-        Authorization: `Bearer ${
-          tokenProvider.value ? tokenProvider.value : tokenVal
-        }`,
-      },
-    })
+  http
+    .get(`/gypsy-user`)
     .then((response) => {
       const data = response.data.data;
       userName.value = data.name;
       userDated.value = data.last_login;
       userImage.value =
-        data.image != null ? (window.$fileURL || "/file/") + data.image : null;
+        data.image != null ? fileURL + data.image : null;
     })
     .catch((error) => {
-      console.log(error);
+      logger.error("Header API error:", error);
     })
     .finally(() => {
       isLoading.value = false;
@@ -433,22 +399,17 @@ function getHeaderUserData() {
 
 function getHeaderUserData2() {
   isLoading.value = true;
-  const tokenVal = localStorage.getItem("token");
-  axios
-    .get(`/gypsy-user`, {
-      headers: {
-        Authorization: `Bearer ${tokenVal}`,
-      },
-    })
+  http
+    .get(`/gypsy-user`)
     .then((response) => {
       const data = response.data.data;
       userName.value = data.name;
       userDated.value = data.last_login;
       userImage.value =
-        data.image != null ? (window.$fileURL || "/file/") + data.image : null;
+        data.image != null ? fileURL + data.image : null;
     })
     .catch((error) => {
-      console.log(error);
+      logger.error("Header API error:", error);
     })
     .finally(() => {
       isLoading.value = false;
@@ -456,7 +417,7 @@ function getHeaderUserData2() {
 }
 
 function getAppData() {
-  axios
+  http
     .get(`/app`)
     .then((response) => {
       const data = response.data.data;
@@ -486,49 +447,35 @@ function getAppData() {
       }));
     })
     .catch((error) => {
-      console.log(error);
+      logger.error("Header API error:", error);
     });
 }
 
 function getApplicantsData() {
-  const tokenVal = localStorage.getItem("token");
-  axios
-    .get(`/applicants`, {
-      headers: {
-        Authorization: `Bearer ${
-          tokenProvider.value ? tokenProvider.value : tokenVal
-        }`,
-      },
-    })
+  http
+    .get(`/applicants`)
     .then((response) => {
       appData.value = response.data.data;
     })
     .catch((error) => {
-      console.log(error);
+      logger.error("Header API error:", error);
     });
 }
 
 function getAppContactData() {
-  const tokenVal = localStorage.getItem("token");
-  axios
-    .get(`/app/contact/1`, {
-      headers: {
-        Authorization: `Bearer ${
-          tokenProvider.value ? tokenProvider.value : tokenVal
-        }`,
-      },
-    })
+  http
+    .get(`/app/contact/1`)
     .then((response) => {
       contactData.value = response.data.data;
     })
     .catch((error) => {
-      console.log(error);
+      logger.error("Header API error:", error);
     });
 }
 
 function getGroups() {
   isLoading.value = true;
-  axios
+  http
     .get(`/groups`)
     .then((response) => {
       const data = response.data.data;
@@ -539,7 +486,7 @@ function getGroups() {
       }));
     })
     .catch((error) => {
-      console.log(error);
+      logger.error("Header API error:", error);
     })
     .finally(() => {
       isLoading.value = false;
@@ -547,18 +494,18 @@ function getGroups() {
 }
 
 function getHeaderData() {
-  axios
+  http
     .get(`/header`)
     .then((response) => {
       headerData.value = response.data.data;
     })
     .catch((error) => {
-      console.log(error);
+      logger.error("Header API error:", error);
     });
 }
 
 function getCountry() {
-  axios
+  http
     .get(`/city`)
     .then((response) => {
       const data = response.data.data;
@@ -569,7 +516,7 @@ function getCountry() {
       }));
     })
     .catch((error) => {
-      console.log(error);
+      logger.error("Header API error:", error);
     });
 }
 
@@ -608,7 +555,7 @@ onMounted(() => {
     locationStore.getCountryMall();
   }, 800);
 
-  const tokenVal = localStorage.getItem("token");
+  const tokenVal = StorageService.getToken();
   if (tokenProvider.value != null || tokenVal) {
     getHeaderUserData();
   }

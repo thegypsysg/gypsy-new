@@ -67,9 +67,10 @@
             </p>
             <div class="our-apps">
               <v-img
+                v-if="item.img"
                 class="our-apps-img"
                 transition="fade-transition"
-                :src="$fileURL + item.img"
+                :src="fileURL + item.img"
               >
                 <template #placeholder>
                   <div class="skeleton" />
@@ -185,8 +186,10 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import axios from "@/util/axios";
+import http from "@/api/http";
 import { emitter } from "@/util/eventBus";
+import { useAppConfig } from "@/composables/useAppConfig";
+import { logger } from "@/utils/logger";
 
 defineProps({
   footerData: {
@@ -199,6 +202,7 @@ defineProps({
   },
 });
 
+const { fileURL } = useAppConfig();
 const trendingCard = ref([]);
 const screenWidth = ref(window.innerWidth);
 
@@ -214,7 +218,7 @@ function scrollToTrending() {
 
 async function getAppData() {
   try {
-    const response = await axios.get(`/app`);
+    const response = await http.get(`/app`);
     const data = response.data.data;
     const dataItem = data.slice(0, 6);
     trendingCard.value = dataItem.map((item) => ({
@@ -247,7 +251,7 @@ async function getAppData() {
       shares: item.app_shares || "",
     }));
   } catch (error) {
-    console.log(error);
+    logger.error("Footer getAppData error:", error);
   }
 }
 

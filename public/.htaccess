@@ -1,4 +1,4 @@
-﻿# Vue Router History Mode — Required for cPanel Deployment
+# Vue Router History Mode — Required for cPanel Deployment
 # Semua request yang bukan file/folder fisik akan diarahkan ke index.html
 
 RewriteOptions inherit
@@ -14,3 +14,13 @@ RewriteOptions inherit
   # Semua route lainnya dikembalikan ke index.html
   RewriteRule . /index.html [L]
 </IfModule>
+
+# Security Headers
+<IfModule mod_headers.c>
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-XSS-Protection "1; mode=block"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(self), camera=(), microphone=()"
+</IfModule>
+

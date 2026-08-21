@@ -302,18 +302,21 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { emitter } from "@/util/eventBus";
-import axios from "@/util/axios";
+import http from "@/api/http";
 import { logger } from "@/utils/logger";
 import VueCropper from "vue-cropperjs";
 import "cropperjs/dist/cropper.css";
 
 import { countryOptions } from "@/constants/countries";
+import { useAppConfig } from "@/composables/useAppConfig";
+import StorageService from "@/services/storage.service";
 import ProfileAvatar from "@/components/profile/ProfileAvatar.vue";
 import BasicInfoForm from "@/components/profile/BasicInfoForm.vue";
 import ContactForm from "@/components/profile/ContactForm.vue";
 import LocationForm from "@/components/profile/LocationForm.vue";
 import SecurityForm from "@/components/profile/SecurityForm.vue";
 
+const { fileURL, appId } = useAppConfig();
 const options = countryOptions;
 const isWhy = ref(false);
 const isVerifySent = ref(false);
@@ -442,7 +445,7 @@ const tokenProvider = computed(() => {
   const url = new URL(window.location.href);
   const tokenParam = url.searchParams.get("token");
   if (tokenParam) {
-    localStorage.setItem("token", tokenParam);
+    StorageService.setToken(tokenParam);
   }
   return tokenParam;
 });
@@ -517,16 +520,12 @@ function handleInputOTP(event) {
 
 async function verifyEmail() {
   isVerifying.value = true;
-  const token = localStorage.getItem("token");
   try {
-    const response = await axios.post(
+    const response = await http.post(
       `/gypsy/send-verification-email`,
       {},
       {
         headers: {
-          Authorization: `Bearer ${
-            tokenProvider.value ? tokenProvider.value : token
-          }`,
           "Content-Type": "multipart/form-data",
         },
       }
@@ -536,7 +535,7 @@ async function verifyEmail() {
     isEmailOTP.value = true;
     isVerifySent.value = true;
   } catch (error) {
-    logger.log(error);
+    logger.error("MyProfile verifyEmail error:", error);
     const message = error.response?.data?.email_id
       ? error.response.data.email_id[0]
       : error.response?.data?.message === ""
@@ -561,13 +560,9 @@ async function saveEmailOTP() {
   const payload = {
     verify_email_otp: input.value.emailOTP,
   };
-  const token = localStorage.getItem("token");
   try {
-    const response = await axios.post(`/gypsy/validate-verify-email-otp`, payload, {
+    const response = await http.post(`/gypsy/validate-verify-email-otp`, payload, {
       headers: {
-        Authorization: `Bearer ${
-          tokenProvider.value ? tokenProvider.value : token
-        }`,
         "Content-Type": "multipart/form-data",
       },
     });
@@ -575,7 +570,7 @@ async function saveEmailOTP() {
     logger.log(data);
     isVerifySuccess.value = true;
   } catch (error) {
-    logger.log(error);
+    logger.error("MyProfile saveEmailOTP error:", error);
     const message = error.response?.data?.verify_email_otp
       ? "Wrong OTP"
       : error.response?.data?.message === ""
@@ -615,7 +610,7 @@ function onInputNationality() {
 
 async function getTown(id) {
   try {
-    const response = await axios.get(`/town-list`);
+    const response = await http.get(`/town-list`);
     const data = response.data.data;
     if (id) {
       resource.value.town = data
@@ -635,13 +630,13 @@ async function getTown(id) {
       }));
     }
   } catch (error) {
-    logger.log(error);
+    logger.error("MyProfile getTown error:", error);
   }
 }
 
 async function getCity(country_name) {
   try {
-    const response = await axios.get(`/city`);
+    const response = await http.get(`/city`);
     const data = response.data.data;
     if (country_name) {
       resource.value.city = data
@@ -660,14 +655,14 @@ async function getCity(country_name) {
       }));
     }
   } catch (error) {
-    logger.log(error);
+    logger.error("MyProfile getCity error:", error);
   }
 }
 
 async function getNationality() {
   isLoading.value = true;
   try {
-    const response = await axios.get(`/country`);
+    const response = await http.get(`/country`);
     const data = response.data.data;
     resource.value.nationality = data.map((c) => ({
       id: c.country_id,
@@ -680,7 +675,7 @@ async function getNationality() {
     }));
     await getUserData();
   } catch (error) {
-    logger.log(error);
+    logger.error("MyProfile getNationality error:", error);
   } finally {
     isLoading.value = false;
   }
@@ -688,18 +683,13 @@ async function getNationality() {
 
 async function getUserData() {
   isLoading.value = true;
-  const token = localStorage.getItem("token");
   try {
-    const response = await axios.get(`/gypsy-user`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await http.get(`/gypsy-user`);
     const data = response.data.data;
     logger.log(data);
 
     image_path.value =
-      data.image != null ? (window.$fileURL || "/file/") + data.image : null;
+      data.image != null ? fileURL + data.image : null;
     input.value = {
       id: data.gypsy_id,
       image_path: "",
@@ -742,7 +732,7 @@ async function getUserData() {
         ? true
         : null;
   } catch (error) {
-    logger.log(error);
+    logger.error("MyProfile getUserData error:", error);
   } finally {
     isLoading.value = false;
   }
@@ -754,19 +744,15 @@ async function saveData() {
     gypsy_id: input.value.id,
     name: input.value.name,
     gender: input.value.gender?.value,
-    app_id: window.$appId || 1,
+    app_id: appId,
     marital_status: input.value.marital?.value,
     date_of_birth: input.value.date,
     country_current: input.value.nationality?.[0]?.id || input.value.nationality?.id,
   };
   logger.log(payload);
-  const token = localStorage.getItem("token");
   try {
-    const response = await axios.post(`/save-gypsy-user`, payload, {
+    const response = await http.post(`/save-gypsy-user`, payload, {
       headers: {
-        Authorization: `Bearer ${
-          tokenProvider.value ? tokenProvider.value : token
-        }`,
         "Content-Type": "multipart/form-data",
       },
     });
@@ -776,7 +762,7 @@ async function saveData() {
     successMessage.value = data.message;
     await getUserData();
   } catch (error) {
-    logger.log(error);
+    logger.error("MyProfile saveData error:", error);
     const message = error.response?.data?.mobile_number
       ? error.response.data.mobile_number[0]
       : error.response?.data?.message === ""
@@ -798,13 +784,9 @@ async function saveDataDesktop1() {
     nationality: input.value.nationality?.[0]?.id || input.value.nationality?.id,
   };
   logger.log(payload);
-  const token = localStorage.getItem("token");
   try {
-    const response = await axios.post(`/save-gypsy-user`, payload, {
+    const response = await http.post(`/save-gypsy-user`, payload, {
       headers: {
-        Authorization: `Bearer ${
-          tokenProvider.value ? tokenProvider.value : token
-        }`,
         "Content-Type": "multipart/form-data",
       },
     });
@@ -814,7 +796,7 @@ async function saveDataDesktop1() {
     successMessage.value = data.message;
     await getUserData();
   } catch (error) {
-    logger.log(error);
+    logger.error("MyProfile saveDataDesktop1 error:", error);
     const message = error.response?.data?.mobile_number
       ? error.response.data.mobile_number[0]
       : error.response?.data?.message === ""
@@ -835,13 +817,9 @@ async function saveDataDesktop2() {
     date_of_birth: input.value.date,
   };
   logger.log(payload);
-  const token = localStorage.getItem("token");
   try {
-    const response = await axios.post(`/save-gypsy-user`, payload, {
+    const response = await http.post(`/save-gypsy-user`, payload, {
       headers: {
-        Authorization: `Bearer ${
-          tokenProvider.value ? tokenProvider.value : token
-        }`,
         "Content-Type": "multipart/form-data",
       },
     });
@@ -851,7 +829,7 @@ async function saveDataDesktop2() {
     successMessage.value = data.message;
     await getUserData();
   } catch (error) {
-    logger.log(error);
+    logger.error("MyProfile saveDataDesktop2 error:", error);
     const message = error.response?.data?.mobile_number
       ? error.response.data.mobile_number[0]
       : error.response?.data?.message === ""
@@ -884,22 +862,15 @@ async function saveLocation() {
       : input.value.town,
   };
   logger.log(payload);
-  const token = localStorage.getItem("token");
   try {
-    const response = await axios.post(`/gypsy/save-current-location`, payload, {
-      headers: {
-        Authorization: `Bearer ${
-          tokenProvider.value ? tokenProvider.value : token
-        }`,
-      },
-    });
+    const response = await http.post(`/gypsy/save-current-location`, payload);
     const data = response.data;
     logger.log(data);
     isSuccess.value = true;
     successMessage.value = data.message;
     await getUserData();
   } catch (error) {
-    logger.log(error);
+    logger.error("MyProfile saveLocation error:", error);
     const message =
       error.response?.data?.message === ""
         ? "Something Wrong!!!"
@@ -918,13 +889,9 @@ async function saveEmail() {
     email_id: input.value.emailNew,
   };
   logger.log(payload);
-  const token = localStorage.getItem("token");
   try {
-    const response = await axios.post(`/save-gypsy-user`, payload, {
+    const response = await http.post(`/save-gypsy-user`, payload, {
       headers: {
-        Authorization: `Bearer ${
-          tokenProvider.value ? tokenProvider.value : token
-        }`,
         "Content-Type": "multipart/form-data",
       },
     });
@@ -937,7 +904,7 @@ async function saveEmail() {
     input.value.emailNew = "";
     isEmailVerified.value = false;
   } catch (error) {
-    logger.log(error);
+    logger.error("MyProfile saveEmail error:", error);
     const message = error.response?.data?.email_id
       ? error.response.data.email_id[0]
       : error.response?.data?.message === ""
@@ -957,13 +924,9 @@ async function saveMobile() {
     mobile_number: input.value.phoneNew || input.value.phone,
   };
   logger.log(payload);
-  const token = localStorage.getItem("token");
   try {
-    const response = await axios.post(`/save-gypsy-user`, payload, {
+    const response = await http.post(`/save-gypsy-user`, payload, {
       headers: {
-        Authorization: `Bearer ${
-          tokenProvider.value ? tokenProvider.value : token
-        }`,
         "Content-Type": "multipart/form-data",
       },
     });
@@ -979,7 +942,7 @@ async function saveMobile() {
     }, 5000);
     input.value.phoneNew = "";
   } catch (error) {
-    logger.log(error);
+    logger.error("MyProfile saveMobile error:", error);
     const message = error.response?.data?.mobile_number
       ? error.response.data.mobile_number[0]
       : error.response?.data?.message === ""
@@ -994,15 +957,8 @@ async function saveMobile() {
 
 async function deleteImage() {
   isSending.value = true;
-  const token = localStorage.getItem("token");
   try {
-    const response = await axios.delete(`/gypsy/image`, {
-      headers: {
-        Authorization: `Bearer ${
-          tokenProvider.value ? tokenProvider.value : token
-        }`,
-      },
-    });
+    const response = await http.delete(`/gypsy/image`);
     const data = response.data;
     logger.log(data);
     isSuccess.value = true;
@@ -1010,7 +966,7 @@ async function deleteImage() {
     emitter.emit("getHeaderUserData");
     await getUserData();
   } catch (error) {
-    logger.log(error);
+    logger.error("MyProfile deleteImage error:", error);
     const message =
       error.response?.data?.message === ""
         ? "Something Wrong!!!"
@@ -1029,13 +985,9 @@ async function saveImage() {
     image: imageSend.value || null,
   };
   logger.log(payload);
-  const token = localStorage.getItem("token");
   try {
-    const response = await axios.post(`/save-gypsy-user`, payload, {
+    const response = await http.post(`/save-gypsy-user`, payload, {
       headers: {
-        Authorization: `Bearer ${
-          tokenProvider.value ? tokenProvider.value : token
-        }`,
         "Content-Type": "multipart/form-data",
       },
     });
@@ -1045,7 +997,7 @@ async function saveImage() {
     successMessage.value = data.message;
     emitter.emit("changeHeaderImage", data.data.image);
   } catch (error) {
-    logger.log(error);
+    logger.error("MyProfile saveImage error:", error);
     const message =
       error.response?.data?.message === ""
         ? "Something Wrong!!!"
@@ -1085,13 +1037,11 @@ async function changePassword() {
     email_id: input.value.email,
     password: input.value.passwordNew,
   };
-  const token = localStorage.getItem("token");
   if (isPassword1.value === true && isPassword2.value === true) {
     try {
-      const response = await axios.post(`/gypsy-change-password`, payload, {
+      const response = await http.post(`/gypsy-change-password`, payload, {
         headers: {
           "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
         },
       });
       const data = response.data;
@@ -1106,7 +1056,7 @@ async function changePassword() {
       input.value.passwordNew = "";
       input.value.passwordConfirm = "";
     } catch (error) {
-      logger.log(error);
+      logger.error("MyProfile changePassword error:", error);
       const message = error.response?.data?.email_id
         ? error.response.data.email_id[0]
         : error.response?.data?.message === ""

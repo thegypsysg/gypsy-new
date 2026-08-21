@@ -83,7 +83,8 @@ export const useLocationStore = defineStore("location", {
             },
             (error) => {
               logger.error("Error geolocation:", error);
-            }
+            },
+            { timeout: 5000, maximumAge: 60000, enableHighAccuracy: false }
           );
         } catch (error) {
           logger.error("Error di getLongLat:", error);

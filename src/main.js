@@ -27,9 +27,6 @@ import "aos/dist/aos.css";
 const app = createApp(App);
 const pinia = createPinia();
 
-app.config.globalProperties.$fileURL = import.meta.env.VITE_FILE_URL;
-app.config.globalProperties.$appId = Number(import.meta.env.VITE_APP_ID) || 1;
-
 app.use(pinia);
 app.use(router);
 app.use(vuetify);

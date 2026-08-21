@@ -55,7 +55,7 @@
     </div>
     <div class="drawer__heading">
       <div class="drawer-logo">
-        <v-img height="35" width="80" :src="$fileURL + headerData?.app_logo" />
+        <v-img v-if="headerData?.app_logo" height="35" width="80" :src="fileURL + headerData.app_logo" />
       </div>
       <v-menu contained style="z-index: 1000">
         <template #activator="{ props }">
@@ -76,7 +76,7 @@
           </v-btn>
         </template>
         <v-list style="z-index: 1000">
-          <v-list-item @click="console.log('share')">
+          <v-list-item>
             <v-list-item-title>
               <v-icon class="mr-4" color="black" size="18">
                 mdi-email-outline
@@ -84,7 +84,7 @@
               Email
             </v-list-item-title>
           </v-list-item>
-          <v-list-item @click="console.log('share')">
+          <v-list-item>
             <v-list-item-title>
               <v-icon class="mr-4" size="18">
                 <i class="fa-brands fa-facebook-f" />
@@ -92,13 +92,13 @@
               Facebook
             </v-list-item-title>
           </v-list-item>
-          <v-list-item @click="console.log('share')">
+          <v-list-item>
             <v-list-item-title>
               <v-icon class="mr-4" color="black" size="18"> mdi-twitter </v-icon>
               Twitter
             </v-list-item-title>
           </v-list-item>
-          <v-list-item @click="console.log('share')">
+          <v-list-item>
             <v-list-item-title>
               <v-icon class="mr-4" size="18">
                 <i class="fa-brands fa-linkedin-in" />
@@ -114,17 +114,19 @@
     <ul class="pt-1" nav dense>
       <li class="v-list-item">
         <div class="v-list-item__icon">
-          <v-img height="20" width="30" src="@/assets/images/icons/home.webp" />
+          <img height="20" width="30" src="@/assets/images/icons/home.webp" alt="Home" style="object-fit: contain;" />
         </div>
         <v-list-item-title style="font-size: 12px"> Home </v-list-item-title>
       </li>
 
       <li v-if="userName != null" class="v-list-item mt-n2">
         <div class="v-list-item__icon">
-          <v-img
+          <img
             height="18"
             width="25"
             src="@/assets/images/icons/menu-shopper.webp"
+            alt="My Profile"
+            style="object-fit: contain;"
           />
         </div>
         <router-link class="text-decoration-none text-black" to="/my-profile">
@@ -136,14 +138,14 @@
 
       <li class="v-list-item mt-n2">
         <div class="v-list-item__icon">
-          <v-img height="18" width="25" src="@/assets/images/icons/shop.webp" />
+          <img height="18" width="25" src="@/assets/images/icons/shop.webp" alt="My Cart" style="object-fit: contain;" />
         </div>
         <v-list-item-title style="font-size: 12px"> My Cart </v-list-item-title>
       </li>
 
       <li v-if="userName != null" class="v-list-item mt-n2">
         <div class="v-list-item__icon">
-          <v-img src="" />
+          <v-icon size="20" color="grey-darken-1">mdi-ticket-percent-outline</v-icon>
         </div>
         <v-list-item-title style="font-size: 12px">
           My Vouchers
@@ -151,7 +153,7 @@
       </li>
       <li v-if="userName != null" class="v-list-item mt-n2">
         <div class="v-list-item__icon">
-          <v-img src="" />
+          <v-icon size="20" color="grey-darken-1">mdi-heart-outline</v-icon>
         </div>
 
         <v-list-item-title style="font-size: 12px">
@@ -160,14 +162,14 @@
       </li>
       <li v-if="userName != null" class="v-list-item mt-n2">
         <div class="v-list-item__icon">
-          <v-img src="" />
+          <v-icon size="20" color="grey-darken-1">mdi-apps</v-icon>
         </div>
 
         <v-list-item-title style="font-size: 12px"> My Apps </v-list-item-title>
       </li>
       <li v-if="userName == null" class="v-list-item mt-n2">
         <div class="v-list-item__icon">
-          <v-img src="" />
+          <v-icon size="20" color="grey-darken-1">mdi-shield-lock-outline</v-icon>
         </div>
         <router-link
           class="text-decoration-none text-black"
@@ -180,7 +182,7 @@
       </li>
       <li v-if="userName == null" class="v-list-item mt-n2">
         <div class="v-list-item__icon">
-          <v-img src="" />
+          <v-icon size="20" color="grey-darken-1">mdi-file-document-outline</v-icon>
         </div>
 
         <router-link class="text-decoration-none text-black" to="/our-terms">
@@ -200,32 +202,35 @@
         >
           <v-col cols="3" class="d-flex justify-end">
             <a :href="contactData?.facebook" aria-label="Facebook">
-              <v-img
+              <img
                 src="@/assets/images/icons/facebook.webp"
                 alt="Facebook icon"
                 height="40"
                 width="32"
+                style="object-fit: contain;"
               />
             </a>
           </v-col>
           <v-col class="d-flex justify-center" cols="3">
             <a :href="contactData?.instagram" aria-label="Instagram">
-              <v-img
+              <img
                 src="@/assets/images/icons/insta.webp"
                 alt="Instagram icon"
                 height="40"
                 width="32"
+                style="object-fit: contain;"
               />
             </a>
           </v-col>
           <v-col class="d-flex justify-start" cols="3">
             <a :href="contactData?.tiktok" aria-label="TikTok">
-              <v-img
+              <img
                 src="@/assets/images/icons/tiktok.webp"
                 alt="TikTok icon"
                 class="mt-1"
                 height="35"
                 width="35"
+                style="object-fit: contain;"
               />
             </a>
           </v-col>
@@ -238,12 +243,13 @@
               :href="`https://api.whatsapp.com/send?phone=${footerData?.whats_app}&text=The Gypsy Support here - How may I help you. ?`"
               aria-label="WhatsApp Support"
             >
-              <v-img
+              <img
                 src="@/assets/whatsapp.svg"
                 alt="WhatsApp icon"
                 class="mt-1"
                 height="35"
                 width="35"
+                style="object-fit: contain;"
               />
             </a>
           </v-col>
@@ -283,6 +289,8 @@
 </template>
 
 <script setup>
+import { useAppConfig } from "@/composables/useAppConfig";
+
 defineProps({
   modelValue: {
     type: Boolean,
@@ -327,6 +335,8 @@ defineProps({
 });
 
 defineEmits(["update:modelValue", "logout"]);
+
+const { fileURL } = useAppConfig();
 </script>
 
 <style scoped>

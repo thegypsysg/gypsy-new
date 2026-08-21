@@ -12,9 +12,25 @@
 
 const StorageService = {
   // --- Auth ---
-  getToken: () => localStorage.getItem("token"),
-  setToken: (token) => localStorage.setItem("token", token),
-  removeToken: () => localStorage.removeItem("token"),
+  getToken: () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    const expiry = localStorage.getItem("token_expiry");
+    if (expiry && Date.now() > Number(expiry)) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("token_expiry");
+      return null;
+    }
+    return token;
+  },
+  setToken: (token, expiryMs = 24 * 60 * 60 * 1000) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("token_expiry", String(Date.now() + expiryMs));
+  },
+  removeToken: () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("token_expiry");
+  },
 
   getSocial: () => localStorage.getItem("social"),
   setSocial: (social) => localStorage.setItem("social", social),
@@ -33,6 +49,18 @@ const StorageService = {
   getGId: () => localStorage.getItem("g_id"),
   setGId: (id) => localStorage.setItem("g_id", id),
 
+  getGypsyId: () => localStorage.getItem("gypsy_id"),
+  setGypsyId: (id) => localStorage.setItem("gypsy_id", String(id)),
+
+  getEmail: () => localStorage.getItem("email"),
+  setEmail: (email) => localStorage.setItem("email", email || ""),
+
+  getMobile: () => localStorage.getItem("mobile"),
+  setMobile: (mobile) => localStorage.setItem("mobile", mobile || ""),
+
+  getAppId: () => localStorage.getItem("app_id"),
+  setAppId: (id) => localStorage.setItem("app_id", String(id || "")),
+
   // --- Geolocation ---
   getLatitude: () => localStorage.getItem("latitude"),
   setLatitude: (lat) => localStorage.setItem("latitude", String(lat)),
@@ -46,11 +74,15 @@ const StorageService = {
   // --- Helpers ---
   clearAuth: () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("token_expiry");
     localStorage.removeItem("social");
     localStorage.removeItem("name");
     localStorage.removeItem("user_image");
     localStorage.removeItem("last_login");
     localStorage.removeItem("g_id");
+    localStorage.removeItem("gypsy_id");
+    localStorage.removeItem("email");
+    localStorage.removeItem("mobile");
   },
 };
 

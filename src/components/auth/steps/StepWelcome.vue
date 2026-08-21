@@ -51,9 +51,10 @@
                     @click="loginSocial('google')"
                   >
                     <v-icon :size="!isSmall ? '35' : '40'">
-                      <v-img
+                      <img
                         src="@/assets/images/icons/google.webp"
                         alt="Google Logo"
+                        style="width: 100%; height: 100%; object-fit: contain;"
                       />
                     </v-icon>
                   </v-btn>
@@ -416,13 +417,17 @@
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import MazPhoneNumberInput from "maz-ui/components/MazPhoneNumberInput";
-import axios from "@/util/axios";
+import http from "@/api/http";
 import { emitter } from "@/util/eventBus";
+import { useAppConfig } from "@/composables/useAppConfig";
+import { logger } from "@/utils/logger";
+import StorageService from "@/services/storage.service";
 
 const emit = defineEmits(["nextStep"]);
 
 const route = useRoute();
 const router = useRouter();
+const { appId: defaultAppId } = useAppConfig();
 
 const appIdLogin = ref("");
 const tokenLogin = ref(null);
@@ -479,7 +484,7 @@ function capitalizeFirstLetter(string) {
 }
 
 const socialProvider = computed(() => {
-  const social = localStorage.getItem("social");
+  const social = StorageService.getSocial();
   return capitalizeFirstLetter(social) === "Linkedin-openid"
     ? "LinkedIn Login"
     : capitalizeFirstLetter(social) + " Login";
@@ -487,7 +492,7 @@ const socialProvider = computed(() => {
 
 const appId = computed(() => {
   const aid = route.query.app_id || "";
-  localStorage.setItem("app_id", aid);
+  StorageService.setAppId(aid);
   return aid;
 });
 
@@ -525,15 +530,15 @@ async function sendOTP() {
     email_id: email.value,
   };
   try {
-    const response = await axios.post(`/send-otp`, payload);
+    const response = await http.post(`/send-otp`, payload);
     const data = response.data;
-    console.log(data);
+    logger.log("sendOTP response:", data);
     successMessage.value = data.message;
     isSuccess.value = true;
-    localStorage.setItem("email", data.data.email_id);
+    StorageService.setEmail(data.data.email_id);
     router.push("/sign-up-email");
   } catch (error) {
-    console.log(error);
+    logger.error("sendOTP error:", error);
     const message = error.response?.data?.email_id
       ? error.response.data.email_id[0]
       : error.response?.data?.message
@@ -562,17 +567,17 @@ async function loginSocial(social_name) {
     isFacebook.value = true;
   } else {
     try {
-      const response = await axios.post(`/gypsy-login/${social_name}`, {
-        app_id: appId.value === "" ? window.$appId || 1 : appId.value,
+      const response = await http.post(`/gypsy-login/${social_name}`, {
+        app_id: appId.value === "" ? defaultAppId : appId.value,
       });
-      console.log(response);
+      logger.log("loginSocial response:", response);
       if (response && response.data?.target_url) {
         window.location.assign(response.data.target_url);
       } else {
         window.location.href = "/sign-in";
       }
     } catch (error) {
-      console.log(error);
+      logger.error("loginSocial error:", error);
       window.location.href = "/sign-in";
     }
   }
@@ -581,10 +586,10 @@ async function loginSocial(social_name) {
 async function forgotPassword() {
   isLoadingForgot.value = true;
   try {
-    const response = await axios.post(`/gypsy/send-forget-password-email`, {
+    const response = await http.post(`/gypsy/send-forget-password-email`, {
       email_id: email.value,
     });
-    console.log(response);
+    logger.log("forgotPassword response:", response);
     if (response) {
       isSuccessForgot.value = true;
       isForgotPassword.value = true;
@@ -623,17 +628,17 @@ async function sendDataMobile() {
       mobile_number: mobile.value,
     };
     try {
-      const response = await axios.post(
+      const response = await http.post(
         `/gypsy-registration/check-mobile-exists`,
         payload
       );
       const data = response.data;
       successMessage.value = data.message;
       isSuccess.value = true;
-      localStorage.setItem("mobile", mobile.value);
+      StorageService.setMobile(mobile.value);
       nextStep();
     } catch (error) {
-      console.log(error);
+      logger.error("sendDataMobile error:", error);
       const message = error.response?.data?.mobile_number
         ? error.response.data.mobile_number[0]
         : error.response?.data?.message
@@ -658,18 +663,18 @@ async function sendDataEmail() {
       email_id: email.value,
     };
     try {
-      const response = await axios.post(`/gypsy/check-info-by-email`, payload);
+      const response = await http.post(`/gypsy/check-info-by-email`, payload);
       const data = response.data.data;
-      console.log(data);
+      logger.log("sendDataEmail response:", data);
       if (data == null) {
-        localStorage.setItem("email", email.value);
+        StorageService.setEmail(email.value);
         router.push("/sign-up-email");
       } else if (data.social_type === "E" && data.password) {
         isLogin.value = true;
       } else if (data.social_type === "E" && !data.password) {
-        localStorage.setItem("email", data.email_id);
-        localStorage.setItem("gypsy_id", data.gypsy_id);
-        localStorage.setItem("token", data.token);
+        StorageService.setEmail(data.email_id);
+        StorageService.setGypsyId(data.gypsy_id);
+        StorageService.setToken(data.token);
         router.push("/signup-email");
       } else if (data.social_type === "G") {
         successMessage.value =
@@ -698,7 +703,7 @@ async function sendDataEmail() {
         isSuccess.value = true;
       }
     } catch (error) {
-      console.log(error);
+      logger.error("sendDataEmail error:", error);
       const message = error.response?.data?.email_id
         ? error.response.data.email_id[0]
         : error.response?.data?.message
@@ -713,16 +718,16 @@ async function sendDataEmail() {
 }
 
 async function loginEmail() {
-  appIdLogin.value = localStorage.getItem("app_id");
+  appIdLogin.value = StorageService.getAppId();
   isSending.value = true;
   const payload = {
     email_id: email.value,
     password: password.value,
   };
   try {
-    const response = await axios.post(`/gypsy/login`, payload);
+    const response = await http.post(`/gypsy/login`, payload);
     const data = response.data;
-    console.log(data);
+    logger.log("loginEmail response:", data);
     if (isForgotPassword.value) {
       isChangePassword.value = true;
       tokenLogin.value = data.token;
@@ -731,18 +736,20 @@ async function loginEmail() {
       isSuccess.value = true;
 
       if (appIdLogin.value === "") {
-        localStorage.setItem("social", "Email");
-        localStorage.setItem("token", data.token);
+        StorageService.setSocial("Email");
+        StorageService.setToken(data.token);
         emitter.emit("changeHeaderWelcome3", "Sign-Up / Sign-in");
-        router.push(`/?token=${data.token}`);
+        router.push("/");
       } else if (appIdLogin.value === "5") {
-        localStorage.setItem("social", "Email");
+        StorageService.setSocial("Email");
+        // Cross-app SSO redirect: external URL requires token query param
         const externalURL = `${import.meta.env.VITE_SYRINGE_URL}?token=${
           data.token
         }`;
         window.location.href = externalURL;
       } else if (appIdLogin.value === "2") {
-        localStorage.setItem("social", "Email");
+        StorageService.setSocial("Email");
+        // Cross-app SSO redirect: external URL requires token query param
         const externalURL = `${import.meta.env.VITE_MALLE_URL}?token=${
           data.token
         }`;
@@ -760,19 +767,21 @@ async function loginEmail() {
 function closeChangePassword() {
   isChangePassword.value = false;
   if (appIdLogin.value === "") {
-    console.log("app id, ", appIdLogin.value);
-    localStorage.setItem("social", "Email");
-    localStorage.setItem("token", tokenLogin.value);
+    logger.log("app id:", appIdLogin.value);
+    StorageService.setSocial("Email");
+    StorageService.setToken(tokenLogin.value);
     emitter.emit("changeHeaderWelcome3", "Sign-Up / Sign-in");
-    router.push(`/?token=${tokenLogin.value}`);
+    router.push("/");
   } else if (appIdLogin.value === "5") {
-    localStorage.setItem("social", "Email");
+    StorageService.setSocial("Email");
+    // Cross-app SSO redirect: external URL requires token query param
     const externalURL = `${import.meta.env.VITE_SYRINGE_URL}?token=${
       tokenLogin.value
     }`;
     window.location.href = externalURL;
   } else if (appIdLogin.value === "2") {
-    localStorage.setItem("social", "Email");
+    StorageService.setSocial("Email");
+    // Cross-app SSO redirect: external URL requires token query param
     const externalURL = `${import.meta.env.VITE_MALLE_URL}?token=${
       tokenLogin.value
     }`;
@@ -781,7 +790,7 @@ function closeChangePassword() {
 }
 
 onMounted(() => {
-  console.log(appId.value);
+  logger.log("appId mounted:", appId.value);
   window.addEventListener("resize", handleResize);
 });
 

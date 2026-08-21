@@ -1,0 +1,30 @@
+@use './_variables.scss' as *;
+
+.bg-image {
+  margin-top: 90px;
+  min-height: calc(100vh - 90px);
+  background-image: url('@/assets/header.webp');
+  background-size: cover;
+  background-position: center;
+
+  img {
+    object-fit: cover !important;
+  }
+}
+
+.text-muted {
+  color: #6c757d !important;
+}
+
+.list-unstyled {
+  padding-left: 0;
+  list-style: none;
+}
+
+.my-custom-class {
+  background-color: red;
+}
+
+:deep(.pencarian) {
+  border-block-color: red;
+}

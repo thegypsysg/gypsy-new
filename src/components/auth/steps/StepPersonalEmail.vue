@@ -317,8 +317,10 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
-import axios from "@/util/axios";
+import http from "@/api/http";
 import { emitter } from "@/util/eventBus";
+import { logger } from "@/utils/logger";
+import StorageService from "@/services/storage.service";
 import MazPhoneNumberInput from "maz-ui/components/MazPhoneNumberInput";
 import MazSelect from "maz-ui/components/MazSelect";
 import ImageCropperDialog from "@/components/ImageCropperDialog.vue";
@@ -444,14 +446,14 @@ function hideEmail(emailStr) {
 
 async function getCountryCode() {
   try {
-    const response = await axios.get(`/country`);
+    const response = await http.get(`/country`);
     const data = response.data.data;
     resource.value.code = data.map((c) => ({
       name: `${c.country_name} (${c.country_code})`,
       code: c.country_code,
     }));
   } catch (error) {
-    console.log(error);
+    logger.error("getCountryCode error:", error);
     const message =
       error.response?.data?.message === ""
         ? "Something Wrong!!!"
@@ -475,7 +477,7 @@ async function saveData() {
       .filter((o) => o.value === country.value)
       .map((op) => op.label)[0];
     isSending.value = true;
-    const appId = localStorage.getItem("app_id");
+    const appId = StorageService.getAppId();
     const payload = {
       email_id: email.value,
       name: name.value,
@@ -494,25 +496,25 @@ async function saveData() {
 
     if (isMobile.value && isName.value && isGender.value) {
       try {
-        const response = await axios.post(`/gypsy/save-normal-user`, payload, {
+        const response = await http.post(`/gypsy/save-normal-user`, payload, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
         const data = response.data;
-        console.log(data);
+        logger.log("saveData email response:", data);
         successMessage.value = data.message;
-        localStorage.setItem("name", data.data.name);
-        localStorage.setItem("email", data.data.email_id);
-        localStorage.setItem("g_id", data.data.gypsy_ref_no);
-        localStorage.setItem("gypsy_id", data.data.gypsy_id);
-        localStorage.setItem("user_image", data.data.image);
-        localStorage.setItem("last_login", data.data.last_login);
-        localStorage.setItem("token", data.data.token);
+        StorageService.setName(data.data.name);
+        StorageService.setEmail(data.data.email_id || "");
+        StorageService.setGId(data.data.gypsy_ref_no);
+        StorageService.setGypsyId(data.data.gypsy_id);
+        StorageService.setUserImage(data.data.image);
+        StorageService.setLastLogin(data.data.last_login);
+        StorageService.setToken(data.data.token);
         isSuccess.value = true;
         nextStep();
       } catch (error) {
-        console.log(error);
+        logger.error("saveData email error:", error);
         if (error.response?.status === 422) {
           const message =
             error.response.data.email_id && error.response.data.message
@@ -549,7 +551,7 @@ function resendOTP() {
 onMounted(() => {
   getCountryCode();
   emitter.emit("changeHeaderWelcome", "Sign-up by Email");
-  email.value = localStorage.getItem("email") || "";
+  email.value = StorageService.getEmail() || "";
   window.addEventListener("resize", handleResize);
 });
 

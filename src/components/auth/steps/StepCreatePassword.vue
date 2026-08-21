@@ -139,8 +139,10 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import axios from "@/util/axios";
+import http from "@/api/http";
 import { emitter } from "@/util/eventBus";
+import { logger } from "@/utils/logger";
+import StorageService from "@/services/storage.service";
 
 const props = defineProps({
   authType: {
@@ -187,10 +189,10 @@ function handleResize() {
 
 onMounted(() => {
   window.addEventListener("resize", handleResize);
-  email.value = localStorage.getItem("email") || "";
-  mobile.value = localStorage.getItem("mobile") || "";
-  gypsyId.value = localStorage.getItem("gypsy_id");
-  token.value = localStorage.getItem("token");
+  email.value = StorageService.getEmail() || "";
+  mobile.value = StorageService.getMobile() || "";
+  gypsyId.value = StorageService.getGypsyId();
+  token.value = StorageService.getToken();
 });
 
 onUnmounted(() => {
@@ -220,20 +222,19 @@ async function saveData() {
     }
 
     try {
-      const response = await axios.post(`/gypsy-set-password`, payload, {
+      const response = await http.post(`/gypsy-set-password`, payload, {
         headers: {
           "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token.value}`,
         },
       });
       const data = response.data;
-      console.log(data);
+      logger.log("setPassword response:", data);
       successMessage.value = data.message;
       isSuccess.value = true;
       emitter.emit("changeHeaderWelcome", "Sign Up Completed");
       nextStep();
     } catch (error) {
-      console.log(error);
+      logger.error("setPassword error:", error);
       const message = error.response?.data?.email_id
         ? error.response.data.email_id[0]
         : error.response?.data?.message === ""

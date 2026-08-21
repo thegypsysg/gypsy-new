@@ -15,7 +15,7 @@
         >
           <template v-slot:prepend>
             <v-avatar
-              :image="$fileURL + itemSelectedComplete?.flag"
+              :image="fileURL + itemSelectedComplete?.flag"
               size="x-small"
             ></v-avatar>
           </template>
@@ -36,7 +36,7 @@
           <v-list-subheader>
             <div class="d-flex align-center ga-2">
               <v-avatar
-                :image="$fileURL + data?.flag"
+                :image="fileURL + data?.flag"
                 size="x-small"
               ></v-avatar>
               <p class="text-subtitle-1 font-weight-medium">
@@ -60,7 +60,7 @@
             <v-list-item-title>
               <div class="d-flex ml-7 align-center ga-2">
                 <v-avatar
-                  :image="$fileURL + dataCity?.city_image"
+                  :image="fileURL + dataCity?.city_image"
                   size="x-small"
                 ></v-avatar>
                 <p class="">
@@ -82,6 +82,8 @@
 </template>
 
 <script setup>
+import { useAppConfig } from "@/composables/useAppConfig";
+
 defineProps({
   modelValue: {
     type: Boolean,
@@ -110,4 +112,6 @@ defineProps({
 });
 
 defineEmits(["update:modelValue", "change-item-selected"]);
+
+const { fileURL } = useAppConfig();
 </script>

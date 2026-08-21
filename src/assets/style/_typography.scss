@@ -1,0 +1,77 @@
+@use './_variables.scss' as *;
+
+* {
+  font-family: Nunito;
+  text-transform: none;
+}
+
+body {
+  font-family: Nunito;
+}
+
+.header-title {
+  color: black;
+  font-family: 'Nunito' !important;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 56px;
+  line-height: 76px;
+  margin-bottom: 32px;
+}
+
+.header-title-sub {
+  text-align: center;
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 44px;
+  color: #808080;
+}
+
+.jumbotron-text {
+  padding-top: 50px;
+  padding-bottom: 50px;
+}
+
+.footer_title {
+  font-family: Nunito;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 33px;
+  letter-spacing: 0em;
+  text-align: left;
+  position: relative;
+  display: inline;
+  margin-bottom: 34px;
+
+  &::before {
+    position: absolute;
+    top: 30px;
+    content: '';
+    width: 60px;
+    height: 2px;
+    background-color: #00cdcd;
+  }
+}
+
+.footer_paragraph {
+  font-family: Nunito;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0em;
+  text-align: left;
+}
+
+.footer__content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: Nunito;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 22px;
+  letter-spacing: 0;
+  text-align: left;
+}

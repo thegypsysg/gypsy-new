@@ -19,7 +19,8 @@ import Banner from "@/components/Banner.vue";
 import TrendingApps from "@/components/TrendingApps.vue";
 import Partners from "@/components/Partners.vue";
 import Footer from "@/components/Footer.vue";
-import axios from "@/util/axios";
+import { logger } from "@/utils/logger";
+import http from "@/api/http";
 
 const headerData = ref({});
 const footerData = ref({});
@@ -28,10 +29,10 @@ const isLoading = ref(false);
 async function getHeaderData() {
   isLoading.value = true;
   try {
-    const response = await axios.get(`/header`);
+    const response = await http.get(`/header`);
     headerData.value = response.data.data;
   } catch (error) {
-    console.log(error);
+    logger.error("Landing getHeaderData error:", error);
   } finally {
     isLoading.value = false;
   }
@@ -40,10 +41,10 @@ async function getHeaderData() {
 async function getFooterData() {
   isLoading.value = true;
   try {
-    const response = await axios.get(`/footer`);
+    const response = await http.get(`/footer`);
     footerData.value = response.data.data?.[0] || {};
   } catch (error) {
-    console.log(error);
+    logger.error("Landing getFooterData error:", error);
   } finally {
     isLoading.value = false;
   }

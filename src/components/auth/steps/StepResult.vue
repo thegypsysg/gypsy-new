@@ -65,6 +65,7 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { emitter } from "@/util/eventBus";
+import StorageService from "@/services/storage.service";
 
 const props = defineProps({
   authType: {
@@ -90,8 +91,8 @@ function handleResize() {
 
 onMounted(() => {
   window.addEventListener("resize", handleResize);
-  name.value = localStorage.getItem("name") || "";
-  gId.value = localStorage.getItem("g_id") || "";
+  name.value = StorageService.getName() || "";
+  gId.value = StorageService.getGId() || "";
 });
 
 onUnmounted(() => {
@@ -99,22 +100,24 @@ onUnmounted(() => {
 });
 
 function changeHeader() {
-  const appId = localStorage.getItem("app_id");
-  const token = localStorage.getItem("token");
+  const appId = StorageService.getAppId();
+  const token = StorageService.getToken();
 
   if (props.authType === "mobile") {
-    localStorage.setItem("social", "Mobile");
+    StorageService.setSocial("Mobile");
   } else if (props.authType === "email") {
-    localStorage.setItem("social", "Email");
+    StorageService.setSocial("Email");
   }
 
   if (appId === "" || !appId) {
     emitter.emit("changeHeaderWelcome2", "Sign-Up / Sign-in");
-    router.push(token ? `/?token=${token}` : "/");
+    router.push("/");
   } else if (appId === "5") {
+    // Cross-app SSO redirect: external URL requires token query param
     const externalURL = `${import.meta.env.VITE_SYRINGE_URL}?token=${token}`;
     window.location.href = externalURL;
   } else if (appId === "2") {
+    // Cross-app SSO redirect: external URL requires token query param
     const externalURL = `${import.meta.env.VITE_MALLE_URL}?token=${token}`;
     window.location.href = externalURL;
   }

@@ -1,3 +1,7 @@
+/**
+ * @deprecated Gunakan `@/api/http` sebagai gantinya.
+ * Seluruh komponen telah dimigrasikan ke `@/api/http` pada Sprint 7.
+ */
 import axios from "axios";
 import { logger } from "@/utils/logger";
 

@@ -10,6 +10,7 @@
  *   await execute();
  */
 import { ref } from "vue";
+import { logger } from "@/utils/logger";
 
 export function useApi(apiFunction) {
   const data = ref(null);
@@ -25,7 +26,7 @@ export function useApi(apiFunction) {
       return response.data;
     } catch (err) {
       error.value = err;
-      console.error("API Error:", err);
+      logger.error("API Error:", err);
       throw err;
     } finally {
       isLoading.value = false;

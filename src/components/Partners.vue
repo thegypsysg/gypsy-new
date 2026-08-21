@@ -13,17 +13,13 @@
         <v-lazy :options="{ threshold: 0.5 }" min-height="200">
           <v-card class="partners_box">
             <div class="img-cont">
-              <v-img
+              <img
                 src="@/assets/partner-1.webp"
                 class="align-end img-item"
-                gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
-                height="200px"
-                cover
-              >
-                <template #placeholder>
-                  <div class="skeleton" />
-                </template>
-              </v-img>
+                alt="As a Rider/Driver"
+                loading="lazy"
+                style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px 8px 0 0;"
+              />
             </div>
             <v-card-title class="text-black text-center">
               As a Rider/Driver
@@ -48,17 +44,13 @@
         <v-lazy :options="{ threshold: 0.5 }" min-height="200">
           <v-card class="partners_box">
             <div class="img-cont">
-              <v-img
+              <img
                 src="@/assets/partner-2.webp"
                 class="align-end img-item"
-                gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
-                height="200px"
-                cover
-              >
-                <template #placeholder>
-                  <div class="skeleton" />
-                </template>
-              </v-img>
+                alt="As a Merchant / Brand Owner"
+                loading="lazy"
+                style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px 8px 0 0;"
+              />
             </div>
             <v-card-title class="text-black text-center">
               As a Merchant / Brand Owner
@@ -83,17 +75,13 @@
         <v-lazy :options="{ threshold: 0.5 }" min-height="200">
           <v-card class="partners_box">
             <div class="img-cont">
-              <v-img
+              <img
                 src="@/assets/partner-3.webp"
                 class="align-end img-item"
-                gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
-                height="200px"
-                cover
-              >
-                <template #placeholder>
-                  <div class="skeleton" />
-                </template>
-              </v-img>
+                alt="As an Employer / Agency"
+                loading="lazy"
+                style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px 8px 0 0;"
+              />
             </div>
             <v-card-title class="text-black text-center">
               As an Employer / Agency

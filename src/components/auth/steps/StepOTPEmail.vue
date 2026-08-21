@@ -134,8 +134,10 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
-import axios from "@/util/axios";
+import http from "@/api/http";
 import { emitter } from "@/util/eventBus";
+import { logger } from "@/utils/logger";
+import StorageService from "@/services/storage.service";
 import VOtpInput from "vue3-otp-input";
 
 const emit = defineEmits(["nextStep", "backStep"]);
@@ -195,7 +197,7 @@ function startCountdown() {
 onMounted(() => {
   startCountdown();
   emitter.emit("changeHeaderWelcome", "Sign-up by Email");
-  email.value = localStorage.getItem("email") || "";
+  email.value = StorageService.getEmail() || "";
   window.addEventListener("resize", handleResize);
 });
 
@@ -246,9 +248,9 @@ async function saveData() {
       otp: otp.value,
     };
     try {
-      const response = await axios.post(`/send-otp`, payload);
+      const response = await http.post(`/send-otp`, payload);
       const data = response.data;
-      console.log(data);
+      logger.log("verify OTP response:", data);
       isSuccess.value = true;
       successMessage.value = "Success verify OTP";
       email.value = "";
@@ -257,7 +259,7 @@ async function saveData() {
       nextStep();
       startCountdown();
     } catch (error) {
-      console.log(error);
+      logger.error("verify OTP error:", error);
       const message = error.response?.data?.email_id
         ? error.response.data.email_id[0]
         : error.response?.data?.message
@@ -279,17 +281,17 @@ async function resendOTP() {
   if (countdown.value === 0) {
     isSending.value = true;
     const payload = {
-      email_id: localStorage.getItem("email"),
+      email_id: StorageService.getEmail(),
     };
     try {
-      const response = await axios.post(`/send-otp`, payload);
+      const response = await http.post(`/send-otp`, payload);
       const data = response.data;
-      console.log(data);
+      logger.log("resend OTP response:", data);
       isSuccess.value = true;
       successMessage.value = "Success send OTP";
       startCountdown();
     } catch (error) {
-      console.log(error);
+      logger.error("resend OTP error:", error);
       const message = error.response?.data?.email_id
         ? error.response.data.email_id[0]
         : error.response?.data?.message

@@ -162,7 +162,8 @@
                     </div>
                   </div>
                   <v-img
-                    :src="$fileURL + card.img"
+                    v-if="card.img"
+                    :src="fileURL + card.img"
                     gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
                     height="200px"
                     cover
@@ -310,7 +311,8 @@
                     </div>
                   </div>
                   <v-img
-                    :src="$fileURL + card.img"
+                    v-if="card.img"
+                    :src="fileURL + card.img"
                     gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
                     height="200px"
                     cover
@@ -412,7 +414,7 @@
     <v-dialog v-model="isOpenLive" persistent width="auto">
       <v-card width="450">
         <v-card-text class="text-center">
-          <v-img height="100" :src="liveData.img" />
+          <v-img v-if="liveData.img" height="100" :src="liveData.img" />
           <h2 class="my-4">{{ liveData.title }} would be Live Soon</h2>
           <v-btn class="mb-4" @click="closeLive()"> OK </v-btn>
         </v-card-text>
@@ -425,7 +427,9 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { emitter } from "@/util/eventBus";
 import { useLocationStore } from "@/stores/location.store";
-import axios from "@/util/axios";
+import { useAppConfig } from "@/composables/useAppConfig";
+import { logger } from "@/utils/logger";
+import http from "@/api/http";
 
 defineProps({
   appData: {
@@ -435,6 +439,7 @@ defineProps({
 });
 
 const locationStore = useLocationStore();
+const { fileURL } = useAppConfig();
 
 const isOpenLive = ref(false);
 const liveData = ref({
@@ -470,7 +475,7 @@ const filteredItemsDesktop = computed(() => {
 function openLive(item) {
   isOpenLive.value = true;
   liveData.value = {
-    img: (window.$fileURL || "/file/") + item.img,
+    img: fileURL + item.img,
     title: item.title,
   };
 }
@@ -485,7 +490,7 @@ function closeLive() {
 
 async function getAppData() {
   try {
-    const response = await axios.get(`/app`);
+    const response = await http.get(`/app`);
     const data = response.data.data;
     trendingCard.value = data.map((item) => ({
       img: item.app_main_image || "",
@@ -526,13 +531,13 @@ async function getAppData() {
       shares: item.app_shares || "",
     }));
   } catch (error) {
-    console.log(error);
+    logger.error("TrendingApps error:", error);
   }
 }
 
 async function getGroups() {
   try {
-    const response = await axios.get(`/groups`);
+    const response = await http.get(`/groups`);
     const data = response.data.data;
     trendingBtn.value = data.map((group) => ({
       id: group.app_group_id,
@@ -540,7 +545,7 @@ async function getGroups() {
       tag: group.app_group_name,
     }));
   } catch (error) {
-    console.log(error);
+    logger.error("TrendingApps error:", error);
   }
 }
 
